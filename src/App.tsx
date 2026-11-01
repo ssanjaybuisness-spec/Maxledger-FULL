@@ -1,5 +1,5 @@
 
-import { useState } from "react";
+import { useEffect, useState, type FormEvent } from "react";
 import {
   Wallet,
   TrendingUp,
@@ -13,55 +13,112 @@ import {
   ArrowUpRight
 } from "lucide-react";
 
-type Transaction = {
-  id: number;
-  title: string;
-  category: string;
-  amount: number;
-  type: "income" | "expense";
-  date: string;
+import { loadData, saveData } from "./services/storage";
+import type { AppData, Transaction } from "./types";
+
+const EMPTY_DATA: AppData = {
+  transactions: [],
+  pendingPayments: [],
+  categories: [],
+  accounts: []
 };
 
 export default function App() {
+  const [data, setData] = useState<AppData>(EMPTY_DATA);
+  const [loaded, setLoaded] = useState(false);
   const [balanceVisible, setBalanceVisible] = useState(true);
-  const [transactions, setTransactions] = useState<Transaction[]>([]);
   const [showForm, setShowForm] = useState(false);
+  const [storageError, setStorageError] = useState("");
 
-  const income = transactions
+  useEffect(() => {
+    let active = true;
+
+    loadData()
+      .then((savedData) => {
+        if (active) {
+          setData(savedData);
+          setLoaded(true);
+        }
+      })
+      .catch(() => {
+        if (active) {
+          setStorageError("Unable to load saved data.");
+          setLoaded(true);
+        }
+      });
+
+    return () => {
+      active = false;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!loaded) return;
+
+    saveData(data).catch(() => {
+      setStorageError("Unable to save data. Check your device storage.");
+    });
+  }, [data, loaded]);
+
+  const income = data.transactions
     .filter((item) => item.type === "income")
     .reduce((sum, item) => sum + item.amount, 0);
 
-  const expenses = transactions
+  const expenses = data.transactions
     .filter((item) => item.type === "expense")
     .reduce((sum, item) => sum + item.amount, 0);
 
   const balance = income - expenses;
 
-  function addTransaction(event: React.FormEvent<HTMLFormElement>) {
+  const money = (amount: number) =>
+    balanceVisible
+      ? `₹${amount.toLocaleString("en-IN", {
+          maximumFractionDigits: 2
+        })}`
+      : "₹••••••";
+
+  function addTransaction(event: FormEvent<HTMLFormElement>) {
     event.preventDefault();
 
     const form = new FormData(event.currentTarget);
     const amount = Number(form.get("amount"));
+    const title = String(form.get("title")).trim();
+    const category = String(form.get("category")).trim();
+    const type = form.get("type") as "income" | "expense";
 
-    if (!amount || amount <= 0) return;
+    if (!title || !category || !Number.isFinite(amount) || amount <= 0) {
+      return;
+    }
+
+    const now = Date.now();
 
     const transaction: Transaction = {
-      id: Date.now(),
-      title: String(form.get("title")),
-      category: String(form.get("category")),
+      id: crypto.randomUUID(),
+      title,
+      category,
       amount,
-      type: form.get("type") as "income" | "expense",
-      date: new Date().toLocaleDateString("en-IN")
+      type,
+      date: new Date().toISOString().slice(0, 10),
+      createdAt: now,
+      updatedAt: now
     };
 
-    setTransactions((current) => [transaction, ...current]);
+    setData((current) => ({
+      ...current,
+      transactions: [transaction, ...current.transactions]
+    }));
+
     setShowForm(false);
   }
 
-  const money = (amount: number) =>
-    balanceVisible
-      ? `₹${amount.toLocaleString("en-IN")}`
-      : "₹••••••";
+  if (!loaded) {
+    return (
+      <main className="app-shell">
+        <h2>MaxLedger</h2>
+        <p>Loading your financial data...</p>
+      </main>
+    );
+  }
 
   return (
     <main className="app-shell">
@@ -130,6 +187,12 @@ export default function App() {
         </button>
       </section>
 
+      {storageError && (
+        <p role="alert" className="storage-error">
+          {storageError}
+        </p>
+      )}
+
       {showForm && (
         <form className="transaction-form" onSubmit={addTransaction}>
           <h3>New transaction</h3>
@@ -137,12 +200,14 @@ export default function App() {
           <input
             name="title"
             placeholder="Transaction name"
+            maxLength={100}
             required
           />
 
           <input
             name="category"
             placeholder="Category"
+            maxLength={50}
             required
           />
 
@@ -167,14 +232,14 @@ export default function App() {
       )}
 
       <section className="transactions">
-        {transactions.length === 0 ? (
+        {data.transactions.length === 0 ? (
           <div className="empty-state">
             <div className="empty-icon"><Clock /></div>
             <h3>No transactions yet</h3>
             <p>Your financial activity will appear here.</p>
           </div>
         ) : (
-          transactions.map((item) => (
+          data.transactions.map((item) => (
             <article className="transaction-row" key={item.id}>
               <div className={`transaction-icon ${item.type}`}>
                 {item.type === "income"

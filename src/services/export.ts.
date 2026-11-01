@@ -9,6 +9,8 @@ function escapeCSV(value: string | number | undefined): string {
 export function exportTransactionsCSV(
   transactions: Transaction[]
 ): void {
+  if (transactions.length === 0) return;
+
   const headers = [
     "Date",
     "Title",
@@ -49,5 +51,5 @@ export function exportTransactionsCSV(
   link.click();
   document.body.removeChild(link);
 
-  URL.revokeObjectURL(url);
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
 }

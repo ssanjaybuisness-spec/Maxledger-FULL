@@ -25,7 +25,8 @@ const EMPTY_DATA: AppData = {
   transactions: [],
   pendingPayments: [],
   categories: DEFAULT_CATEGORIES,
-  accounts: []
+  accounts: [],
+  budgets: []
 };
 
 function isValidData(value: unknown): value is AppData {
@@ -41,7 +42,7 @@ function isValidData(value: unknown): value is AppData {
   );
 }
 
-function addMissingCategories(data: AppData): AppData {
+function migrateData(data: AppData): AppData {
   const existingIds = new Set(data.categories.map(category => category.id));
 
   return {
@@ -49,7 +50,8 @@ function addMissingCategories(data: AppData): AppData {
     categories: [
       ...data.categories,
       ...DEFAULT_CATEGORIES.filter(category => !existingIds.has(category.id))
-    ]
+    ],
+    budgets: Array.isArray(data.budgets) ? data.budgets : []
   };
 }
 
@@ -59,7 +61,10 @@ export async function loadData(): Promise<AppData> {
 
     if (result.value) {
       const parsed: unknown = JSON.parse(result.value);
-      if (isValidData(parsed)) return addMissingCategories(parsed);
+
+      if (isValidData(parsed)) {
+        return migrateData(parsed);
+      }
     }
   } catch (error) {
     console.warn("Capacitor storage unavailable:", error);
@@ -70,7 +75,10 @@ export async function loadData(): Promise<AppData> {
 
     if (saved) {
       const parsed: unknown = JSON.parse(saved);
-      if (isValidData(parsed)) return addMissingCategories(parsed);
+
+      if (isValidData(parsed)) {
+        return migrateData(parsed);
+      }
     }
   } catch (error) {
     console.error("Unable to load local data:", error);

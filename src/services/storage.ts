@@ -1,13 +1,30 @@
 
 import { Preferences } from "@capacitor/preferences";
-import type { AppData } from "../types";
+import type { AppData, Category } from "../types";
 
 const STORAGE_KEY = "maxledger_data_v1";
+
+export const DEFAULT_CATEGORIES: Category[] = [
+  { id: "income-salary", name: "Salary", type: "income", color: "#34d399", icon: "wallet" },
+  { id: "income-freelance", name: "Freelance", type: "income", color: "#60a5fa", icon: "laptop" },
+  { id: "income-business", name: "Business", type: "income", color: "#a78bfa", icon: "briefcase" },
+  { id: "income-event", name: "Event Work", type: "income", color: "#fbbf24", icon: "calendar" },
+  { id: "income-other", name: "Other Income", type: "income", color: "#94a3b8", icon: "plus-circle" },
+
+  { id: "expense-food", name: "Food", type: "expense", color: "#fb923c", icon: "utensils" },
+  { id: "expense-transport", name: "Transport", type: "expense", color: "#38bdf8", icon: "bike" },
+  { id: "expense-shopping", name: "Shopping", type: "expense", color: "#f472b6", icon: "shopping-bag" },
+  { id: "expense-education", name: "Education", type: "expense", color: "#818cf8", icon: "book" },
+  { id: "expense-bills", name: "Bills", type: "expense", color: "#facc15", icon: "receipt" },
+  { id: "expense-entertainment", name: "Entertainment", type: "expense", color: "#c084fc", icon: "gamepad-2" },
+  { id: "expense-health", name: "Health", type: "expense", color: "#4ade80", icon: "heart-pulse" },
+  { id: "expense-other", name: "Other Expense", type: "expense", color: "#94a3b8", icon: "circle-help" }
+];
 
 const EMPTY_DATA: AppData = {
   transactions: [],
   pendingPayments: [],
-  categories: [],
+  categories: DEFAULT_CATEGORIES,
   accounts: []
 };
 
@@ -24,13 +41,25 @@ function isValidData(value: unknown): value is AppData {
   );
 }
 
+function addMissingCategories(data: AppData): AppData {
+  const existingIds = new Set(data.categories.map(category => category.id));
+
+  return {
+    ...data,
+    categories: [
+      ...data.categories,
+      ...DEFAULT_CATEGORIES.filter(category => !existingIds.has(category.id))
+    ]
+  };
+}
+
 export async function loadData(): Promise<AppData> {
   try {
     const result = await Preferences.get({ key: STORAGE_KEY });
 
     if (result.value) {
       const parsed: unknown = JSON.parse(result.value);
-      if (isValidData(parsed)) return parsed;
+      if (isValidData(parsed)) return addMissingCategories(parsed);
     }
   } catch (error) {
     console.warn("Capacitor storage unavailable:", error);
@@ -41,7 +70,7 @@ export async function loadData(): Promise<AppData> {
 
     if (saved) {
       const parsed: unknown = JSON.parse(saved);
-      if (isValidData(parsed)) return parsed;
+      if (isValidData(parsed)) return addMissingCategories(parsed);
     }
   } catch (error) {
     console.error("Unable to load local data:", error);

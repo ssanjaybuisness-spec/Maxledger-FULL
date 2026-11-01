@@ -657,4 +657,6 @@ export default function App() {
           <span>Categories</span>
         </button>
       </nav>
-    <
+    </main>
+  );
+}

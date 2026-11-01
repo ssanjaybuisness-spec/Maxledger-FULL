@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 import {
   getAuth,
@@ -7,6 +6,14 @@ import {
   signOut,
   onAuthStateChanged
 } from "firebase/auth";
+
+import {
+  getFirestore,
+  doc,
+  getDoc,
+  setDoc,
+  serverTimestamp
+} from "firebase/firestore";
 
 const firebaseConfig = {
   apiKey: "AIzaSyBNPEjzQ9Q4D8Xx4c3hs1sCCgn9V7dySHk",
@@ -21,6 +28,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 
 export const auth = getAuth(app);
+export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
 
@@ -37,3 +45,19 @@ export function logout() {
 }
 
 export { onAuthStateChanged };
+
+export async function getCloudData(userId: string) {
+  const userRef = doc(db, "users", userId);
+  const snapshot = await getDoc(userRef);
+
+  return snapshot.exists() ? snapshot.data() : null;
+}
+
+export async function saveCloudData(userId: string, data: unknown) {
+  const userRef = doc(db, "users", userId);
+
+  await setDoc(userRef, {
+    data,
+    updatedAt: serverTimestamp()
+  });
+}

@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags, ChartPie
+  Search, X, Tags, ChartPie, BarChart3
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -17,6 +17,7 @@ import type {
 import PendingPayments from "./components/PendingPayments";
 import CategoryManager from "./components/CategoryManager";
 import BudgetManager, { type Budget } from "./components/BudgetManager";
+import Analytics from "./components/Analytics";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -27,7 +28,7 @@ const EMPTY_DATA: AppData = {
 };
 
 type Filter = "all" | "income" | "expense";
-type Tab = "home" | "pending" | "categories" | "budgets";
+type Tab = "home" | "pending" | "categories" | "budgets" | "analytics";
 
 export default function App() {
   const [data, setData] = useState<AppData>(EMPTY_DATA);
@@ -596,6 +597,10 @@ export default function App() {
         </section>
       )}
 
+      {activeTab === "analytics" && (
+        <Analytics transactions={data.transactions} />
+      )}
+
       <nav className="bottom-nav">
         <button
           type="button"
@@ -646,6 +651,15 @@ export default function App() {
         >
           <ChartPie />
           <span>Budgets</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
+          onClick={() => setActiveTab("analytics")}
+        >
+          <BarChart3 />
+          <span>Analytics</span>
         </button>
 
         <button

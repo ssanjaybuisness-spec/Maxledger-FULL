@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags, ChartPie, BarChart3
+  Search, X, Tags, ChartPie, BarChart3, Download
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -18,6 +18,7 @@ import PendingPayments from "./components/PendingPayments";
 import CategoryManager from "./components/CategoryManager";
 import BudgetManager, { type Budget } from "./components/BudgetManager";
 import Analytics from "./components/Analytics";
+import { exportTransactionsCSV } from "./services/export";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -369,6 +370,22 @@ export default function App() {
               <p>Total expenses</p>
               <h3>{money(expenses)}</h3>
             </article>
+          </section>
+
+          <section className="export-panel">
+            <div>
+              <h3>Export transactions</h3>
+              <p>Download your transaction history as a CSV file.</p>
+            </div>
+
+            <button
+              type="button"
+              className="add-button"
+              onClick={() => exportTransactionsCSV(data.transactions)}
+              disabled={data.transactions.length === 0}
+            >
+              <Download size={17} /> Export CSV
+            </button>
           </section>
 
           <section className="section-heading">

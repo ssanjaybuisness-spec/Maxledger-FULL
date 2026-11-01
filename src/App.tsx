@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags
+  Search, X, Tags, ChartPie
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -16,16 +16,18 @@ import type {
 } from "./types";
 import PendingPayments from "./components/PendingPayments";
 import CategoryManager from "./components/CategoryManager";
+import BudgetManager, { type Budget } from "./components/BudgetManager";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
   pendingPayments: [],
   categories: [],
-  accounts: []
+  accounts: [],
+  budgets: []
 };
 
 type Filter = "all" | "income" | "expense";
-type Tab = "home" | "pending" | "categories";
+type Tab = "home" | "pending" | "categories" | "budgets";
 
 export default function App() {
   const [data, setData] = useState<AppData>(EMPTY_DATA);
@@ -46,7 +48,10 @@ export default function App() {
     loadData()
       .then(saved => {
         if (active) {
-          setData(saved);
+          setData({
+            ...saved,
+            budgets: saved.budgets || []
+          });
           setLoaded(true);
         }
       })
@@ -225,6 +230,13 @@ export default function App() {
       ...current,
       categories,
       transactions
+    }));
+  }
+
+  function handleBudgetsChange(budgets: Budget[]) {
+    setData(current => ({
+      ...current,
+      budgets
     }));
   }
 
@@ -567,6 +579,23 @@ export default function App() {
         </section>
       )}
 
+      {activeTab === "budgets" && (
+        <section className="pending-page">
+          <section className="welcome">
+            <p>SPENDING CONTROL</p>
+            <h2>Monthly budgets.</h2>
+            <span>Plan your spending and stay on track.</span>
+          </section>
+
+          <BudgetManager
+            budgets={data.budgets as Budget[]}
+            categories={data.categories}
+            transactions={data.transactions}
+            onChange={handleBudgetsChange}
+          />
+        </section>
+      )}
+
       <nav className="bottom-nav">
         <button
           type="button"
@@ -612,6 +641,15 @@ export default function App() {
 
         <button
           type="button"
+          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
+          onClick={() => setActiveTab("budgets")}
+        >
+          <ChartPie />
+          <span>Budgets</span>
+        </button>
+
+        <button
+          type="button"
           className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
           onClick={() => setActiveTab("categories")}
         >
@@ -621,4 +659,4 @@ export default function App() {
       </nav>
     </main>
   );
-              }
+}

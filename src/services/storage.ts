@@ -1,7 +1,13 @@
 
 import { Preferences } from "@capacitor/preferences";
 import type { AppData, Category } from "../types";
-import { auth, getCloudData, saveCloudData } from "./firebase";
+
+import {
+  auth,
+  getCloudData,
+  saveCloudData,
+  createCloudBackup
+} from "./firebase";
 
 const LEGACY_STORAGE_KEY = "maxledger_data_v1";
 const PRIMARY_EMAIL = "ssanjaybuisness@gmail.com";
@@ -32,7 +38,9 @@ const EMPTY_DATA: AppData = {
 
 function getStorageKey(): string {
   const user = auth.currentUser;
-  return user ? `maxledger_data_v1_${user.uid}` : "maxledger_data_v1_guest";
+  return user
+    ? `maxledger_data_v1_${user.uid}`
+    : "maxledger_data_v1_guest";
 }
 
 function isValidData(value: unknown): value is AppData {
@@ -61,13 +69,16 @@ function migrateData(data: AppData): AppData {
   };
 }
 
-function mergeRecords<T extends { id: string; updatedAt?: number; createdAt?: number }>(
-  local: T[],
-  cloud: T[]
-): T[] {
+function mergeRecords<T extends {
+  id: string;
+  updatedAt?: number;
+  createdAt?: number
+}>(local: T[], cloud: T[]): T[] {
   const records = new Map<string, T>();
 
-  for (const item of local) records.set(item.id, item);
+  for (const item of local) {
+    records.set(item.id, item);
+  }
 
   for (const item of cloud) {
     const existing = records.get(item.id);
@@ -126,7 +137,7 @@ async function readLocalData(): Promise<AppData> {
 
   const user = auth.currentUser;
 
-  // Only the primary account may inherit the old shared local data.
+  // Only the primary account may inherit old shared local data.
   if (user?.email?.toLowerCase() === PRIMARY_EMAIL.toLowerCase()) {
     const legacyData = await readFromKey(LEGACY_STORAGE_KEY);
 
@@ -136,7 +147,10 @@ async function readLocalData(): Promise<AppData> {
     }
   }
 
-  return { ...EMPTY_DATA, categories: [...DEFAULT_CATEGORIES] };
+  return {
+    ...EMPTY_DATA,
+    categories: [...DEFAULT_CATEGORIES]
+  };
 }
 
 async function writeLocalData(data: AppData): Promise<void> {
@@ -193,6 +207,7 @@ export async function loadData(): Promise<AppData> {
 export async function saveData(
   data: AppData
 ): Promise<"synced" | "local-only"> {
+  // Save locally first so the user's data remains available offline.
   await writeLocalData(data);
 
   const user = auth.currentUser;
@@ -200,7 +215,20 @@ export async function saveData(
   if (!user) return "local-only";
 
   try {
+    // Update the current cloud data.
     await saveCloudData(user.uid, data);
+
+    // Create a separate historical backup.
+    try {
+      await createCloudBackup(user.uid, data);
+    } catch (backupError) {
+      console.error("Cloud backup failed:", backupError);
+
+      throw new Error(
+        "Cloud data synced, but automatic backup failed. Your local data is safe."
+      );
+    }
+
     return "synced";
   } catch (error) {
     console.error("Cloud save failed:", error);
@@ -208,7 +236,9 @@ export async function saveData(
     const message =
       error instanceof Error ? error.message : String(error);
 
-    throw new Error("Local data is safe, but cloud sync failed: " + message);
+    throw new Error(
+      "Local data is safe, but cloud sync or backup failed: " + message
+    );
   }
 }
 

@@ -1,6 +1,6 @@
 
 import { useState, type FormEvent } from "react";
-import { Plus, Wallet, CheckCircle, Clock, X } from "lucide-react";
+import { Plus, Wallet, CheckCircle, X } from "lucide-react";
 import type { PendingPayment, PaymentReceipt } from "../types";
 
 interface Props {

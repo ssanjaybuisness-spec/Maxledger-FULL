@@ -17,6 +17,7 @@ import Analytics from "./components/Analytics";
 import { exportTransactionsCSV } from "./services/export";
 import { exportBackup } from "./services/backup";
 import { importBackup } from "./services/restore";
+import { printFinancialReport } from "./services/report";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -365,6 +366,14 @@ export default function App() {
             <button
               type="button"
               className="add-button"
+              onClick={() => printFinancialReport(data)}
+            >
+              <Download size={17} /> Download PDF report
+            </button>
+
+            <button
+              type="button"
+              className="add-button"
               onClick={() => exportBackup(data)}
             >
               <Download size={17} /> Backup all data
@@ -645,18 +654,4 @@ export default function App() {
           onClick={() => setActiveTab("analytics")}
         >
           <BarChart3 />
-          <span>Analytics</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          <Tags />
-          <span>Categories</span>
-        </button>
-      </nav>
-    </main>
-  );
-}
+          <span>Analytics</sp

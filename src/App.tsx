@@ -11,7 +11,8 @@ import type {
   AppData,
   Transaction,
   PendingPayment,
-  PaymentReceipt
+  PaymentReceipt,
+  TransactionType
 } from "./types";
 import PendingPayments from "./components/PendingPayments";
 
@@ -35,6 +36,8 @@ export default function App() {
   const [filter, setFilter] = useState<Filter>("all");
   const [activeTab, setActiveTab] = useState<Tab>("home");
   const [storageError, setStorageError] = useState("");
+  const [formType, setFormType] = useState<TransactionType>("income");
+  const [selectedCategory, setSelectedCategory] = useState("");
 
   useEffect(() => {
     let active = true;
@@ -78,6 +81,10 @@ export default function App() {
 
   const balance = income - expenses;
 
+  const availableCategories = data.categories.filter(
+    category => category.type === formType
+  );
+
   const visibleTransactions = useMemo(() => {
     const query = search.trim().toLowerCase();
 
@@ -101,18 +108,35 @@ export default function App() {
       : "₹••••••";
 
   function openAddForm() {
+    const firstCategory =
+      data.categories.find(category => category.type === "income");
+
     setEditingId(null);
+    setFormType("income");
+    setSelectedCategory(firstCategory?.name || "");
     setShowForm(true);
   }
 
   function openEditForm(item: Transaction) {
     setEditingId(item.id);
+    setFormType(item.type);
+    setSelectedCategory(item.category);
     setShowForm(true);
   }
 
   function closeForm() {
     setEditingId(null);
     setShowForm(false);
+  }
+
+  function changeFormType(type: TransactionType) {
+    setFormType(type);
+
+    const firstCategory = data.categories.find(
+      category => category.type === type
+    );
+
+    setSelectedCategory(firstCategory?.name || "");
   }
 
   function saveTransaction(event: FormEvent<HTMLFormElement>) {
@@ -122,7 +146,7 @@ export default function App() {
     const title = String(form.get("title") || "").trim();
     const category = String(form.get("category") || "").trim();
     const amount = Number(form.get("amount"));
-    const type = form.get("type") as "income" | "expense";
+    const type = form.get("type") as TransactionType;
     const date = String(form.get("date") || "");
 
     if (
@@ -202,7 +226,6 @@ export default function App() {
 
       if (!payment) return current;
 
-      // Prevent an invalid or excessive receipt.
       const alreadyReceived = payment.receipts.reduce(
         (sum, item) => sum + item.amount,
         0
@@ -285,9 +308,7 @@ export default function App() {
         </button>
       </header>
 
-      {storageError && (
-        <p role="alert">{storageError}</p>
-      )}
+      {storageError && <p role="alert">{storageError}</p>}
 
       {activeTab === "home" && (
         <>
@@ -303,9 +324,7 @@ export default function App() {
               <Wallet size={19} />
             </div>
             <h2>{money(balance)}</h2>
-            <span className="balance-note">
-              Available balance
-            </span>
+            <span className="balance-note">Available balance</span>
           </section>
 
           <section className="summary-grid">
@@ -365,14 +384,40 @@ export default function App() {
                 required
               />
 
+              <label>Transaction type</label>
+              <select
+                name="type"
+                value={formType}
+                onChange={event =>
+                  changeFormType(event.target.value as TransactionType)
+                }
+              >
+                <option value="income">Income</option>
+                <option value="expense">Expense</option>
+              </select>
+
               <label>Category</label>
-              <input
+              <select
                 name="category"
-                placeholder="e.g. Freelance"
-                defaultValue={editingTransaction?.category || ""}
-                maxLength={50}
+                value={selectedCategory}
+                onChange={event => setSelectedCategory(event.target.value)}
                 required
-              />
+              >
+                {editingTransaction &&
+                  !availableCategories.some(
+                    category => category.name === editingTransaction.category
+                  ) && (
+                    <option value={editingTransaction.category}>
+                      {editingTransaction.category}
+                    </option>
+                  )}
+
+                {availableCategories.map(category => (
+                  <option key={category.id} value={category.name}>
+                    {category.name}
+                  </option>
+                ))}
+              </select>
 
               <label>Amount (₹)</label>
               <input
@@ -384,15 +429,6 @@ export default function App() {
                 defaultValue={editingTransaction?.amount ?? ""}
                 required
               />
-
-              <label>Transaction type</label>
-              <select
-                name="type"
-                defaultValue={editingTransaction?.type || "income"}
-              >
-                <option value="income">Income</option>
-                <option value="expense">Expense</option>
-              </select>
 
               <label>Date</label>
               <input
@@ -447,10 +483,7 @@ export default function App() {
               </div>
             ) : (
               visibleTransactions.map(item => (
-                <article
-                  className="transaction-row"
-                  key={item.id}
-                >
+                <article className="transaction-row" key={item.id}>
                   <div className={`transaction-icon ${item.type}`}>
                     {item.type === "income"
                       ? <ArrowDownLeft />

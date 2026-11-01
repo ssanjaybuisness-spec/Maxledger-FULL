@@ -19,6 +19,7 @@ import CategoryManager from "./components/CategoryManager";
 import BudgetManager, { type Budget } from "./components/BudgetManager";
 import Analytics from "./components/Analytics";
 import { exportTransactionsCSV } from "./services/export";
+import { exportBackup } from "./services/backup";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -374,8 +375,8 @@ export default function App() {
 
           <section className="export-panel">
             <div>
-              <h3>Export transactions</h3>
-              <p>Download your transaction history as a CSV file.</p>
+              <h3>Data export & backup</h3>
+              <p>Download your transactions or a complete MaxLedger backup.</p>
             </div>
 
             <button
@@ -385,6 +386,14 @@ export default function App() {
               disabled={data.transactions.length === 0}
             >
               <Download size={17} /> Export CSV
+            </button>
+
+            <button
+              type="button"
+              className="add-button"
+              onClick={() => exportBackup(data)}
+            >
+              <Download size={17} /> Backup all data
             </button>
           </section>
 

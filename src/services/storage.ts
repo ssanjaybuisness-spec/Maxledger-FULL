@@ -1,3 +1,4 @@
+
 import { Preferences } from "@capacitor/preferences";
 import type { AppData, Category } from "../types";
 import { auth, getCloudData, saveCloudData } from "./firebase";
@@ -42,7 +43,7 @@ function isValidData(value: unknown): value is AppData {
 }
 
 function migrateData(data: AppData): AppData {
-  const existingIds = new Set(data.categories.map(category => category.id));
+  const existingIds = new Set(data.categories.map(category => category.id);
 
   return {
     ...data,
@@ -64,7 +65,6 @@ function mergeRecords<T extends { id: string; updatedAt?: number; createdAt?: nu
 
   for (const item of cloud) {
     const existing = records.get(item.id);
-
     const existingTime = existing?.updatedAt ?? existing?.createdAt ?? 0;
     const cloudTime = item.updatedAt ?? item.createdAt ?? 0;
 
@@ -165,17 +165,28 @@ export async function loadData(): Promise<AppData> {
   }
 }
 
-export async function saveData(data: AppData): Promise<void> {
+export async function saveData(
+  data: AppData
+): Promise<"synced" | "local-only"> {
+  // Save locally first so the user's data remains safe.
   await writeLocalData(data);
 
   const user = auth.currentUser;
 
-  if (user) {
-    try {
-      await saveCloudData(user.uid, data);
-    } catch (error) {
-      console.warn("Cloud save failed. Local data is safe:", error);
-    }
+  if (!user) {
+    return "local-only";
+  }
+
+  try {
+    await saveCloudData(user.uid, data);
+    return "synced";
+  } catch (error) {
+    console.error("Cloud save failed:", error);
+
+    const message =
+      error instanceof Error ? error.message : String(error);
+
+    throw new Error("Local data is safe, but cloud sync failed: " + message);
   }
 }
 

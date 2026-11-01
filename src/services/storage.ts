@@ -3,7 +3,8 @@ import { Preferences } from "@capacitor/preferences";
 import type { AppData, Category } from "../types";
 import { auth, getCloudData, saveCloudData } from "./firebase";
 
-const STORAGE_KEY = "maxledger_data_v1";
+const LEGACY_STORAGE_KEY = "maxledger_data_v1";
+const PRIMARY_EMAIL = "ssanjaybuisness@gmail.com";
 
 export const DEFAULT_CATEGORIES: Category[] = [
   { id: "income-salary", name: "Salary", type: "income", color: "#34d399", icon: "wallet" },
@@ -28,6 +29,11 @@ const EMPTY_DATA: AppData = {
   accounts: [],
   budgets: []
 };
+
+function getStorageKey(): string {
+  const user = auth.currentUser;
+  return user ? `maxledger_data_v1_${user.uid}` : "maxledger_data_v1_guest";
+}
 
 function isValidData(value: unknown): value is AppData {
   if (!value || typeof value !== "object") return false;
@@ -86,9 +92,9 @@ function mergeData(local: AppData, cloud: AppData): AppData {
   });
 }
 
-async function readLocalData(): Promise<AppData> {
+async function readFromKey(key: string): Promise<AppData | null> {
   try {
-    const result = await Preferences.get({ key: STORAGE_KEY });
+    const result = await Preferences.get({ key });
 
     if (result.value) {
       const parsed: unknown = JSON.parse(result.value);
@@ -99,7 +105,7 @@ async function readLocalData(): Promise<AppData> {
   }
 
   try {
-    const saved = localStorage.getItem(STORAGE_KEY);
+    const saved = localStorage.getItem(key);
 
     if (saved) {
       const parsed: unknown = JSON.parse(saved);
@@ -109,24 +115,43 @@ async function readLocalData(): Promise<AppData> {
     console.error("Unable to load local data:", error);
   }
 
+  return null;
+}
+
+async function readLocalData(): Promise<AppData> {
+  const accountKey = getStorageKey();
+  const accountData = await readFromKey(accountKey);
+
+  if (accountData) return accountData;
+
+  const user = auth.currentUser;
+
+  // Only the primary account may inherit the old shared local data.
+  if (user?.email?.toLowerCase() === PRIMARY_EMAIL.toLowerCase()) {
+    const legacyData = await readFromKey(LEGACY_STORAGE_KEY);
+
+    if (legacyData) {
+      await writeLocalData(legacyData);
+      return legacyData;
+    }
+  }
+
   return { ...EMPTY_DATA, categories: [...DEFAULT_CATEGORIES] };
 }
 
 async function writeLocalData(data: AppData): Promise<void> {
+  const key = getStorageKey();
   const serialized = JSON.stringify(data);
 
   try {
-    await Preferences.set({
-      key: STORAGE_KEY,
-      value: serialized
-    });
+    await Preferences.set({ key, value: serialized });
     return;
   } catch (error) {
     console.warn("Capacitor storage unavailable:", error);
   }
 
   try {
-    localStorage.setItem(STORAGE_KEY, serialized);
+    localStorage.setItem(key, serialized);
   } catch (error) {
     throw new Error("Unable to save MaxLedger data: " + String(error));
   }
@@ -168,14 +193,11 @@ export async function loadData(): Promise<AppData> {
 export async function saveData(
   data: AppData
 ): Promise<"synced" | "local-only"> {
-  // Save locally first so the user's data remains safe.
   await writeLocalData(data);
 
   const user = auth.currentUser;
 
-  if (!user) {
-    return "local-only";
-  }
+  if (!user) return "local-only";
 
   try {
     await saveCloudData(user.uid, data);
@@ -191,6 +213,8 @@ export async function saveData(
 }
 
 export async function clearLocalData(): Promise<void> {
-  await Preferences.remove({ key: STORAGE_KEY });
-  localStorage.removeItem(STORAGE_KEY);
+  const key = getStorageKey();
+
+  await Preferences.remove({ key });
+  localStorage.removeItem(key);
 }

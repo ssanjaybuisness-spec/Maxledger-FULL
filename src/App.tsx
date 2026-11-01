@@ -8,11 +8,7 @@ import {
 
 import { loadData, saveData } from "./services/storage";
 import type {
-  AppData,
-  Transaction,
-  PendingPayment,
-  PaymentReceipt,
-  TransactionType
+  AppData, Transaction, PendingPayment, PaymentReceipt, TransactionType
 } from "./types";
 import PendingPayments from "./components/PendingPayments";
 import CategoryManager from "./components/CategoryManager";
@@ -53,10 +49,7 @@ export default function App() {
     loadData()
       .then(saved => {
         if (active) {
-          setData({
-            ...saved,
-            budgets: saved.budgets || []
-          });
+          setData({ ...saved, budgets: saved.budgets || [] });
           setLoaded(true);
         }
       })
@@ -77,9 +70,7 @@ export default function App() {
 
     saveData(data)
       .then(() => setStorageError(""))
-      .catch(() => {
-        setStorageError("Unable to save data. Check device storage.");
-      });
+      .catch(() => setStorageError("Unable to save data. Check device storage."));
   }, [data, loaded]);
 
   const income = data.transactions
@@ -100,9 +91,7 @@ export default function App() {
     const query = search.trim().toLowerCase();
 
     return data.transactions.filter(item => {
-      const matchesFilter =
-        filter === "all" || item.type === filter;
-
+      const matchesFilter = filter === "all" || item.type === filter;
       const matchesSearch =
         item.title.toLowerCase().includes(query) ||
         item.category.toLowerCase().includes(query);
@@ -113,9 +102,7 @@ export default function App() {
 
   const money = (amount: number) =>
     balanceVisible
-      ? `₹${amount.toLocaleString("en-IN", {
-          maximumFractionDigits: 2
-        })}`
+      ? `₹${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`
       : "₹••••••";
 
   function openAddForm() {
@@ -161,13 +148,9 @@ export default function App() {
     const type = form.get("type") as TransactionType;
     const date = String(form.get("date") || "");
 
-    if (
-      !title ||
-      !category ||
-      !date ||
-      !Number.isFinite(amount) ||
-      amount <= 0
-    ) return;
+    if (!title || !category || !date || !Number.isFinite(amount) || amount <= 0) {
+      return;
+    }
 
     const now = Date.now();
 
@@ -176,15 +159,7 @@ export default function App() {
         ...current,
         transactions: current.transactions.map(item =>
           item.id === editingId
-            ? {
-                ...item,
-                title,
-                category,
-                amount,
-                type,
-                date,
-                updatedAt: now
-              }
+            ? { ...item, title, category, amount, type, date, updatedAt: now }
             : item
         )
       }));
@@ -214,25 +189,18 @@ export default function App() {
 
     setData(current => ({
       ...current,
-      transactions: current.transactions.filter(
-        item => item.id !== id
-      )
+      transactions: current.transactions.filter(item => item.id !== id)
     }));
   }
 
   async function handleRestore(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
-
     if (!file) return;
 
     try {
       const restoredData = await importBackup(file);
 
-      const confirmed = window.confirm(
-        "Restore this backup? Your current MaxLedger data will be replaced."
-      );
-
-      if (confirmed) {
+      if (window.confirm("Restore this backup? Your current MaxLedger data will be replaced.")) {
         setData({
           ...restoredData,
           budgets: restoredData.budgets || []
@@ -241,14 +209,11 @@ export default function App() {
         setActiveTab("home");
         setSearch("");
         setFilter("all");
-
         window.alert("Backup restored successfully!");
       }
     } catch (error) {
       window.alert(
-        error instanceof Error
-          ? error.message
-          : "Unable to restore this backup."
+        error instanceof Error ? error.message : "Unable to restore this backup."
       );
     } finally {
       event.target.value = "";
@@ -256,44 +221,27 @@ export default function App() {
   }
 
   function handlePendingChange(payments: PendingPayment[]) {
-    setData(current => ({
-      ...current,
-      pendingPayments: payments
-    }));
+    setData(current => ({ ...current, pendingPayments: payments }));
   }
 
   function handleCategoriesChange(
     categories: AppData["categories"],
     transactions: Transaction[]
   ) {
-    setData(current => ({
-      ...current,
-      categories,
-      transactions
-    }));
+    setData(current => ({ ...current, categories, transactions }));
   }
 
   function handleBudgetsChange(budgets: Budget[]) {
-    setData(current => ({
-      ...current,
-      budgets
-    }));
+    setData(current => ({ ...current, budgets }));
   }
 
-  function handleReceive(
-    paymentId: string,
-    receipt: PaymentReceipt
-  ) {
+  function handleReceive(paymentId: string, receipt: PaymentReceipt) {
     setData(current => {
-      const payment = current.pendingPayments.find(
-        item => item.id === paymentId
-      );
-
+      const payment = current.pendingPayments.find(item => item.id === paymentId);
       if (!payment) return current;
 
       const alreadyReceived = payment.receipts.reduce(
-        (sum, item) => sum + item.amount,
-        0
+        (sum, item) => sum + item.amount, 0
       );
 
       const remaining = payment.expectedAmount - alreadyReceived;
@@ -331,17 +279,12 @@ export default function App() {
         pendingPayments: current.pendingPayments.map(item =>
           item.id === paymentId ? updatedPayment : item
         ),
-        transactions: [
-          incomeTransaction,
-          ...current.transactions
-        ]
+        transactions: [incomeTransaction, ...current.transactions]
       };
     });
   }
 
-  const editingTransaction = data.transactions.find(
-    item => item.id === editingId
-  );
+  const editingTransaction = data.transactions.find(item => item.id === editingId);
 
   if (!loaded) {
     return (
@@ -355,9 +298,7 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-icon">
-            <Wallet />
-          </div>
+          <div className="brand-icon"><Wallet /></div>
           <div>
             <h1>MaxLedger</h1>
             <p>PERSONAL FINANCE</p>
@@ -394,17 +335,13 @@ export default function App() {
 
           <section className="summary-grid">
             <article className="summary-card">
-              <div className="summary-icon income-icon">
-                <TrendingUp />
-              </div>
+              <div className="summary-icon income-icon"><TrendingUp /></div>
               <p>Total income</p>
               <h3>{money(income)}</h3>
             </article>
 
             <article className="summary-card">
-              <div className="summary-icon expense-icon">
-                <TrendingDown />
-              </div>
+              <div className="summary-icon expense-icon"><TrendingDown /></div>
               <p>Total expenses</p>
               <h3>{money(expenses)}</h3>
             </article>
@@ -455,27 +392,16 @@ export default function App() {
               <p>ACTIVITY</p>
               <h2>Transactions</h2>
             </div>
-
             <button className="add-button" onClick={openAddForm}>
               <Plus size={17} /> Add
             </button>
           </section>
 
           {showForm && (
-            <form
-              className="transaction-form"
-              onSubmit={saveTransaction}
-            >
+            <form className="transaction-form" onSubmit={saveTransaction}>
               <div className="form-heading">
-                <h3>
-                  {editingId ? "Edit transaction" : "New transaction"}
-                </h3>
-
-                <button
-                  type="button"
-                  className="icon-button"
-                  onClick={closeForm}
-                >
+                <h3>{editingId ? "Edit transaction" : "New transaction"}</h3>
+                <button type="button" className="icon-button" onClick={closeForm}>
                   <X size={18} />
                 </button>
               </div>
@@ -493,9 +419,7 @@ export default function App() {
               <select
                 name="type"
                 value={formType}
-                onChange={event =>
-                  changeFormType(event.target.value as TransactionType)
-                }
+                onChange={event => changeFormType(event.target.value as TransactionType)}
               >
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
@@ -509,9 +433,7 @@ export default function App() {
                 required
               >
                 {editingTransaction &&
-                  !availableCategories.some(
-                    category => category.name === editingTransaction.category
-                  ) && (
+                  !availableCategories.some(category => category.name === editingTransaction.category) && (
                     <option value={editingTransaction.category}>
                       {editingTransaction.category}
                     </option>
@@ -539,10 +461,7 @@ export default function App() {
               <input
                 name="date"
                 type="date"
-                defaultValue={
-                  editingTransaction?.date ||
-                  new Date().toISOString().slice(0, 10)
-                }
+                defaultValue={editingTransaction?.date || new Date().toISOString().slice(0, 10)}
                 required
               />
 
@@ -568,11 +487,7 @@ export default function App() {
                 className={filter === option ? "filter-active" : ""}
                 onClick={() => setFilter(option)}
               >
-                {option === "all"
-                  ? "All"
-                  : option === "income"
-                    ? "Income"
-                    : "Expenses"}
+                {option === "all" ? "All" : option === "income" ? "Income" : "Expenses"}
               </button>
             ))}
           </div>
@@ -580,9 +495,7 @@ export default function App() {
           <section className="transactions">
             {visibleTransactions.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon">
-                  <Clock />
-                </div>
+                <div className="empty-icon"><Clock /></div>
                 <h3>No transactions found</h3>
                 <p>Try another search or add a transaction.</p>
               </div>
@@ -590,9 +503,7 @@ export default function App() {
               visibleTransactions.map(item => (
                 <article className="transaction-row" key={item.id}>
                   <div className={`transaction-icon ${item.type}`}>
-                    {item.type === "income"
-                      ? <ArrowDownLeft />
-                      : <ArrowUpRight />}
+                    {item.type === "income" ? <ArrowDownLeft /> : <ArrowUpRight />}
                   </div>
 
                   <div className="transaction-info">
@@ -601,8 +512,7 @@ export default function App() {
                   </div>
 
                   <strong className={item.type}>
-                    {item.type === "income" ? "+" : "-"}
-                    {money(item.amount)}
+                    {item.type === "income" ? "+" : "-"}{money(item.amount)}
                   </strong>
 
                   <button
@@ -634,7 +544,6 @@ export default function App() {
             <h2>Pending payments.</h2>
             <span>Track what you are waiting to receive.</span>
           </section>
-
           <PendingPayments
             payments={data.pendingPayments}
             onChange={handlePendingChange}
@@ -650,7 +559,6 @@ export default function App() {
             <h2>Your categories.</h2>
             <span>Organise your income and expenses.</span>
           </section>
-
           <CategoryManager
             categories={data.categories}
             transactions={data.transactions}
@@ -666,7 +574,6 @@ export default function App() {
             <h2>Monthly budgets.</h2>
             <span>Plan your spending and stay on track.</span>
           </section>
-
           <BudgetManager
             budgets={data.budgets as Budget[]}
             categories={data.categories}
@@ -715,4 +622,39 @@ export default function App() {
         </button>
 
         <button
-    
+          type="button"
+          className={`nav-item ${activeTab === "pending" ? "active" : ""}`}
+          onClick={() => setActiveTab("pending")}
+        >
+          <Clock />
+          <span>Pending</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
+          onClick={() => setActiveTab("budgets")}
+        >
+          <ChartPie />
+          <span>Budgets</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
+          onClick={() => setActiveTab("analytics")}
+        >
+          <BarChart3 />
+          <span>Analytics</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          <Tags />
+          <span>Categories</span>
+        </button>
+      </nav>
+    <

@@ -1,5 +1,13 @@
 
-import { useEffect, useMemo, useRef, useState, type FormEvent, type ChangeEvent } from "react";
+import {
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+  type FormEvent,
+  type ChangeEvent
+} from "react";
+
 import {
   Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
@@ -10,10 +18,13 @@ import { loadData, saveData } from "./services/storage";
 import type {
   AppData, Transaction, PendingPayment, PaymentReceipt, TransactionType
 } from "./types";
+
 import PendingPayments from "./components/PendingPayments";
 import CategoryManager from "./components/CategoryManager";
 import BudgetManager, { type Budget } from "./components/BudgetManager";
 import Analytics from "./components/Analytics";
+import CustomDashboard from "./components/CustomDashboard";
+
 import { exportTransactionsCSV } from "./services/export";
 import { exportBackup } from "./services/backup";
 import { importBackup } from "./services/restore";
@@ -325,28 +336,14 @@ export default function App() {
             <span>Every rupee, accounted for.</span>
           </section>
 
-          <section className="balance-card">
-            <div className="card-label">
-              <span>Total balance</span>
-              <Wallet size={19} />
-            </div>
-            <h2>{money(balance)}</h2>
-            <span className="balance-note">Available balance</span>
-          </section>
-
-          <section className="summary-grid">
-            <article className="summary-card">
-              <div className="summary-icon income-icon"><TrendingUp /></div>
-              <p>Total income</p>
-              <h3>{money(income)}</h3>
-            </article>
-
-            <article className="summary-card">
-              <div className="summary-icon expense-icon"><TrendingDown /></div>
-              <p>Total expenses</p>
-              <h3>{money(expenses)}</h3>
-            </article>
-          </section>
+          <CustomDashboard
+            balance={balance}
+            income={income}
+            expenses={expenses}
+            transactions={data.transactions}
+            pendingPayments={data.pendingPayments}
+            money={money}
+          />
 
           <section className="export-panel">
             <div>
@@ -596,7 +593,6 @@ export default function App() {
         <Analytics transactions={data.transactions} />
       )}
 
-     
       <nav className="bottom-nav">
         <button
           type="button"

@@ -1,13 +1,9 @@
 
 import { useMemo, useState, type FormEvent } from "react";
-import { Plus, Trash2, Wallet, AlertTriangle } from "lucide-react";
-import type { Category, Transaction } from "../types";
+import { Plus, Trash2, Wallet, AlertTriangle, CalendarDays } from "lucide-react";
+import type { Budget, Category, Transaction } from "../types";
 
-export interface Budget {
-  id: string;
-  category: string;
-  amount: number;
-}
+export type { Budget } from "../types";
 
 interface Props {
   budgets: Budget[];
@@ -23,16 +19,24 @@ const currency = (amount: number) =>
     maximumFractionDigits: 0
   }).format(amount);
 
+function getCurrentMonth() {
+  const now = new Date();
+  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}`;
+}
+
 export default function BudgetManager({
   budgets,
   categories,
   transactions,
   onChange
 }: Props) {
+  const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [category, setCategory] = useState("Overall");
   const [amount, setAmount] = useState("");
 
-  const month = new Date().toISOString().slice(0, 7);
+  const monthlyBudgets = budgets.filter(
+    item => (item.month || getCurrentMonth()) === selectedMonth
+  );
 
   const spending = useMemo(() => {
     const result: Record<string, number> = {};
@@ -41,7 +45,7 @@ export default function BudgetManager({
       .filter(
         transaction =>
           transaction.type === "expense" &&
-          transaction.date.slice(0, 7) === month
+          transaction.date.slice(0, 7) === selectedMonth
       )
       .forEach(transaction => {
         result[transaction.category] =
@@ -49,7 +53,7 @@ export default function BudgetManager({
       });
 
     return result;
-  }, [transactions, month]);
+  }, [transactions, selectedMonth]);
 
   const totalSpent = Object.values(spending).reduce(
     (sum, value) => sum + value,
@@ -66,12 +70,18 @@ export default function BudgetManager({
       return;
     }
 
-    const existing = budgets.find(item => item.category === category);
+    const existing = budgets.find(
+      item =>
+        item.category === category &&
+        (item.month || getCurrentMonth()) === selectedMonth
+    );
 
     if (existing) {
       onChange(
         budgets.map(item =>
-          item.category === category ? { ...item, amount: value } : item
+          item.id === existing.id
+            ? { ...item, amount: value, month: selectedMonth }
+            : item
         )
       );
     } else {
@@ -80,7 +90,8 @@ export default function BudgetManager({
         {
           id: crypto.randomUUID(),
           category,
-          amount: value
+          amount: value,
+          month: selectedMonth
         }
       ]);
     }
@@ -98,6 +109,14 @@ export default function BudgetManager({
     return name === "Overall" ? totalSpent : spending[name] || 0;
   }
 
+  const monthLabel = new Date(
+    Number(selectedMonth.slice(0, 4)),
+    Number(selectedMonth.slice(5, 7)) - 1
+  ).toLocaleDateString("en-IN", {
+    month: "long",
+    year: "numeric"
+  });
+
   return (
     <section className="budget-page">
       <div className="section-heading">
@@ -107,9 +126,22 @@ export default function BudgetManager({
         </div>
       </div>
 
+      <div className="budget-month-picker">
+        <CalendarDays size={20} />
+        <div>
+          <label htmlFor="budget-month">Select month</label>
+          <input
+            id="budget-month"
+            type="month"
+            value={selectedMonth}
+            onChange={event => setSelectedMonth(event.target.value)}
+          />
+        </div>
+      </div>
+
       <div className="pending-summary">
         <div>
-          <span>Total spent this month</span>
+          <span>Total spending · {monthLabel}</span>
           <h2>{currency(totalSpent)}</h2>
         </div>
         <Wallet size={28} />
@@ -151,16 +183,16 @@ export default function BudgetManager({
       </form>
 
       <div className="budget-list">
-        <h3>Your budgets</h3>
+        <h3>Budgets for {monthLabel}</h3>
 
-        {budgets.length === 0 ? (
+        {monthlyBudgets.length === 0 ? (
           <div className="empty-state">
             <Wallet />
-            <h3>No budgets set</h3>
-            <p>Create your first monthly budget above.</p>
+            <h3>No budgets for this month</h3>
+            <p>Create a budget above to start tracking.</p>
           </div>
         ) : (
-          budgets.map(item => {
+          monthlyBudgets.map(item => {
             const spent = getSpent(item.category);
             const percentage = (spent / item.amount) * 100;
             const remaining = item.amount - spent;
@@ -175,6 +207,7 @@ export default function BudgetManager({
                       {currency(spent)} spent of {currency(item.amount)}
                     </p>
                   </div>
+
                   <button
                     className="row-action delete-action"
                     onClick={() => removeBudget(item.id)}
@@ -202,7 +235,7 @@ export default function BudgetManager({
                   </strong>
                 </div>
 
-                {(percentage >= 80 || exceeded) && (
+                {percentage >= 80 && (
                   <p className="budget-warning">
                     <AlertTriangle size={15} />
                     {exceeded

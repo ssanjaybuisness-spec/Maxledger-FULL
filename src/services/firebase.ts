@@ -1,4 +1,6 @@
+
 import { initializeApp } from "firebase/app";
+
 import {
   getAuth,
   GoogleAuthProvider,
@@ -12,7 +14,9 @@ import {
   doc,
   getDoc,
   setDoc,
-  serverTimestamp
+  serverTimestamp,
+  collection,
+  addDoc
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -59,5 +63,17 @@ export async function saveCloudData(userId: string, data: unknown) {
   await setDoc(userRef, {
     data,
     updatedAt: serverTimestamp()
+  });
+}
+
+export async function createCloudBackup(
+  userId: string,
+  data: unknown
+) {
+  const backupsRef = collection(db, "users", userId, "backups");
+
+  await addDoc(backupsRef, {
+    data,
+    createdAt: serverTimestamp()
   });
 }

@@ -43,7 +43,7 @@ function isValidData(value: unknown): value is AppData {
 }
 
 function migrateData(data: AppData): AppData {
-  const existingIds = new Set(data.categories.map(category => category.id);
+  const existingIds = new Set(data.categories.map(category => category.id));
 
   return {
     ...data,

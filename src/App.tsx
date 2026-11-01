@@ -672,4 +672,10 @@ export default function App() {
           onClick={() => setActiveTab("categories")}
         >
           <Tags />
+                    <span>Categories</span>
+        </button>
+      </nav>
+    </main>
+  );
+}
       

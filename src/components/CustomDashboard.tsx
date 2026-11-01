@@ -1,7 +1,8 @@
+
 import { useEffect, useState } from "react";
 import {
   Settings2, GripVertical, Eye, EyeOff, RotateCcw,
-  Wallet, Clock, ArrowDownLeft, ArrowUpRight, ChevronDown
+  ArrowDownLeft, ArrowUpRight, ChevronDown
 } from "lucide-react";
 import type { Transaction, PendingPayment } from "../types";
 
@@ -60,14 +61,21 @@ export default function CustomDashboard({
   useEffect(() => {
     try {
       const saved = localStorage.getItem(STORAGE_KEY);
+
       if (saved) {
         const parsed = JSON.parse(saved) as Preferences;
         const validIds: WidgetId[] = ["balance", "recent", "pending"];
 
+        const savedOrder = Array.isArray(parsed.order)
+          ? parsed.order.filter(
+              (id): id is WidgetId => validIds.includes(id)
+            )
+          : DEFAULTS.order;
+
         setPreferences({
           order: [
-            ...parsed.order.filter(id => validIds.includes(id)),
-            ...validIds.filter(id => !parsed.order.includes(id))
+            ...savedOrder,
+            ...validIds.filter(id => !savedOrder.includes(id))
           ],
           visible: { ...DEFAULTS.visible, ...parsed.visible },
           sizes: { ...DEFAULTS.sizes, ...parsed.sizes }
@@ -80,7 +88,12 @@ export default function CustomDashboard({
 
   function update(next: Preferences) {
     setPreferences(next);
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
+    } catch {
+      // Preferences remain active for this session if storage is unavailable.
+    }
   }
 
   function toggleVisibility(id: WidgetId) {
@@ -112,6 +125,8 @@ export default function CustomDashboard({
     const from = order.indexOf(dragged);
     const to = order.indexOf(target);
 
+    if (from < 0 || to < 0) return;
+
     order.splice(from, 1);
     order.splice(to, 0, dragged);
 
@@ -120,15 +135,25 @@ export default function CustomDashboard({
   }
 
   function reset() {
-    update(DEFAULTS);
+    update({
+      order: [...DEFAULTS.order],
+      visible: { ...DEFAULTS.visible },
+      sizes: { ...DEFAULTS.sizes }
+    });
   }
 
   const outstanding = pendingPayments
-    .filter(payment => payment.status !== "paid" && payment.status !== "cancelled")
+    .filter(
+      payment =>
+        payment.status !== "paid" &&
+        payment.status !== "cancelled"
+    )
     .reduce((total, payment) => {
       const received = payment.receipts.reduce(
-        (sum, receipt) => sum + receipt.amount, 0
+        (sum, receipt) => sum + receipt.amount,
+        0
       );
+
       return total + Math.max(0, payment.expectedAmount - received);
     }, 0);
 
@@ -156,6 +181,7 @@ export default function CustomDashboard({
             {editing && <GripVertical size={16} />}
             <h3>{LABELS[id]}</h3>
           </div>
+
           {editing && (
             <button
               className="widget-size-button"
@@ -170,6 +196,7 @@ export default function CustomDashboard({
         {id === "balance" && (
           <>
             <h2 className="custom-balance">{money(balance)}</h2>
+
             {size === "expanded" && (
               <div className="custom-balance-details">
                 <div>
@@ -197,10 +224,12 @@ export default function CustomDashboard({
                       ? <ArrowDownLeft size={17} />
                       : <ArrowUpRight size={17} />}
                   </div>
+
                   <div className="custom-transaction-info">
                     <strong>{item.title}</strong>
                     <span>{item.category} · {item.date}</span>
                   </div>
+
                   <strong className={item.type}>
                     {item.type === "income" ? "+" : "-"}
                     {money(item.amount)}
@@ -214,28 +243,38 @@ export default function CustomDashboard({
         {id === "pending" && (
           <>
             <h2 className="custom-balance">{money(outstanding)}</h2>
+
             <p className="custom-muted">
               Outstanding amount · {pendingPayments.filter(
-                payment => payment.status !== "paid" &&
+                payment =>
+                  payment.status !== "paid" &&
                   payment.status !== "cancelled"
               ).length} active payments
             </p>
-            {size === "expanded" && pendingPayments
-              .filter(payment =>
-                payment.status !== "paid" &&
-                payment.status !== "cancelled"
-              )
-              .slice(0, 5)
-              .map(payment => (
-                <div className="custom-pending-row" key={payment.id}>
-                  <span>{payment.customerName}</span>
-                  <strong>{money(Math.max(
-                    0,
-                    payment.expectedAmount -
-                    payment.receipts.reduce((sum, receipt) => sum + receipt.amount, 0)
-                  ))}</strong>
-                </div>
-              ))}
+
+            {size === "expanded" &&
+              pendingPayments
+                .filter(
+                  payment =>
+                    payment.status !== "paid" &&
+                    payment.status !== "cancelled"
+                )
+                .slice(0, 5)
+                .map(payment => (
+                  <div className="custom-pending-row" key={payment.id}>
+                    <span>{payment.customerName}</span>
+                    <strong>
+                      {money(Math.max(
+                        0,
+                        payment.expectedAmount -
+                          payment.receipts.reduce(
+                            (sum, receipt) => sum + receipt.amount,
+                            0
+                          )
+                      ))}
+                    </strong>
+                  </div>
+                ))}
           </>
         )}
       </section>
@@ -249,6 +288,7 @@ export default function CustomDashboard({
           <p className="custom-eyebrow">YOUR SPACE</p>
           <h2>My Dashboard</h2>
         </div>
+
         <button
           type="button"
           className={`custom-settings-button ${editing ? "selected" : ""}`}
@@ -266,6 +306,7 @@ export default function CustomDashboard({
               <h3>Personalise dashboard</h3>
               <p>Drag widgets to change their order.</p>
             </div>
+
             <button type="button" onClick={reset}>
               <RotateCcw size={15} /> Reset
             </button>
@@ -275,13 +316,17 @@ export default function CustomDashboard({
             <div className="dashboard-editor-row" key={id}>
               <GripVertical size={17} />
               <span>{LABELS[id]}</span>
+
               <button
                 type="button"
                 onClick={() => toggleVisibility(id)}
                 aria-label={`Toggle ${LABELS[id]}`}
               >
-                {preferences.visible[id] ? <Eye size={18} /> : <EyeOff size={18} />}
+                {preferences.visible[id]
+                  ? <Eye size={18} />
+                  : <EyeOff size={18} />}
               </button>
+
               <button
                 type="button"
                 onClick={() => toggleSize(id)}

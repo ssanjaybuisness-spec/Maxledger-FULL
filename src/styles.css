@@ -367,3 +367,77 @@ button {
     padding-top: 35px;
   }
 }
+
+.form-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.transaction-form label {
+  color: #aab9af;
+  font-size: 11px;
+}
+
+.transaction-search {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  margin: 15px 0;
+  border: 1px solid #29372e;
+  border-radius: 12px;
+  color: #89978e;
+  background: #111713;
+}
+
+.transaction-search input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  outline: none;
+  color: #edf5ef;
+  background: transparent;
+}
+
+.filter-tabs {
+  display: flex;
+  gap: 9px;
+  margin-bottom: 15px;
+}
+
+.filter-tabs button {
+  padding: 9px 15px;
+  border: 1px solid #29372e;
+  border-radius: 20px;
+  color: #aab9af;
+  background: #111713;
+  font-size: 11px;
+}
+
+.filter-tabs button.filter-active {
+  border-color: #35d18a;
+  color: #35d18a;
+  background: #183b2b;
+}
+
+.row-action {
+  display: grid;
+  flex-shrink: 0;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  border: 0;
+  border-radius: 8px;
+  color: #aab9af;
+  background: #1a241e;
+}
+
+.row-action.delete-action {
+  color: #ff8b82;
+}
+
+.transaction-row {
+  flex-wrap: wrap;
+}
+

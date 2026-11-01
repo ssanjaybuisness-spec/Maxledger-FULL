@@ -60,4 +60,9 @@ export interface AppData {
   pendingPayments: PendingPayment[];
   categories: Category[];
   accounts: UpiAccount[];
+  budgets: {
+    id: string;
+    category: string;
+    amount: number;
+  }[];
 }

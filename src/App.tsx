@@ -1,9 +1,9 @@
 
-import { useEffect, useMemo, useState, type FormEvent } from "react";
+import { useEffect, useMemo, useRef, useState, type FormEvent, type ChangeEvent } from "react";
 import {
   Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags, ChartPie, BarChart3, Download
+  Search, X, Tags, ChartPie, BarChart3, Download, Upload
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -20,6 +20,7 @@ import BudgetManager, { type Budget } from "./components/BudgetManager";
 import Analytics from "./components/Analytics";
 import { exportTransactionsCSV } from "./services/export";
 import { exportBackup } from "./services/backup";
+import { importBackup } from "./services/restore";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -44,6 +45,7 @@ export default function App() {
   const [storageError, setStorageError] = useState("");
   const [formType, setFormType] = useState<TransactionType>("income");
   const [selectedCategory, setSelectedCategory] = useState("");
+  const backupInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
     let active = true;
@@ -218,6 +220,41 @@ export default function App() {
     }));
   }
 
+  async function handleRestore(event: ChangeEvent<HTMLInputElement>) {
+    const file = event.target.files?.[0];
+
+    if (!file) return;
+
+    try {
+      const restoredData = await importBackup(file);
+
+      const confirmed = window.confirm(
+        "Restore this backup? Your current MaxLedger data will be replaced."
+      );
+
+      if (confirmed) {
+        setData({
+          ...restoredData,
+          budgets: restoredData.budgets || []
+        });
+
+        setActiveTab("home");
+        setSearch("");
+        setFilter("all");
+
+        window.alert("Backup restored successfully!");
+      }
+    } catch (error) {
+      window.alert(
+        error instanceof Error
+          ? error.message
+          : "Unable to restore this backup."
+      );
+    } finally {
+      event.target.value = "";
+    }
+  }
+
   function handlePendingChange(payments: PendingPayment[]) {
     setData(current => ({
       ...current,
@@ -376,7 +413,7 @@ export default function App() {
           <section className="export-panel">
             <div>
               <h3>Data export & backup</h3>
-              <p>Download your transactions or a complete MaxLedger backup.</p>
+              <p>Download or restore your complete MaxLedger data.</p>
             </div>
 
             <button
@@ -394,6 +431,22 @@ export default function App() {
               onClick={() => exportBackup(data)}
             >
               <Download size={17} /> Backup all data
+            </button>
+
+            <input
+              ref={backupInputRef}
+              type="file"
+              accept=".json,application/json"
+              hidden
+              onChange={handleRestore}
+            />
+
+            <button
+              type="button"
+              className="add-button"
+              onClick={() => backupInputRef.current?.click()}
+            >
+              <Upload size={17} /> Restore backup
             </button>
           </section>
 
@@ -662,41 +715,4 @@ export default function App() {
         </button>
 
         <button
-          type="button"
-          className={`nav-item ${activeTab === "pending" ? "active" : ""}`}
-          onClick={() => setActiveTab("pending")}
-        >
-          <Clock />
-          <span>Pending</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
-          onClick={() => setActiveTab("budgets")}
-        >
-          <ChartPie />
-          <span>Budgets</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
-          onClick={() => setActiveTab("analytics")}
-        >
-          <BarChart3 />
-          <span>Analytics</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          <Tags />
-          <span>Categories</span>
-        </button>
-      </nav>
-    </main>
-  );
-}
+    

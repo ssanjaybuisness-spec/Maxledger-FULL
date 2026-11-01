@@ -3,7 +3,7 @@ import { useEffect, useMemo, useState, type FormEvent } from "react";
 import {
   Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X
+  Search, X, Tags
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -15,6 +15,7 @@ import type {
   TransactionType
 } from "./types";
 import PendingPayments from "./components/PendingPayments";
+import CategoryManager from "./components/CategoryManager";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -24,7 +25,7 @@ const EMPTY_DATA: AppData = {
 };
 
 type Filter = "all" | "income" | "expense";
-type Tab = "home" | "pending";
+type Tab = "home" | "pending" | "categories";
 
 export default function App() {
   const [data, setData] = useState<AppData>(EMPTY_DATA);
@@ -108,8 +109,9 @@ export default function App() {
       : "₹••••••";
 
   function openAddForm() {
-    const firstCategory =
-      data.categories.find(category => category.type === "income");
+    const firstCategory = data.categories.find(
+      category => category.type === "income"
+    );
 
     setEditingId(null);
     setFormType("income");
@@ -212,6 +214,17 @@ export default function App() {
     setData(current => ({
       ...current,
       pendingPayments: payments
+    }));
+  }
+
+  function handleCategoriesChange(
+    categories: AppData["categories"],
+    transactions: Transaction[]
+  ) {
+    setData(current => ({
+      ...current,
+      categories,
+      transactions
     }));
   }
 
@@ -538,6 +551,22 @@ export default function App() {
         </section>
       )}
 
+      {activeTab === "categories" && (
+        <section className="pending-page">
+          <section className="welcome">
+            <p>PERSONALISE YOUR FINANCES</p>
+            <h2>Your categories.</h2>
+            <span>Organise your income and expenses.</span>
+          </section>
+
+          <CategoryManager
+            categories={data.categories}
+            transactions={data.transactions}
+            onChange={handleCategoriesChange}
+          />
+        </section>
+      )}
+
       <nav className="bottom-nav">
         <button
           type="button"
@@ -550,7 +579,7 @@ export default function App() {
 
         <button
           type="button"
-          className="nav-item"
+          className={`nav-item ${activeTab === "home" && filter === "income" ? "active" : ""}`}
           onClick={() => {
             setActiveTab("home");
             setFilter("income");
@@ -562,7 +591,7 @@ export default function App() {
 
         <button
           type="button"
-          className="nav-item"
+          className={`nav-item ${activeTab === "home" && filter === "expense" ? "active" : ""}`}
           onClick={() => {
             setActiveTab("home");
             setFilter("expense");
@@ -580,7 +609,16 @@ export default function App() {
           <Clock />
           <span>Pending</span>
         </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          <Tags />
+          <span>Categories</span>
+        </button>
       </nav>
     </main>
   );
-}
+              }

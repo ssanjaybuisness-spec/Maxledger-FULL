@@ -81,8 +81,20 @@ export default function App() {
     if (!loaded) return;
 
     saveData(data)
-      .then(() => setStorageError(""))
-      .catch(() => setStorageError("Unable to save data. Check device storage."));
+      .then(status => {
+        setStorageError(
+          status === "synced"
+            ? "☁️ Cloud sync successful"
+            : "📱 Saved locally only — sign in to sync"
+        );
+      })
+      .catch(error => {
+        setStorageError(
+          error instanceof Error
+            ? error.message
+            : "Cloud sync failed. Your local data is safe."
+        );
+      });
   }, [data, loaded]);
 
   const income = data.transactions
@@ -326,7 +338,7 @@ export default function App() {
         </button>
       </header>
 
-      {storageError && <p role="alert">{storageError}</p>}
+      {storageError && <p role="status">{storageError}</p>}
 
       {activeTab === "home" && (
         <>
@@ -660,9 +672,4 @@ export default function App() {
           onClick={() => setActiveTab("categories")}
         >
           <Tags />
-          <span>Categories</span>
-        </button>
-      </nav>
-    </main>
-  );
-}
+      

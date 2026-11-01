@@ -596,6 +596,7 @@ export default function App() {
         <Analytics transactions={data.transactions} />
       )}
 
+     
       <nav className="bottom-nav">
         <button
           type="button"
@@ -654,4 +655,18 @@ export default function App() {
           onClick={() => setActiveTab("analytics")}
         >
           <BarChart3 />
-          <span>Analytics</sp
+          <span>Analytics</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          <Tags />
+          <span>Categories</span>
+        </button>
+      </nav>
+    </main>
+  );
+}

@@ -55,14 +55,17 @@ export interface UpiAccount {
   isDefault: boolean;
 }
 
+export interface Budget {
+  id: string;
+  category: string;
+  amount: number;
+  month: string;
+}
+
 export interface AppData {
   transactions: Transaction[];
   pendingPayments: PendingPayment[];
   categories: Category[];
   accounts: UpiAccount[];
-  budgets: {
-    id: string;
-    category: string;
-    amount: number;
-  }[];
+  budgets: Budget[];
 }

@@ -711,12 +711,11 @@ export default function App() {
         </section>
       )}
 
-            <nav className="bottom-nav">
-  <button
-    type="button"
-    className={`nav-item ${activeTab === "home" ? "active" : ""}`}
-    onClick={() => setActiveTab("home")}
-  >
+      <nav className="bottom-nav">
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "home" ? "active" : ""}`}
+          onClick={() => setActiveTab("home")}
         >
           <LayoutDashboard />
           <span>Home</span>
@@ -738,7 +737,7 @@ export default function App() {
         >
           <Tags />
           <span>Categories</span>
-        </button>
+            </button>
 
         <button
           type="button"
@@ -770,3 +769,5 @@ export default function App() {
     </main>
   );
 }
+          
+     

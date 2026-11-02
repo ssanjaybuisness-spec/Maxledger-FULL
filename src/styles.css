@@ -1639,3 +1639,246 @@ select:focus-visible {
     font-size: 26px;
   }
 }
+/* =================================
+   MAXLEDGER — MIDNIGHT BLUE THEME
+================================= */
+
+:root {
+  color: #F8FAFC;
+  background: #111827;
+  --bg: #111827;
+  --surface: #1B2638;
+  --surface-2: #243247;
+  --border: rgba(191, 211, 239, .14);
+  --muted: #9AAAC0;
+  --green: #3B82F6;
+  --green-dark: #1E3A5F;
+  --red: #F28B82;
+}
+
+html, body {
+  background: #111827;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(59,130,246,.18), transparent 45%),
+    #111827;
+}
+
+.brand-icon {
+  color: #fff;
+  background: linear-gradient(145deg, #60A5FA, #2563EB);
+}
+
+.brand p,
+.welcome > p,
+.section-heading > div > p,
+.custom-eyebrow {
+  color: #60A5FA;
+}
+
+.icon-button,
+.custom-settings-button,
+.widget-size-button,
+.transaction-search,
+.filter-tabs button {
+  color: #DCE8F8;
+  background: #1B2638;
+  border-color: var(--border);
+}
+
+.custom-settings-button.selected,
+.filter-tabs button.filter-active {
+  color: #BFDBFE;
+  border-color: #3B82F6;
+  background: #1E3A5F;
+}
+
+.custom-widget,
+.transaction-form,
+.export-panel,
+.pending-card,
+.dashboard-editor,
+.auth-card {
+  border-color: var(--border);
+  background: linear-gradient(145deg, #1D2A3E, #172235);
+}
+
+.custom-widget:first-child,
+.pending-summary {
+  border: 1px solid rgba(96,165,250,.28);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(96,165,250,.22), transparent 45%),
+    linear-gradient(135deg, #1E3A5F, #172B46);
+}
+
+.brand h1,
+.welcome h2,
+.custom-dashboard-top h2,
+.section-heading h2,
+.transaction-info h3,
+.pending-card h3,
+.pending-amounts strong,
+.export-panel h3,
+.auth-card h1 {
+  color: #F8FAFC;
+}
+
+.custom-widget-title,
+.custom-widget-title svg,
+.custom-balance-details span,
+.custom-pending-row span {
+  color: #BFDBFE;
+}
+
+.custom-muted,
+.custom-transaction-info span,
+.transaction-info p,
+.pending-card p,
+.pending-amounts span,
+.export-panel p {
+  color: #9AAAC0;
+}
+
+.custom-transaction-icon.income,
+.transaction-icon.income,
+.empty-icon {
+  color: #93C5FD;
+  background: #1E3A5F;
+}
+
+.custom-recent-row > strong.income {
+  color: #60A5FA;
+}
+
+.add-button,
+.submit-button {
+  color: #fff;
+  background: linear-gradient(135deg, #60A5FA, #2563EB);
+  box-shadow: 0 6px 17px rgba(59,130,246,.2);
+}
+
+.transaction-form input,
+.transaction-form select,
+.pending-module input,
+.pending-module select,
+.pending-module textarea,
+.category-manager input,
+.category-manager select,
+.category-manager textarea,
+.analytics-page select,
+.analytics-page input,
+.pending-amounts div {
+  color: #F8FAFC;
+  border-color: rgba(191,211,239,.18);
+  background: #111C2D;
+}
+
+.transaction-form label,
+.pending-module label {
+  color: #C3D3E8;
+}
+
+.transaction-form input:focus,
+.transaction-form select:focus {
+  border-color: #3B82F6;
+}
+
+.row-action {
+  color: #BFDBFE;
+  background: #26364D;
+}
+
+.pending-summary p {
+  color: #BFDBFE;
+}
+
+.pending-summary h2,
+.payment-status.paid,
+.nav-item.active {
+  color: #93C5FD;
+}
+
+.payment-status.paid {
+  background: #1E3A5F;
+}
+
+.payment-status.pending {
+  color: #FDE68A;
+  background: #45391D;
+}
+
+.payment-status.partially_paid {
+  color: #BAE6FD;
+  background: #173B53;
+}
+
+.payment-status.overdue {
+  color: #FECACA;
+  background: #48252B;
+}
+
+.budget-progress {
+  background: #344256;
+}
+
+.budget-progress-fill {
+  background: linear-gradient(90deg, #2563EB, #60A5FA);
+}
+
+.empty-state {
+  border-color: rgba(191,211,239,.2);
+}
+
+.empty-icon {
+  color: #93C5FD;
+  background: #1E3A5F;
+}
+
+.bottom-nav {
+  border-top-color: var(--border);
+  background: rgba(17,24,39,.95);
+}
+
+.nav-item {
+  color: #8798B0;
+}
+
+.nav-item.active svg {
+  filter: drop-shadow(0 0 7px rgba(96,165,250,.35));
+}
+
+.signed-in-bar {
+  border-color: var(--border);
+  color: #9AAAC0;
+}
+
+.signed-in-bar button {
+  color: #93C5FD;
+  border-color: var(--border);
+  background: #1B2638;
+}
+
+.dashboard-editor {
+  border-color: rgba(96,165,250,.25);
+}
+
+.dashboard-editor-heading button,
+.dashboard-editor-row button {
+  color: #60A5FA;
+}
+
+.dashboard-editor-row {
+  color: #9AAAC0;
+}
+
+.dashboard-editor-row span {
+  color: #E5EEF9;
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline-color: #60A5FA;
+}

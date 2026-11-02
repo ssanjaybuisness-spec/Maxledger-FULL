@@ -1,4 +1,3 @@
-
 import {
   useEffect,
   useMemo,
@@ -24,6 +23,7 @@ import CategoryManager from "./components/CategoryManager";
 import BudgetManager, { type Budget } from "./components/BudgetManager";
 import Analytics from "./components/Analytics";
 import CustomDashboard from "./components/CustomDashboard";
+import BackupManager from "./components/BackupManager";
 
 import { exportTransactionsCSV } from "./services/export";
 import { exportBackup } from "./services/backup";
@@ -39,7 +39,14 @@ const EMPTY_DATA: AppData = {
 };
 
 type Filter = "all" | "income" | "expense";
-type Tab = "home" | "pending" | "categories" | "budgets" | "analytics";
+
+type Tab =
+  | "home"
+  | "pending"
+  | "categories"
+  | "budgets"
+  | "analytics"
+  | "backups";
 
 export default function App() {
   const [data, setData] = useState<AppData>(EMPTY_DATA);
@@ -116,6 +123,7 @@ export default function App() {
 
     return data.transactions.filter(item => {
       const matchesFilter = filter === "all" || item.type === filter;
+
       const matchesSearch =
         item.title.toLowerCase().includes(query) ||
         item.category.toLowerCase().includes(query);
@@ -126,7 +134,9 @@ export default function App() {
 
   const money = (amount: number) =>
     balanceVisible
-      ? `₹${amount.toLocaleString("en-IN", { maximumFractionDigits: 2 })}`
+      ? `₹${amount.toLocaleString("en-IN", {
+          maximumFractionDigits: 2
+        })}`
       : "₹••••••";
 
   function openAddForm() {
@@ -172,7 +182,13 @@ export default function App() {
     const type = form.get("type") as TransactionType;
     const date = String(form.get("date") || "");
 
-    if (!title || !category || !date || !Number.isFinite(amount) || amount <= 0) {
+    if (
+      !title ||
+      !category ||
+      !date ||
+      !Number.isFinite(amount) ||
+      amount <= 0
+    ) {
       return;
     }
 
@@ -183,7 +199,15 @@ export default function App() {
         ...current,
         transactions: current.transactions.map(item =>
           item.id === editingId
-            ? { ...item, title, category, amount, type, date, updatedAt: now }
+            ? {
+                ...item,
+                title,
+                category,
+                amount,
+                type,
+                date,
+                updatedAt: now
+              }
             : item
         )
       }));
@@ -209,7 +233,9 @@ export default function App() {
   }
 
   function deleteTransaction(id: string) {
-    if (!window.confirm("Delete this transaction permanently?")) return;
+    if (!window.confirm("Delete this transaction permanently?")) {
+      return;
+    }
 
     setData(current => ({
       ...current,
@@ -224,7 +250,11 @@ export default function App() {
     try {
       const restoredData = await importBackup(file);
 
-      if (window.confirm("Restore this backup? Your current MaxLedger data will be replaced.")) {
+      if (
+        window.confirm(
+          "Restore this backup? Your current MaxLedger data will be replaced."
+        )
+      ) {
         setData({
           ...restoredData,
           budgets: restoredData.budgets || []
@@ -233,11 +263,14 @@ export default function App() {
         setActiveTab("home");
         setSearch("");
         setFilter("all");
+
         window.alert("Backup restored successfully!");
       }
     } catch (error) {
       window.alert(
-        error instanceof Error ? error.message : "Unable to restore this backup."
+        error instanceof Error
+          ? error.message
+          : "Unable to restore this backup."
       );
     } finally {
       event.target.value = "";
@@ -245,27 +278,44 @@ export default function App() {
   }
 
   function handlePendingChange(payments: PendingPayment[]) {
-    setData(current => ({ ...current, pendingPayments: payments }));
+    setData(current => ({
+      ...current,
+      pendingPayments: payments
+    }));
   }
 
   function handleCategoriesChange(
     categories: AppData["categories"],
     transactions: Transaction[]
   ) {
-    setData(current => ({ ...current, categories, transactions }));
+    setData(current => ({
+      ...current,
+      categories,
+      transactions
+    }));
   }
 
   function handleBudgetsChange(budgets: Budget[]) {
-    setData(current => ({ ...current, budgets }));
+    setData(current => ({
+      ...current,
+      budgets
+    }));
   }
 
-  function handleReceive(paymentId: string, receipt: PaymentReceipt) {
+  function handleReceive(
+    paymentId: string,
+    receipt: PaymentReceipt
+  ) {
     setData(current => {
-      const payment = current.pendingPayments.find(item => item.id === paymentId);
+      const payment = current.pendingPayments.find(
+        item => item.id === paymentId
+      );
+
       if (!payment) return current;
 
       const alreadyReceived = payment.receipts.reduce(
-        (sum, item) => sum + item.amount, 0
+        (sum, item) => sum + item.amount,
+        0
       );
 
       const remaining = payment.expectedAmount - alreadyReceived;
@@ -303,12 +353,17 @@ export default function App() {
         pendingPayments: current.pendingPayments.map(item =>
           item.id === paymentId ? updatedPayment : item
         ),
-        transactions: [incomeTransaction, ...current.transactions]
+        transactions: [
+          incomeTransaction,
+          ...current.transactions
+        ]
       };
     });
   }
 
-  const editingTransaction = data.transactions.find(item => item.id === editingId);
+  const editingTransaction = data.transactions.find(
+    item => item.id === editingId
+  );
 
   if (!loaded) {
     return (
@@ -322,7 +377,10 @@ export default function App() {
     <main className="app-shell">
       <header className="topbar">
         <div className="brand">
-          <div className="brand-icon"><Wallet /></div>
+          <div className="brand-icon">
+            <Wallet />
+          </div>
+
           <div>
             <h1>MaxLedger</h1>
             <p>PERSONAL FINANCE</p>
@@ -331,14 +389,18 @@ export default function App() {
 
         <button
           className="icon-button"
-          onClick={() => setBalanceVisible(value => !value)}
+          onClick={() =>
+            setBalanceVisible(value => !value)
+          }
           aria-label="Toggle balance visibility"
         >
           {balanceVisible ? <Eye /> : <EyeOff />}
         </button>
       </header>
 
-      {storageError && <p role="status">{storageError}</p>}
+      {storageError && (
+        <p role="status">{storageError}</p>
+      )}
 
       {activeTab === "home" && (
         <>
@@ -360,13 +422,17 @@ export default function App() {
           <section className="export-panel">
             <div>
               <h3>Data export & backup</h3>
-              <p>Download or restore your complete MaxLedger data.</p>
+              <p>
+                Download or restore your complete MaxLedger data.
+              </p>
             </div>
 
             <button
               type="button"
               className="add-button"
-              onClick={() => exportTransactionsCSV(data.transactions)}
+              onClick={() =>
+                exportTransactionsCSV(data.transactions)
+              }
               disabled={data.transactions.length === 0}
             >
               <Download size={17} /> Export CSV
@@ -399,7 +465,9 @@ export default function App() {
             <button
               type="button"
               className="add-button"
-              onClick={() => backupInputRef.current?.click()}
+              onClick={() =>
+                backupInputRef.current?.click()
+              }
             >
               <Upload size={17} /> Restore backup
             </button>
@@ -410,21 +478,38 @@ export default function App() {
               <p>ACTIVITY</p>
               <h2>Transactions</h2>
             </div>
-            <button className="add-button" onClick={openAddForm}>
+
+            <button
+              className="add-button"
+              onClick={openAddForm}
+            >
               <Plus size={17} /> Add
             </button>
           </section>
 
           {showForm && (
-            <form className="transaction-form" onSubmit={saveTransaction}>
+            <form
+              className="transaction-form"
+              onSubmit={saveTransaction}
+            >
               <div className="form-heading">
-                <h3>{editingId ? "Edit transaction" : "New transaction"}</h3>
-                <button type="button" className="icon-button" onClick={closeForm}>
+                <h3>
+                  {editingId
+                    ? "Edit transaction"
+                    : "New transaction"}
+                </h3>
+
+                <button
+                  type="button"
+                  className="icon-button"
+                  onClick={closeForm}
+                >
                   <X size={18} />
                 </button>
               </div>
 
               <label>Transaction name</label>
+
               <input
                 name="title"
                 placeholder="e.g. Event payment"
@@ -434,103 +519,160 @@ export default function App() {
               />
 
               <label>Transaction type</label>
+
               <select
                 name="type"
                 value={formType}
-                onChange={event => changeFormType(event.target.value as TransactionType)}
+                onChange={event =>
+                  changeFormType(
+                    event.target.value as TransactionType
+                  )
+                }
               >
                 <option value="income">Income</option>
                 <option value="expense">Expense</option>
               </select>
 
               <label>Category</label>
+
               <select
                 name="category"
                 value={selectedCategory}
-                onChange={event => setSelectedCategory(event.target.value)}
+                onChange={event =>
+                  setSelectedCategory(event.target.value)
+                }
                 required
               >
                 {editingTransaction &&
-                  !availableCategories.some(category => category.name === editingTransaction.category) && (
-                    <option value={editingTransaction.category}>
+                  !availableCategories.some(
+                    category =>
+                      category.name ===
+                      editingTransaction.category
+                  ) && (
+                    <option
+                      value={editingTransaction.category}
+                    >
                       {editingTransaction.category}
                     </option>
                   )}
 
                 {availableCategories.map(category => (
-                  <option key={category.id} value={category.name}>
+                  <option
+                    key={category.id}
+                    value={category.name}
+                  >
                     {category.name}
                   </option>
                 ))}
               </select>
 
               <label>Amount (₹)</label>
+
               <input
                 name="amount"
                 type="number"
                 min="0.01"
                 step="0.01"
                 placeholder="Enter amount"
-                defaultValue={editingTransaction?.amount ?? ""}
+                defaultValue={
+                  editingTransaction?.amount ?? ""
+                }
                 required
               />
 
               <label>Date</label>
+
               <input
                 name="date"
                 type="date"
-                defaultValue={editingTransaction?.date || new Date().toISOString().slice(0, 10)}
+                defaultValue={
+                  editingTransaction?.date ||
+                  new Date().toISOString().slice(0, 10)
+                }
                 required
               />
 
-              <button className="submit-button" type="submit">
-                {editingId ? "Update transaction" : "Save transaction"}
+              <button
+                className="submit-button"
+                type="submit"
+              >
+                {editingId
+                  ? "Update transaction"
+                  : "Save transaction"}
               </button>
             </form>
           )}
 
           <div className="transaction-search">
             <Search size={18} />
+
             <input
               value={search}
-              onChange={event => setSearch(event.target.value)}
+              onChange={event =>
+                setSearch(event.target.value)
+              }
               placeholder="Search transactions..."
             />
           </div>
 
           <div className="filter-tabs">
-            {(["all", "income", "expense"] as Filter[]).map(option => (
-              <button
-                key={option}
-                className={filter === option ? "filter-active" : ""}
-                onClick={() => setFilter(option)}
-              >
-                {option === "all" ? "All" : option === "income" ? "Income" : "Expenses"}
-              </button>
-            ))}
+            {(["all", "income", "expense"] as Filter[]).map(
+              option => (
+                <button
+                  key={option}
+                  className={
+                    filter === option
+                      ? "filter-active"
+                      : ""
+                  }
+                  onClick={() => setFilter(option)}
+                >
+                  {option === "all"
+                    ? "All"
+                    : option === "income"
+                      ? "Income"
+                      : "Expenses"}
+                </button>
+              )
+            )}
           </div>
 
           <section className="transactions">
             {visibleTransactions.length === 0 ? (
               <div className="empty-state">
-                <div className="empty-icon"><Clock /></div>
+                <div className="empty-icon">
+                  <Clock />
+                </div>
+
                 <h3>No transactions found</h3>
-                <p>Try another search or add a transaction.</p>
+                <p>
+                  Try another search or add a transaction.
+                </p>
               </div>
             ) : (
               visibleTransactions.map(item => (
-                <article className="transaction-row" key={item.id}>
-                  <div className={`transaction-icon ${item.type}`}>
-                    {item.type === "income" ? <ArrowDownLeft /> : <ArrowUpRight />}
+                <article
+                  className="transaction-row"
+                  key={item.id}
+                >
+                  <div
+                    className={`transaction-icon ${item.type}`}
+                  >
+                    {item.type === "income"
+                      ? <ArrowDownLeft />
+                      : <ArrowUpRight />}
                   </div>
 
                   <div className="transaction-info">
                     <h3>{item.title}</h3>
-                    <p>{item.category} · {item.date}</p>
+                    <p>
+                      {item.category} · {item.date}
+                    </p>
                   </div>
 
                   <strong className={item.type}>
-                    {item.type === "income" ? "+" : "-"}{money(item.amount)}
+                    {item.type === "income" ? "+" : "-"}
+                    {money(item.amount)}
                   </strong>
 
                   <button
@@ -544,7 +686,9 @@ export default function App() {
                   <button
                     className="row-action delete-action"
                     aria-label="Delete transaction"
-                    onClick={() => deleteTransaction(item.id)}
+                    onClick={() =>
+                      deleteTransaction(item.id)
+                    }
                   >
                     <Trash2 size={16} />
                   </button>
@@ -560,8 +704,11 @@ export default function App() {
           <section className="welcome">
             <p>PAYMENT TRACKER</p>
             <h2>Pending payments.</h2>
-            <span>Track what you are waiting to receive.</span>
+            <span>
+              Track what you are waiting to receive.
+            </span>
           </section>
+
           <PendingPayments
             payments={data.pendingPayments}
             onChange={handlePendingChange}
@@ -575,8 +722,11 @@ export default function App() {
           <section className="welcome">
             <p>PERSONALISE YOUR FINANCES</p>
             <h2>Your categories.</h2>
-            <span>Organise your income and expenses.</span>
+            <span>
+              Organise your income and expenses.
+            </span>
           </section>
+
           <CategoryManager
             categories={data.categories}
             transactions={data.transactions}
@@ -590,8 +740,11 @@ export default function App() {
           <section className="welcome">
             <p>SPENDING CONTROL</p>
             <h2>Monthly budgets.</h2>
-            <span>Plan your spending and stay on track.</span>
+            <span>
+              Plan your spending and stay on track.
+            </span>
           </section>
+
           <BudgetManager
             budgets={data.budgets as Budget[]}
             categories={data.categories}
@@ -601,81 +754,4 @@ export default function App() {
         </section>
       )}
 
-      {activeTab === "analytics" && (
-        <Analytics transactions={data.transactions} />
-      )}
-
-      <nav className="bottom-nav">
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "home" ? "active" : ""}`}
-          onClick={() => setActiveTab("home")}
-        >
-          <LayoutDashboard />
-          <span>Home</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "home" && filter === "income" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("home");
-            setFilter("income");
-          }}
-        >
-          <TrendingUp />
-          <span>Income</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "home" && filter === "expense" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("home");
-            setFilter("expense");
-          }}
-        >
-          <TrendingDown />
-          <span>Expenses</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "pending" ? "active" : ""}`}
-          onClick={() => setActiveTab("pending")}
-        >
-          <Clock />
-          <span>Pending</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
-          onClick={() => setActiveTab("budgets")}
-        >
-          <ChartPie />
-          <span>Budgets</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
-          onClick={() => setActiveTab("analytics")}
-        >
-          <BarChart3 />
-          <span>Analytics</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          <Tags />
-                    <span>Categories</span>
-        </button>
-      </nav>
-    </main>
-  );
-}
-      
+      {activeTab === "anal

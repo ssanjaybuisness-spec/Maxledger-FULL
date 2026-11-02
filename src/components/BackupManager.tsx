@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import {
   auth,
@@ -11,6 +12,7 @@ type BackupItem = {
   id: string;
   data: unknown;
   createdAt: any;
+  kind: "automatic" | "manual";
 };
 
 type Props = {
@@ -33,12 +35,14 @@ function formatBackupDate(value: any) {
 }
 
 function isAppData(value: any): value is AppData {
-  return value &&
+  return (
+    value &&
     Array.isArray(value.transactions) &&
     Array.isArray(value.pendingPayments) &&
     Array.isArray(value.categories) &&
     Array.isArray(value.accounts) &&
-    Array.isArray(value.budgets);
+    Array.isArray(value.budgets)
+  );
 }
 
 export default function BackupManager({
@@ -64,6 +68,7 @@ export default function BackupManager({
     try {
       const items = await getCloudBackups(userId);
       setBackups(items as BackupItem[]);
+      setMessage("");
     } catch (error) {
       console.error(error);
       setMessage("Could not load cloud backups.");
@@ -87,7 +92,7 @@ export default function BackupManager({
 
     try {
       await createCloudBackup(userId, currentData);
-      setMessage("Backup created successfully.");
+      setMessage("Manual backup created successfully.");
       await refreshBackups();
     } catch (error) {
       console.error(error);
@@ -104,7 +109,7 @@ export default function BackupManager({
     }
 
     const confirmed = window.confirm(
-      "Restore this backup? Your current data will be saved as a backup first, then replaced with the selected snapshot."
+      "Restore this backup? Your current data will be saved as a safety backup first."
     );
 
     if (!confirmed) return;
@@ -139,8 +144,8 @@ export default function BackupManager({
         <div>
           <h2>Cloud Backup Manager</h2>
           <p>
-            Save a snapshot or restore an earlier version
-            of your data.
+            Automatic backups are created once per day.
+            Manual backups can be created anytime.
           </p>
         </div>
 
@@ -148,7 +153,7 @@ export default function BackupManager({
           onClick={handleCreateBackup}
           disabled={busy || !userId}
         >
-          {busy ? "Please wait…" : "Create backup"}
+          {busy ? "Please wait…" : "Create manual backup"}
         </button>
       </div>
 
@@ -164,6 +169,8 @@ export default function BackupManager({
             const data = backup.data as
               Partial<AppData> | undefined;
 
+            const isAutomatic = backup.kind === "automatic";
+
             return (
               <article
                 className="backup-item"
@@ -171,8 +178,14 @@ export default function BackupManager({
               >
                 <div>
                   <strong>
-                    {formatBackupDate(backup.createdAt)}
+                    {isAutomatic
+                      ? "🤖 Automatic Backup"
+                      : "✋ Manual Backup"}
                   </strong>
+
+                  <p>
+                    {formatBackupDate(backup.createdAt)}
+                  </p>
 
                   <p>
                     {data?.transactions?.length ?? 0}

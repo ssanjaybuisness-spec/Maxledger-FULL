@@ -16,7 +16,6 @@ export default function PendingPayments({
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [receivingId, setReceivingId] = useState<string | null>(null);
-
   const [filter, setFilter] = useState("all");
 
   const receivedTotal = (payment: PendingPayment) =>
@@ -49,6 +48,7 @@ export default function PendingPayments({
     const customerName = String(form.get("customerName") || "").trim();
     const expectedAmount = Number(form.get("expectedAmount"));
     const expectedDate = String(form.get("expectedDate") || "");
+    const eventAttendedDate = String(form.get("eventAttendedDate") || "");
     const notes = String(form.get("notes") || "").trim();
 
     if (
@@ -65,6 +65,7 @@ export default function PendingPayments({
       customerName,
       expectedAmount,
       expectedDate,
+      eventAttendedDate: eventAttendedDate || undefined,
       status: "pending",
       receipts: [],
       notes,
@@ -159,6 +160,9 @@ export default function PendingPayments({
           <input name="expectedAmount" type="number"
             min="0.01" step="0.01" required />
 
+          <label>Event attended date</label>
+          <input name="eventAttendedDate" type="date" />
+
           <label>Expected receiving date</label>
           <input name="expectedDate" type="date" required />
 
@@ -180,8 +184,7 @@ export default function PendingPayments({
           <button key={status}
             className={filter === status ? "filter-active" : ""}
             onClick={() => setFilter(status)}>
-            {status === "all" ? "All" :
-              status.replace("_", " ")}
+            {status === "all" ? "All" : status.replace("_", " ")}
           </button>
         ))}
       </div>
@@ -201,6 +204,9 @@ export default function PendingPayments({
               <div className="pending-card-top">
                 <div>
                   <h3>{payment.customerName}</h3>
+                  {payment.eventAttendedDate && (
+                    <p>Event attended: {payment.eventAttendedDate}</p>
+                  )}
                   <p>Expected: {payment.expectedDate}</p>
                 </div>
                 <span className={`payment-status ${status}`}>

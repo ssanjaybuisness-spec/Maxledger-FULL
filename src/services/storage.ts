@@ -1,3 +1,4 @@
+
 import { Preferences } from "@capacitor/preferences";
 import type { AppData, Category } from "../types";
 
@@ -32,7 +33,8 @@ const EMPTY_DATA: AppData = {
   pendingPayments: [],
   categories: DEFAULT_CATEGORIES,
   accounts: [],
-  budgets: []
+  budgets: [],
+  deletedTransactionIds: []
 };
 
 function getStorageKey(): string {
@@ -64,14 +66,17 @@ function migrateData(data: AppData): AppData {
       ...data.categories,
       ...DEFAULT_CATEGORIES.filter(category => !existingIds.has(category.id))
     ],
-    budgets: Array.isArray(data.budgets) ? data.budgets : []
+    budgets: Array.isArray(data.budgets) ? data.budgets : [],
+    deletedTransactionIds: Array.isArray(data.deletedTransactionIds)
+      ? data.deletedTransactionIds
+      : []
   };
 }
 
 function mergeRecords<T extends {
   id: string;
   updatedAt?: number;
-  createdAt?: number
+  createdAt?: number;
 }>(local: T[], cloud: T[]): T[] {
   const records = new Map<string, T>();
 
@@ -93,12 +98,26 @@ function mergeRecords<T extends {
 }
 
 function mergeData(local: AppData, cloud: AppData): AppData {
+  const deletedIds = new Set([
+    ...(local.deletedTransactionIds || []),
+    ...(cloud.deletedTransactionIds || [])
+  ]);
+
+  const transactions = mergeRecords(
+    local.transactions,
+    cloud.transactions
+  ).filter(transaction => !deletedIds.has(transaction.id));
+
   return migrateData({
-    transactions: mergeRecords(local.transactions, cloud.transactions),
-    pendingPayments: mergeRecords(local.pendingPayments, cloud.pendingPayments),
+    transactions,
+    pendingPayments: mergeRecords(
+      local.pendingPayments,
+      cloud.pendingPayments
+    ),
     categories: mergeRecords(local.categories, cloud.categories),
     accounts: mergeRecords(local.accounts, cloud.accounts),
-    budgets: mergeRecords(local.budgets, cloud.budgets)
+    budgets: mergeRecords(local.budgets || [], cloud.budgets || []),
+    deletedTransactionIds: Array.from(deletedIds)
   });
 }
 
@@ -147,13 +166,14 @@ async function readLocalData(): Promise<AppData> {
 
   return {
     ...EMPTY_DATA,
-    categories: [...DEFAULT_CATEGORIES]
+    categories: [...DEFAULT_CATEGORIES],
+    deletedTransactionIds: []
   };
 }
 
 async function writeLocalData(data: AppData): Promise<void> {
   const key = getStorageKey();
-  const serialized = JSON.stringify(data);
+  const serialized = JSON.stringify(migrateData(data));
 
   try {
     await Preferences.set({ key, value: serialized });
@@ -205,21 +225,21 @@ export async function loadData(): Promise<AppData> {
 export async function saveData(
   data: AppData
 ): Promise<"synced" | "local-only"> {
-  await writeLocalData(data);
+  const safeData = migrateData(data);
+
+  await writeLocalData(safeData);
 
   const user = auth.currentUser;
 
   if (!user) return "local-only";
 
   try {
-    await saveCloudData(user.uid, data);
+    await saveCloudData(user.uid, safeData);
 
-    // Automatic backup: at most once per UTC calendar day.
     try {
-      await createAutomaticCloudBackup(user.uid, data);
+      await createAutomaticCloudBackup(user.uid, safeData);
     } catch (backupError) {
       console.error("Automatic backup failed:", backupError);
-      // Cloud data is already saved, so don't report the sync as failed.
     }
 
     return "synced";

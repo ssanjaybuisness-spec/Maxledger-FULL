@@ -1,4 +1,3 @@
-
 import { useMemo, useState } from "react";
 import {
   ResponsiveContainer,
@@ -13,11 +12,16 @@ import {
   Legend,
   CartesianGrid
 } from "recharts";
-import type { Transaction } from "../types";
+import type { Transaction, AppData } from "../types";
 import { printPeriodFinancialReport } from "../services/report";
 
 interface Props {
   transactions: Transaction[];
+  data: AppData;
+  onExportCSV: () => void;
+  onDownloadPDF: () => void;
+  onBackup: () => void;
+  onRestore: () => void;
 }
 
 type ReportMode = "monthly" | "yearly" | "custom";
@@ -43,7 +47,14 @@ const monthKey = (date: Date) =>
 
 const currentDate = new Date();
 
-export default function Analytics({ transactions }: Props) {
+export default function Analytics({
+  transactions,
+  data,
+  onExportCSV,
+  onDownloadPDF,
+  onBackup,
+  onRestore
+}: Props) {
   const [mode, setMode] = useState<ReportMode>("monthly");
 
   const [selectedMonth, setSelectedMonth] = useState(
@@ -529,6 +540,46 @@ export default function Analytics({ transactions }: Props) {
           </section>
         </>
       )}
+
+      <section className="export-panel">
+        <div>
+          <h3>Data & reports</h3>
+          <p>Export, download or protect your ledger data.</p>
+        </div>
+
+        <button
+          type="button"
+          className="add-button"
+          onClick={onExportCSV}
+          disabled={transactions.length === 0}
+        >
+          ↓ Export CSV
+        </button>
+
+        <button
+          type="button"
+          className="add-button"
+          onClick={onDownloadPDF}
+        >
+          ↓ Download PDF
+        </button>
+
+        <button
+          type="button"
+          className="add-button"
+          onClick={onBackup}
+        >
+          ↓ Backup data
+        </button>
+
+        <button
+          type="button"
+          className="add-button"
+          onClick={onRestore}
+        >
+          ↑ Restore backup
+        </button>
+      </section>
     </section>
   );
 }

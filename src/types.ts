@@ -33,6 +33,7 @@ export interface PendingPayment {
   customerName: string;
   expectedAmount: number;
   expectedDate: string;
+  eventAttendedDate?: string;
   status: PaymentStatus;
   receipts: PaymentReceipt[];
   notes?: string;
@@ -62,11 +63,47 @@ export interface Budget {
   month: string;
 }
 
+export interface TeamMember {
+  id: string;
+  name: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
+export interface DistributionPayment {
+  id: string;
+  amount: number;
+  paidDate: string;
+  referenceNote?: string;
+  createdAt: number;
+}
+
+export interface DistributionMember {
+  id: string;
+  teamMemberId: string;
+  memberName: string;
+  allocatedAmount: number;
+  payments: DistributionPayment[];
+  notes?: string;
+}
+
+export interface CashDistribution {
+  id: string;
+  eventName: string;
+  eventAttendedDate: string;
+  members: DistributionMember[];
+  notes?: string;
+  createdAt: number;
+  updatedAt: number;
+}
+
 export interface AppData {
   transactions: Transaction[];
   pendingPayments: PendingPayment[];
   categories: Category[];
   accounts: UpiAccount[];
   budgets: Budget[];
+  teamMembers?: TeamMember[];
+  cashDistributions?: CashDistribution[];
   deletedTransactionIds?: string[];
 }

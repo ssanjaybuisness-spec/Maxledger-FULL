@@ -764,31 +764,33 @@ function deleteTransaction(id: string) {
         <Analytics transactions={data.transactions} />
       )}
 
-      {activeTab === "backups" && (
+            {activeTab === "backups" && (
         <section className="pending-page">
           <section className="welcome">
             <p>CLOUD BACKUP</p>
             <h2>Your backups.</h2>
-            <span>Create and restore snapshots of your MaxLedger data.</span>
+            <span>
+              Create and restore snapshots of your MaxLedger data.
+            </span>
           </section>
 
-          
-<BackupManager
-  currentData={data}
-  onRestore={restoredData => {
-    setData({
-      ...restoredData,
-      budgets: restoredData.budgets || [],
-      deletedTransactionIds:
-        restoredData.deletedTransactionIds || []
-    });
+          <BackupManager
+            currentData={data}
+            onRestore={restoredData => {
+              setData({
+                ...restoredData,
+                budgets: restoredData.budgets || [],
+                deletedTransactionIds:
+                  restoredData.deletedTransactionIds || []
+              });
 
-    setSearch("");
-    setFilter("all");
-    setActiveTab("home");
-  }}
-/>
-
+              setSearch("");
+              setFilter("all");
+              setActiveTab("home");
+            }}
+          />
+        </section>
+      )}
 
       <nav className="bottom-nav">
         <button

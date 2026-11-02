@@ -1,3 +1,4 @@
+
 import {
   useEffect,
   useMemo,
@@ -88,18 +89,14 @@ export default function App() {
     if (!loaded) return;
 
     saveData(data)
-      .then(status => {
-        setStorageError(
-          status === "synced"
-            ? "☁️ Cloud sync successful"
-            : "📱 Saved locally only — sign in to sync"
-        );
+      .then(() => {
+        setStorageError("");
       })
       .catch(error => {
         setStorageError(
           error instanceof Error
             ? error.message
-            : "Cloud sync failed. Your local data is safe."
+            : "Unable to save your data. Your local data may still be available."
         );
       });
   }, [data, loaded]);
@@ -232,22 +229,20 @@ export default function App() {
     closeForm();
   }
 
-  
-function deleteTransaction(id: string) {
-  if (!window.confirm("Delete this transaction permanently?")) return;
+  function deleteTransaction(id: string) {
+    if (!window.confirm("Delete this transaction permanently?")) return;
 
-  setData(current => ({
-    ...current,
-    transactions: current.transactions.filter(item => item.id !== id),
-    deletedTransactionIds: [
-      ...new Set([
-        ...(current.deletedTransactionIds || []),
-        id
-      ])
-    ]
-  }));
-}
-
+    setData(current => ({
+      ...current,
+      transactions: current.transactions.filter(item => item.id !== id),
+      deletedTransactionIds: [
+        ...new Set([
+          ...(current.deletedTransactionIds || []),
+          id
+        ])
+      ]
+    }));
+  }
 
   async function handleRestore(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];
@@ -258,7 +253,7 @@ function deleteTransaction(id: string) {
 
       if (
         window.confirm(
-          "Restore this backup? Your current MaxLedger data will be replaced."
+          "Restore this backup? Your current data will be replaced."
         )
       ) {
         setData({
@@ -270,7 +265,7 @@ function deleteTransaction(id: string) {
         setSearch("");
         setFilter("all");
 
-        window.alert("Backup restored successfully!");
+        window.alert("Backup restored successfully.");
       }
     } catch (error) {
       window.alert(
@@ -374,7 +369,7 @@ function deleteTransaction(id: string) {
   if (!loaded) {
     return (
       <main className="app-shell">
-        <h2>Loading MaxLedger...</h2>
+        <h2>Loading...</h2>
       </main>
     );
   }
@@ -389,15 +384,13 @@ function deleteTransaction(id: string) {
 
           <div>
             <h1>MaxLedger</h1>
-            <p>PERSONAL FINANCE</p>
+            <p>FINANCE</p>
           </div>
         </div>
 
         <button
           className="icon-button"
-          onClick={() =>
-            setBalanceVisible(value => !value)
-          }
+          onClick={() => setBalanceVisible(value => !value)}
           aria-label="Toggle balance visibility"
         >
           {balanceVisible ? <Eye /> : <EyeOff />}
@@ -405,15 +398,14 @@ function deleteTransaction(id: string) {
       </header>
 
       {storageError && (
-        <p role="status">{storageError}</p>
+        <p role="alert">{storageError}</p>
       )}
 
       {activeTab === "home" && (
         <>
           <section className="welcome">
-            <p>YOUR FINANCIAL OVERVIEW</p>
-            <h2>Manage your money.</h2>
-            <span>Every rupee, accounted for.</span>
+            <p>OVERVIEW</p>
+            <h2>Dashboard</h2>
           </section>
 
           <CustomDashboard
@@ -427,18 +419,13 @@ function deleteTransaction(id: string) {
 
           <section className="export-panel">
             <div>
-              <h3>Data export & backup</h3>
-              <p>
-                Download or restore your complete MaxLedger data.
-              </p>
+              <h3>Data & reports</h3>
             </div>
 
             <button
               type="button"
               className="add-button"
-              onClick={() =>
-                exportTransactionsCSV(data.transactions)
-              }
+              onClick={() => exportTransactionsCSV(data.transactions)}
               disabled={data.transactions.length === 0}
             >
               <Download size={17} /> Export CSV
@@ -449,7 +436,7 @@ function deleteTransaction(id: string) {
               className="add-button"
               onClick={() => printFinancialReport(data)}
             >
-              <Download size={17} /> Download PDF report
+              <Download size={17} /> Download PDF
             </button>
 
             <button
@@ -457,7 +444,7 @@ function deleteTransaction(id: string) {
               className="add-button"
               onClick={() => exportBackup(data)}
             >
-              <Download size={17} /> Backup all data
+              <Download size={17} /> Backup data
             </button>
 
             <input
@@ -471,9 +458,7 @@ function deleteTransaction(id: string) {
             <button
               type="button"
               className="add-button"
-              onClick={() =>
-                backupInputRef.current?.click()
-              }
+              onClick={() => backupInputRef.current?.click()}
             >
               <Upload size={17} /> Restore backup
             </button>
@@ -485,37 +470,27 @@ function deleteTransaction(id: string) {
               <h2>Transactions</h2>
             </div>
 
-            <button
-              className="add-button"
-              onClick={openAddForm}
-            >
+            <button className="add-button" onClick={openAddForm}>
               <Plus size={17} /> Add
             </button>
           </section>
 
           {showForm && (
-            <form
-              className="transaction-form"
-              onSubmit={saveTransaction}
-            >
+            <form className="transaction-form" onSubmit={saveTransaction}>
               <div className="form-heading">
-                <h3>
-                  {editingId
-                    ? "Edit transaction"
-                    : "New transaction"}
-                </h3>
+                <h3>{editingId ? "Edit transaction" : "New transaction"}</h3>
 
                 <button
                   type="button"
                   className="icon-button"
                   onClick={closeForm}
+                  aria-label="Close form"
                 >
                   <X size={18} />
                 </button>
               </div>
 
               <label>Transaction name</label>
-
               <input
                 name="title"
                 placeholder="e.g. Event payment"
@@ -524,15 +499,12 @@ function deleteTransaction(id: string) {
                 required
               />
 
-              <label>Transaction type</label>
-
+              <label>Type</label>
               <select
                 name="type"
                 value={formType}
                 onChange={event =>
-                  changeFormType(
-                    event.target.value as TransactionType
-                  )
+                  changeFormType(event.target.value as TransactionType)
                 }
               >
                 <option value="income">Income</option>
@@ -540,54 +512,40 @@ function deleteTransaction(id: string) {
               </select>
 
               <label>Category</label>
-
               <select
                 name="category"
                 value={selectedCategory}
-                onChange={event =>
-                  setSelectedCategory(event.target.value)
-                }
+                onChange={event => setSelectedCategory(event.target.value)}
                 required
               >
                 {editingTransaction &&
                   !availableCategories.some(
-                    category =>
-                      category.name ===
-                      editingTransaction.category
+                    category => category.name === editingTransaction.category
                   ) && (
-                    <option
-                      value={editingTransaction.category}
-                    >
+                    <option value={editingTransaction.category}>
                       {editingTransaction.category}
                     </option>
                   )}
 
                 {availableCategories.map(category => (
-                  <option
-                    key={category.id}
-                    value={category.name}
-                  >
+                  <option key={category.id} value={category.name}>
                     {category.name}
                   </option>
                 ))}
               </select>
 
               <label>Amount (₹)</label>
-
               <input
                 name="amount"
                 type="number"
                 min="0.01"
                 step="0.01"
                 placeholder="Enter amount"
-                defaultValue={
-                  editingTransaction?.amount ?? ""
-                }
+                defaultValue={editingTransaction?.amount ?? ""}
                 required
               />
 
               <label>Date</label>
-
               <input
                 name="date"
                 type="date"
@@ -598,49 +556,35 @@ function deleteTransaction(id: string) {
                 required
               />
 
-              <button
-                className="submit-button"
-                type="submit"
-              >
-                {editingId
-                  ? "Update transaction"
-                  : "Save transaction"}
+              <button className="submit-button" type="submit">
+                {editingId ? "Update transaction" : "Save transaction"}
               </button>
             </form>
           )}
 
           <div className="transaction-search">
             <Search size={18} />
-
             <input
               value={search}
-              onChange={event =>
-                setSearch(event.target.value)
-              }
-              placeholder="Search transactions..."
+              onChange={event => setSearch(event.target.value)}
+              placeholder="Search transactions"
             />
           </div>
 
           <div className="filter-tabs">
-            {(["all", "income", "expense"] as Filter[]).map(
-              option => (
-                <button
-                  key={option}
-                  className={
-                    filter === option
-                      ? "filter-active"
-                      : ""
-                  }
-                  onClick={() => setFilter(option)}
-                >
-                  {option === "all"
-                    ? "All"
-                    : option === "income"
-                      ? "Income"
-                      : "Expenses"}
-                </button>
-              )
-            )}
+            {(["all", "income", "expense"] as Filter[]).map(option => (
+              <button
+                key={option}
+                className={filter === option ? "filter-active" : ""}
+                onClick={() => setFilter(option)}
+              >
+                {option === "all"
+                  ? "All"
+                  : option === "income"
+                    ? "Income"
+                    : "Expenses"}
+              </button>
+            ))}
           </div>
 
           <section className="transactions">
@@ -651,29 +595,18 @@ function deleteTransaction(id: string) {
                 </div>
 
                 <h3>No transactions found</h3>
-                <p>
-                  Try another search or add a transaction.
-                </p>
+                <p>Try another search or add a transaction.</p>
               </div>
             ) : (
               visibleTransactions.map(item => (
-                <article
-                  className="transaction-row"
-                  key={item.id}
-                >
-                  <div
-                    className={`transaction-icon ${item.type}`}
-                  >
-                    {item.type === "income"
-                      ? <ArrowDownLeft />
-                      : <ArrowUpRight />}
+                <article className="transaction-row" key={item.id}>
+                  <div className={`transaction-icon ${item.type}`}>
+                    {item.type === "income" ? <ArrowDownLeft /> : <ArrowUpRight />}
                   </div>
 
                   <div className="transaction-info">
                     <h3>{item.title}</h3>
-                    <p>
-                      {item.category} · {item.date}
-                    </p>
+                    <p>{item.category} · {item.date}</p>
                   </div>
 
                   <strong className={item.type}>
@@ -692,9 +625,7 @@ function deleteTransaction(id: string) {
                   <button
                     className="row-action delete-action"
                     aria-label="Delete transaction"
-                    onClick={() =>
-                      deleteTransaction(item.id)
-                    }
+                    onClick={() => deleteTransaction(item.id)}
                   >
                     <Trash2 size={16} />
                   </button>
@@ -708,11 +639,8 @@ function deleteTransaction(id: string) {
       {activeTab === "pending" && (
         <section className="pending-page">
           <section className="welcome">
-            <p>PAYMENT TRACKER</p>
-            <h2>Pending payments.</h2>
-            <span>
-              Track what you are waiting to receive.
-            </span>
+            <p>PAYMENTS</p>
+            <h2>Pending payments</h2>
           </section>
 
           <PendingPayments
@@ -726,11 +654,8 @@ function deleteTransaction(id: string) {
       {activeTab === "categories" && (
         <section className="pending-page">
           <section className="welcome">
-            <p>PERSONALISE YOUR FINANCES</p>
-            <h2>Your categories.</h2>
-            <span>
-              Organise your income and expenses.
-            </span>
+            <p>SETTINGS</p>
+            <h2>Categories</h2>
           </section>
 
           <CategoryManager
@@ -744,11 +669,8 @@ function deleteTransaction(id: string) {
       {activeTab === "budgets" && (
         <section className="pending-page">
           <section className="welcome">
-            <p>SPENDING CONTROL</p>
-            <h2>Monthly budgets.</h2>
-            <span>
-              Plan your spending and stay on track.
-            </span>
+            <p>FINANCIAL PLANNING</p>
+            <h2>Budgets</h2>
           </section>
 
           <BudgetManager
@@ -760,18 +682,15 @@ function deleteTransaction(id: string) {
         </section>
       )}
 
-            {activeTab === "analytics" && (
+      {activeTab === "analytics" && (
         <Analytics transactions={data.transactions} />
       )}
 
-            {activeTab === "backups" && (
+      {activeTab === "backups" && (
         <section className="pending-page">
           <section className="welcome">
-            <p>CLOUD BACKUP</p>
-            <h2>Your backups.</h2>
-            <span>
-              Create and restore snapshots of your MaxLedger data.
-            </span>
+            <p>DATA</p>
+            <h2>Backups</h2>
           </section>
 
           <BackupManager
@@ -817,60 +736,4 @@ function deleteTransaction(id: string) {
         <button
           type="button"
           className={`nav-item ${activeTab === "home" && filter === "expense" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("home");
-            setFilter("expense");
-          }}
-        >
-          <TrendingDown />
-          <span>Expenses</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "pending" ? "active" : ""}`}
-          onClick={() => setActiveTab("pending")}
-        >
-          <Clock />
-          <span>Pending</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
-          onClick={() => setActiveTab("budgets")}
-        >
-          <ChartPie />
-          <span>Budgets</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
-          onClick={() => setActiveTab("analytics")}
-        >
-          <BarChart3 />
-          <span>Analytics</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
-          onClick={() => setActiveTab("categories")}
-        >
-          <Tags />
-          <span>Categories</span>
-        </button>
-
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "backups" ? "active" : ""}`}
-          onClick={() => setActiveTab("backups")}
-        >
-          <Download />
-          <span>Backups</span>
-        </button>
-      </nav>
-    </main>
-  );
-}
+          onClick={() 

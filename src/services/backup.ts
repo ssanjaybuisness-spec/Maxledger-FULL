@@ -1,29 +1,36 @@
+
 import type { AppData } from "../types";
+import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
+import { Share } from "@capacitor/share";
 
-export function exportBackup(data: AppData): void {
-  const backup = {
-    app: "MaxLedger",
-    version: 1,
-    exportedAt: new Date().toISOString(),
-    data
-  };
+export async function exportBackup(data: AppData): Promise<void> {
+  try {
+    const backup = {
+      app: "MaxLedger",
+      version: 1,
+      exportedAt: new Date().toISOString(),
+      data
+    };
 
-  const blob = new Blob(
-    [JSON.stringify(backup, null, 2)],
-    { type: "application/json" }
-  );
+    const filename = `MaxLedger-Backup-${new Date()
+      .toISOString()
+      .slice(0, 10)}.json`;
 
-  const url = URL.createObjectURL(blob);
-  const link = document.createElement("a");
+    const file = await Filesystem.writeFile({
+      path: filename,
+      data: JSON.stringify(backup, null, 2),
+      directory: Directory.Cache,
+      encoding: Encoding.UTF8
+    });
 
-  link.href = url;
-  link.download = `MaxLedger-Backup-${new Date()
-    .toISOString()
-    .slice(0, 10)}.json`;
-
-  document.body.appendChild(link);
-  link.click();
-  document.body.removeChild(link);
-
-  setTimeout(() => URL.revokeObjectURL(url), 1000);
+    await Share.share({
+      title: "MaxLedger Full Backup",
+      text: "Your complete MaxLedger data backup",
+      files: [file.uri],
+      dialogTitle: "Save or share backup"
+    });
+  } catch (error) {
+    console.error("Backup export failed:", error);
+    alert("Unable to create backup. Please try again.");
+  }
 }

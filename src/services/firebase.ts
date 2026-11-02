@@ -135,6 +135,7 @@ export async function createCloudBackup(
   await trimCloudBackups(userId);
 }
 
+
 export async function createAutomaticCloudBackup(
   userId: string,
   data: unknown
@@ -150,13 +151,18 @@ export async function createAutomaticCloudBackup(
   const snapshot = await getDocs(latestQuery);
 
   if (!snapshot.empty) {
-    const latest = snapshot.docs[0].data();
-    const timestamp = latest.createdAt?.toDate?.();
+    const latestData = snapshot.docs[0].data().data as
+      | { transactions?: unknown[] }
+      | undefined;
+
+    const currentTransactions =
+      (data as { transactions?: unknown[] } | null)?.transactions ?? [];
+
+    const latestTransactions = latestData?.transactions ?? [];
 
     if (
-      timestamp &&
-      timestamp.toISOString().slice(0, 10) ===
-      new Date().toISOString().slice(0, 10)
+      JSON.stringify(latestTransactions) ===
+      JSON.stringify(currentTransactions)
     ) {
       return false;
     }
@@ -172,6 +178,7 @@ export async function createAutomaticCloudBackup(
 
   return true;
 }
+
 
 export async function getCloudBackups(userId: string) {
   const backupsRef = collection(db, "users", userId, "backups");

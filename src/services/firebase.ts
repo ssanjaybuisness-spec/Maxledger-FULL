@@ -1,12 +1,19 @@
+
 import { initializeApp } from "firebase/app";
 
 import {
   getAuth,
+  initializeAuth,
+  indexedDBLocalPersistence,
   GoogleAuthProvider,
   signInWithPopup,
+  signInWithCredential,
   signOut,
   onAuthStateChanged
 } from "firebase/auth";
+
+import { Capacitor } from "@capacitor/core";
+import { FirebaseAuthentication } from "@capacitor-firebase/authentication";
 
 import {
   getFirestore,
@@ -24,7 +31,7 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBNPEjzQ9Q4D8Xx4c3hs1sCCgn9V7dySHk",
+  apiKey: "PASTE_YOUR_EXISTING_FIREBASE_API_KEY_HERE",
   authDomain: "maxledger-full.firebaseapp.com",
   projectId: "maxledger-full",
   storageBucket: "maxledger-full.firebasestorage.app",
@@ -35,7 +42,12 @@ const firebaseConfig = {
 
 const app = initializeApp(firebaseConfig);
 
-export const auth = getAuth(app);
+export const auth = Capacitor.isNativePlatform()
+  ? initializeAuth(app, {
+      persistence: indexedDBLocalPersistence
+    })
+  : getAuth(app);
+
 export const db = getFirestore(app);
 
 const googleProvider = new GoogleAuthProvider();
@@ -44,11 +56,31 @@ googleProvider.setCustomParameters({
   prompt: "select_account"
 });
 
-export function signInWithGoogle() {
+export async function signInWithGoogle() {
+  if (Capacitor.isNativePlatform()) {
+    const result = await FirebaseAuthentication.signInWithGoogle({
+      skipNativeAuth: true
+    });
+
+    const idToken = result.credential?.idToken;
+
+    if (!idToken) {
+      throw new Error("Google sign-in did not return an ID token.");
+    }
+
+    const credential = GoogleAuthProvider.credential(idToken);
+
+    return signInWithCredential(auth, credential);
+  }
+
   return signInWithPopup(auth, googleProvider);
 }
 
-export function logout() {
+export async function logout() {
+  if (Capacitor.isNativePlatform()) {
+    await FirebaseAuthentication.signOut();
+  }
+
   return signOut(auth);
 }
 
@@ -178,7 +210,6 @@ export async function restoreCloudBackup(
     throw new Error("Backup data is empty.");
   }
 
-  // Preserve current cloud data before restoring.
   const currentSnapshot = await getDoc(userRef);
 
   if (currentSnapshot.exists() && currentSnapshot.data().data) {

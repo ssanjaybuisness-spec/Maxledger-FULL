@@ -712,10 +712,11 @@ export default function App() {
       )}
 
             <nav className="bottom-nav">
-        <button
-          type="button"
-          className={`nav-item ${activeTab === "home" ? "active" : ""}`}
-          onClick={() => setActiveTab("home")}
+  <button
+    type="button"
+    className={`nav-item ${activeTab === "home" ? "active" : ""}`}
+    onClick={() => setActiveTab("home")}
+  >
         >
           <LayoutDashboard />
           <span>Home</span>

@@ -1990,3 +1990,30 @@ select:focus-visible {
   color: #60B5FF;
   font-weight: 700;
 }
+/* MaxLedger creator branding */
+
+.brand-credit {
+  display: block;
+  margin-top: 4px;
+  color: #60B5FF;
+  font-size: 9px;
+  font-weight: 600;
+  letter-spacing: 0.35px;
+}
+
+.app-branding {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 16px 18px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
+
+.app-branding strong {
+  color: #60B5FF;
+  font-weight: 700;
+}

@@ -19,11 +19,12 @@ import {
   getDocs,
   query,
   orderBy,
-  limit
+  limit,
+  deleteDoc
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "AIzaSyBNPEjzQ9Q4D8Xx4c3hs1sCCgn9V7dySHk",
+  apiKey: "YOUR_EXISTING_FIREBASE_API_KEY",
   authDomain: "maxledger-full.firebaseapp.com",
   projectId: "maxledger-full",
   storageBucket: "maxledger-full.firebasestorage.app",
@@ -69,6 +70,23 @@ export async function saveCloudData(userId: string, data: unknown) {
   });
 }
 
+async function trimCloudBackups(userId: string) {
+  const backupsRef = collection(db, "users", userId, "backups");
+
+  const backupsQuery = query(
+    backupsRef,
+    orderBy("createdAt", "desc"),
+    limit(100)
+  );
+
+  const snapshot = await getDocs(backupsQuery);
+  const oldBackups = snapshot.docs.slice(30);
+
+  await Promise.all(
+    oldBackups.map(item => deleteDoc(item.ref))
+  );
+}
+
 export async function createCloudBackup(
   userId: string,
   data: unknown
@@ -77,8 +95,49 @@ export async function createCloudBackup(
 
   await addDoc(backupsRef, {
     data,
-    createdAt: serverTimestamp()
+    createdAt: serverTimestamp(),
+    kind: "manual"
   });
+
+  await trimCloudBackups(userId);
+}
+
+export async function createAutomaticCloudBackup(
+  userId: string,
+  data: unknown
+) {
+  const backupsRef = collection(db, "users", userId, "backups");
+
+  const latestQuery = query(
+    backupsRef,
+    orderBy("createdAt", "desc"),
+    limit(1)
+  );
+
+  const snapshot = await getDocs(latestQuery);
+
+  if (!snapshot.empty) {
+    const latest = snapshot.docs[0].data();
+    const timestamp = latest.createdAt?.toDate?.();
+
+    if (
+      timestamp &&
+      timestamp.toISOString().slice(0, 10) ===
+      new Date().toISOString().slice(0, 10)
+    ) {
+      return false;
+    }
+  }
+
+  await addDoc(backupsRef, {
+    data,
+    createdAt: serverTimestamp(),
+    kind: "automatic"
+  });
+
+  await trimCloudBackups(userId);
+
+  return true;
 }
 
 export async function getCloudBackups(userId: string) {
@@ -95,7 +154,8 @@ export async function getCloudBackups(userId: string) {
   return snapshot.docs.map(item => ({
     id: item.id,
     data: item.data().data,
-    createdAt: item.data().createdAt
+    createdAt: item.data().createdAt,
+    kind: item.data().kind ?? "manual"
   }));
 }
 
@@ -118,7 +178,7 @@ export async function restoreCloudBackup(
     throw new Error("Backup data is empty.");
   }
 
-  // Preserve the current cloud data before restoring.
+  // Preserve current cloud data before restoring.
   const currentSnapshot = await getDoc(userRef);
 
   if (currentSnapshot.exists() && currentSnapshot.data().data) {

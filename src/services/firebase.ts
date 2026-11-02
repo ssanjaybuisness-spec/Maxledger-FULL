@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 
 import {
@@ -16,7 +15,11 @@ import {
   setDoc,
   serverTimestamp,
   collection,
-  addDoc
+  addDoc,
+  getDocs,
+  query,
+  orderBy,
+  limit
 } from "firebase/firestore";
 
 const firebaseConfig = {
@@ -76,4 +79,59 @@ export async function createCloudBackup(
     data,
     createdAt: serverTimestamp()
   });
+}
+
+export async function getCloudBackups(userId: string) {
+  const backupsRef = collection(db, "users", userId, "backups");
+
+  const backupsQuery = query(
+    backupsRef,
+    orderBy("createdAt", "desc"),
+    limit(30)
+  );
+
+  const snapshot = await getDocs(backupsQuery);
+
+  return snapshot.docs.map(item => ({
+    id: item.id,
+    data: item.data().data,
+    createdAt: item.data().createdAt
+  }));
+}
+
+export async function restoreCloudBackup(
+  userId: string,
+  backupId: string
+) {
+  const userRef = doc(db, "users", userId);
+  const backupRef = doc(db, "users", userId, "backups", backupId);
+
+  const backupSnapshot = await getDoc(backupRef);
+
+  if (!backupSnapshot.exists()) {
+    throw new Error("Backup not found.");
+  }
+
+  const backupData = backupSnapshot.data().data;
+
+  if (!backupData) {
+    throw new Error("Backup data is empty.");
+  }
+
+  // Preserve the current cloud data before restoring.
+  const currentSnapshot = await getDoc(userRef);
+
+  if (currentSnapshot.exists() && currentSnapshot.data().data) {
+    await createCloudBackup(
+      userId,
+      currentSnapshot.data().data
+    );
+  }
+
+  await setDoc(userRef, {
+    data: backupData,
+    updatedAt: serverTimestamp()
+  });
+
+  return backupData;
 }

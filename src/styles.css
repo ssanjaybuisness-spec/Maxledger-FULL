@@ -1974,4 +1974,19 @@ select:focus-visible {
   .backup-stat { padding:11px 8px; }
   .category-editor,.category-section { padding:14px; }
 }
+.app-branding {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  gap: 5px;
+  padding: 14px 16px 18px;
+  color: var(--muted);
+  font-size: 10px;
+  letter-spacing: 0.4px;
+  text-align: center;
+}
 
+.app-branding strong {
+  color: #60B5FF;
+  font-weight: 700;
+}

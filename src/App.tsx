@@ -9,9 +9,9 @@ import {
 } from "react";
 
 import {
-  Wallet, TrendingUp, TrendingDown, Clock, Plus, Eye, EyeOff,
+  Wallet, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags, ChartPie, BarChart3, Download, Upload
+  Search, X, Tags, BarChart3, Download, Upload
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";

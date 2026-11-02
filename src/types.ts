@@ -68,4 +68,5 @@ export interface AppData {
   categories: Category[];
   accounts: UpiAccount[];
   budgets: Budget[];
+  deletedTransactionIds?: string[];
 }

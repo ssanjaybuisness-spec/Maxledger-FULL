@@ -31,7 +31,7 @@ import {
 } from "firebase/firestore";
 
 const firebaseConfig = {
-  apiKey: "PASTE_YOUR_EXISTING_FIREBASE_API_KEY_HERE",
+  apiKey: "AIzaSyBNPEjzQ9Q4D8Xx4c3hs1sCCgn9V7dySHk",
   authDomain: "maxledger-full.firebaseapp.com",
   projectId: "maxledger-full",
   storageBucket: "maxledger-full.firebasestorage.app",

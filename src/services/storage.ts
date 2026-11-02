@@ -34,6 +34,8 @@ const EMPTY_DATA: AppData = {
   categories: DEFAULT_CATEGORIES,
   accounts: [],
   budgets: [],
+  teamMembers: [],
+  cashDistributions: [],
   deletedTransactionIds: []
 };
 
@@ -67,6 +69,12 @@ function migrateData(data: AppData): AppData {
       ...DEFAULT_CATEGORIES.filter(category => !existingIds.has(category.id))
     ],
     budgets: Array.isArray(data.budgets) ? data.budgets : [],
+    teamMembers: Array.isArray(data.teamMembers)
+      ? data.teamMembers
+      : [],
+    cashDistributions: Array.isArray(data.cashDistributions)
+      ? data.cashDistributions
+      : [],
     deletedTransactionIds: Array.isArray(data.deletedTransactionIds)
       ? data.deletedTransactionIds
       : []
@@ -117,6 +125,14 @@ function mergeData(local: AppData, cloud: AppData): AppData {
     categories: mergeRecords(local.categories, cloud.categories),
     accounts: mergeRecords(local.accounts, cloud.accounts),
     budgets: mergeRecords(local.budgets || [], cloud.budgets || []),
+    teamMembers: mergeRecords(
+      local.teamMembers || [],
+      cloud.teamMembers || []
+    ),
+    cashDistributions: mergeRecords(
+      local.cashDistributions || [],
+      cloud.cashDistributions || []
+    ),
     deletedTransactionIds: Array.from(deletedIds)
   });
 }
@@ -167,6 +183,8 @@ async function readLocalData(): Promise<AppData> {
   return {
     ...EMPTY_DATA,
     categories: [...DEFAULT_CATEGORIES],
+    teamMembers: [],
+    cashDistributions: [],
     deletedTransactionIds: []
   };
 }

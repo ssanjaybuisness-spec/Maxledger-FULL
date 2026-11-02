@@ -10,7 +10,7 @@
     "preview": "vite preview"
   },
   "dependencies": {
-    "@capgo/capacitor-printer": "^7.0.0"
+    "@capgo/capacitor-printer": "^7.0.0",
     "@capacitor-firebase/authentication": "7.5.0",
     "@capacitor/android": "^7.4.3",
     "@capacitor/core": "^7.4.3",

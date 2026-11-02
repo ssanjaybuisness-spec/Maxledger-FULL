@@ -710,7 +710,9 @@ export default function App() {
           />
         </section>
       )}
-
+<footer className="app-branding">
+  <span>Branding by</span> <strong>Sanjay S</strong>
+</footer>
       <nav className="bottom-nav">
         <button
           type="button"

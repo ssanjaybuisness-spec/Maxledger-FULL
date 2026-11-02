@@ -7,6 +7,10 @@ import {
   restoreCloudBackup
 } from "../services/firebase";
 import type { AppData } from "../types";
+import {
+  Cloud, CloudDownload, RefreshCw, ShieldCheck,
+  Clock3, Database, HardDrive, CheckCircle2
+} from "lucide-react";
 
 type BackupItem = {
   id: string;
@@ -21,40 +25,35 @@ type Props = {
 };
 
 function formatBackupDate(value: any) {
-  const date = value?.toDate
-    ? value.toDate()
-    : value
-      ? new Date(value)
-      : null;
+  const date = value?.toDate ? value.toDate() : value ? new Date(value) : null;
 
-  if (!date || Number.isNaN(date.getTime())) {
-    return "Date unavailable";
-  }
+  if (!date || Number.isNaN(date.getTime())) return "Date unavailable";
 
-  return date.toLocaleString();
+  return date.toLocaleString([], {
+    dateStyle: "medium",
+    timeStyle: "short"
+  });
 }
 
 function isAppData(value: any): value is AppData {
-  return (
-    value &&
+  return value &&
     Array.isArray(value.transactions) &&
     Array.isArray(value.pendingPayments) &&
     Array.isArray(value.categories) &&
     Array.isArray(value.accounts) &&
-    Array.isArray(value.budgets)
-  );
+    Array.isArray(value.budgets);
 }
 
-export default function BackupManager({
-  currentData,
-  onRestore
-}: Props) {
+export default function BackupManager({ currentData, onRestore }: Props) {
   const [backups, setBackups] = useState<BackupItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
   const [message, setMessage] = useState("");
+  const [messageError, setMessageError] = useState(false);
 
   const userId = auth.currentUser?.uid;
+  const transactionCount = currentData.transactions.length;
+  const pendingCount = currentData.pendingPayments.length;
 
   async function refreshBackups() {
     if (!userId) {
@@ -71,7 +70,8 @@ export default function BackupManager({
       setMessage("");
     } catch (error) {
       console.error(error);
-      setMessage("Could not load cloud backups.");
+      setMessage("Could not load cloud backups. Check your connection and try again.");
+      setMessageError(true);
     } finally {
       setLoading(false);
     }
@@ -84,6 +84,7 @@ export default function BackupManager({
   async function handleCreateBackup() {
     if (!userId) {
       setMessage("Please sign in first.");
+      setMessageError(true);
       return;
     }
 
@@ -92,11 +93,13 @@ export default function BackupManager({
 
     try {
       await createCloudBackup(userId, currentData);
-      setMessage("Manual backup created successfully.");
+      setMessage("Your manual backup is safely stored in the cloud.");
+      setMessageError(false);
       await refreshBackups();
     } catch (error) {
       console.error(error);
       setMessage("Backup failed. Please try again.");
+      setMessageError(true);
     } finally {
       setBusy(false);
     }
@@ -105,23 +108,19 @@ export default function BackupManager({
   async function handleRestore(backup: BackupItem) {
     if (!userId) {
       setMessage("Please sign in first.");
+      setMessageError(true);
       return;
     }
 
-    const confirmed = window.confirm(
+    if (!window.confirm(
       "Restore this backup? Your current data will be saved as a safety backup first."
-    );
-
-    if (!confirmed) return;
+    )) return;
 
     setBusy(true);
     setMessage("");
 
     try {
-      const restored = await restoreCloudBackup(
-        userId,
-        backup.id
-      );
+      const restored = await restoreCloudBackup(userId, backup.id);
 
       if (!isAppData(restored)) {
         throw new Error("Invalid backup format.");
@@ -129,77 +128,130 @@ export default function BackupManager({
 
       onRestore(restored);
       setMessage("Backup restored successfully.");
+      setMessageError(false);
       await refreshBackups();
     } catch (error) {
       console.error(error);
       setMessage("Restore failed. Please try again.");
+      setMessageError(true);
     } finally {
       setBusy(false);
     }
   }
 
   return (
-    <section className="backup-manager">
-      <div className="backup-manager-header">
-        <div>
-          <h2>Cloud Backup Manager</h2>
-          <p>
-            Automatic backups are created once per day.
-            Manual backups can be created anytime.
-          </p>
+    <section className="backup-manager backup-redesign">
+      <div className="backup-hero">
+        <div className="backup-hero-top">
+          <div className="backup-hero-icon"><Cloud size={23} /></div>
+          <span className="backup-secure">
+            <ShieldCheck size={14} /> CLOUD PROTECTED
+          </span>
         </div>
 
+        <span className="backup-kicker">DATA & SECURITY</span>
+        <h2>Your data, backed up.</h2>
+        <p>
+          Keep your ledger safe with automatic snapshots and manual backups whenever you need them.
+        </p>
+
         <button
-          onClick={handleCreateBackup}
+          className="backup-create-button"
+          onClick={() => void handleCreateBackup()}
           disabled={busy || !userId}
         >
+          <CloudDownload size={17} />
           {busy ? "Please wait…" : "Create manual backup"}
         </button>
       </div>
 
-      {message && <p role="status">{message}</p>}
+      <div className="backup-stats">
+        <div className="backup-stat">
+          <Database size={17} />
+          <strong>{transactionCount}</strong>
+          <span>Transactions</span>
+        </div>
+        <div className="backup-stat">
+          <Clock3 size={17} />
+          <strong>{pendingCount}</strong>
+          <span>Pending items</span>
+        </div>
+        <div className="backup-stat">
+          <HardDrive size={17} />
+          <strong>{backups.length}</strong>
+          <span>Cloud backups</span>
+        </div>
+      </div>
+
+      {message && (
+        <div className={`backup-message ${messageError ? "error" : "success"}`}>
+          {!messageError && <CheckCircle2 size={16} />}
+          {message}
+        </div>
+      )}
+
+      <div className="backup-list-heading">
+        <div>
+          <span className="backup-kicker">HISTORY</span>
+          <h3>Backup history</h3>
+          <p>Your recent cloud restore points.</p>
+        </div>
+        <button
+          className="backup-refresh-button"
+          onClick={() => void refreshBackups()}
+          disabled={loading || busy}
+        >
+          <RefreshCw size={15} /> Refresh
+        </button>
+      </div>
 
       {loading ? (
-        <p>Loading backups…</p>
+        <div className="backup-empty">
+          <span className="backup-spinner" />
+          <strong>Loading backup history</strong>
+          <p>Checking your secure cloud storage…</p>
+        </div>
       ) : backups.length === 0 ? (
-        <p>No cloud backups found yet.</p>
+        <div className="backup-empty">
+          <div className="backup-empty-icon"><Cloud size={22} /></div>
+          <strong>No backups yet</strong>
+          <p>Your cloud restore points will appear here after the first backup.</p>
+        </div>
       ) : (
         <div className="backup-list">
-          {backups.map((backup) => {
-            const data = backup.data as
-              Partial<AppData> | undefined;
-
-            const isAutomatic = backup.kind === "automatic";
+          {backups.map(backup => {
+            const data = backup.data as Partial<AppData> | undefined;
+            const automatic = backup.kind === "automatic";
 
             return (
-              <article
-                className="backup-item"
-                key={backup.id}
-              >
-                <div>
-                  <strong>
-                    {isAutomatic
-                      ? "🤖 Automatic Backup"
-                      : "✋ Manual Backup"}
-                  </strong>
+              <article className="backup-item" key={backup.id}>
+                <div className={`backup-item-icon ${automatic ? "automatic" : "manual"}`}>
+                  {automatic ? <Clock3 size={18} /> : <CloudDownload size={18} />}
+                </div>
 
-                  <p>
-                    {formatBackupDate(backup.createdAt)}
-                  </p>
+                <div className="backup-item-info">
+                  <div className="backup-item-title">
+                    <strong>{automatic ? "Automatic backup" : "Manual backup"}</strong>
+                    <span className={`backup-kind ${automatic ? "auto" : "manual"}`}>
+                      {automatic ? "AUTO" : "MANUAL"}
+                    </span>
+                  </div>
 
-                  <p>
-                    {data?.transactions?.length ?? 0}
-                    {" transactions · "}
-                    {data?.pendingPayments?.length ?? 0}
-                    {" pending payments"}
-                  </p>
+                  <p>{formatBackupDate(backup.createdAt)}</p>
+
+                  <span className="backup-item-meta">
+                    {data?.transactions?.length ?? 0} transactions
+                    <i />
+                    {data?.pendingPayments?.length ?? 0} pending
+                  </span>
                 </div>
 
                 <button
+                  className="backup-restore-button"
                   onClick={() => void handleRestore(backup)}
                   disabled={busy || !userId}
                 >
-                  Restore
+                  <RefreshCw size={14} /> Restore
                 </button>
               </article>
             );
@@ -207,13 +259,10 @@ export default function BackupManager({
         </div>
       )}
 
-      <button
-        className="backup-refresh"
-        onClick={() => void refreshBackups()}
-        disabled={loading || busy}
-      >
-        Refresh list
-      </button>
+      <p className="backup-footnote">
+        <ShieldCheck size={14} />
+        Restoring creates a safety backup of your current data first.
+      </p>
     </section>
   );
 }

@@ -51,16 +51,16 @@ jobs:
       - name: Sync Capacitor
         run: npx cap sync android
 
-      - name: Generate signing fingerprints
-        run: |
-          cd android
-          chmod +x gradlew
-          ./gradlew signingReport
-
       - name: Build APK
         run: |
           cd android
+          chmod +x gradlew
           ./gradlew assembleDebug
+
+      - name: Generate signing fingerprints
+        run: |
+          cd android
+          ./gradlew signingReport
 
       - name: Upload APK
         uses: actions/upload-artifact@v4

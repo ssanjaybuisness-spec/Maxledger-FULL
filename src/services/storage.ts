@@ -5,7 +5,6 @@ import {
   auth,
   getCloudData,
   saveCloudData,
-  createCloudBackup,
   createAutomaticCloudBackup
 } from "./firebase";
 

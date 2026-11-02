@@ -710,9 +710,6 @@ export default function App() {
           />
         </section>
       )}
-<footer className="app-branding">
-  <span>Branding by</span> <strong>Sanjay S</strong>
-</footer>
       <footer className="app-branding">
   <span>Made by</span>
   <strong>Sanjay S</strong>

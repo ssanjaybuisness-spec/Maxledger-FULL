@@ -1,0 +1,63 @@
+{
+  "project_info": {
+    "project_number": "848437171884",
+    "project_id": "maxledger-full",
+    "storage_bucket": "maxledger-full.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:848437171884:android:c67e58232a35b4217d3109",
+        "android_client_info": {
+          "package_name": "com.sanjays.maxledger.full"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "848437171884-19h7dn8oeofeeudjimr348oso63jioga.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sanjays.maxledger.full",
+            "certificate_hash": "6ce120919d22f5913591043bbe6a964624a66717"
+          }
+        },
+        {
+          "client_id": "848437171884-7qp6de21aon1lr904t4tdpl7tovil7th.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sanjays.maxledger.full",
+            "certificate_hash": "cd15b8317b95c904e711e7cd4d1490e6fd5e49d8"
+          }
+        },
+        {
+          "client_id": "848437171884-a0l1th4ss7ktd7jkr3mh8s7n4ptsr4ta.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.sanjays.maxledger.full",
+            "certificate_hash": "a1fce250eba62ff5cbdfd2049994e571adcfcbb8"
+          }
+        },
+        {
+          "client_id": "848437171884-k1o5eud704ngm271eu837r6infmkvgbr.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDt7NjjAu2G3bM-85XtamtLk6eQq59zty4"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "848437171884-k1o5eud704ngm271eu837r6infmkvgbr.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

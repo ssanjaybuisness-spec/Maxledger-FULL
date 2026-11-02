@@ -232,16 +232,22 @@ export default function App() {
     closeForm();
   }
 
-  function deleteTransaction(id: string) {
-    if (!window.confirm("Delete this transaction permanently?")) {
-      return;
-    }
+  
+function deleteTransaction(id: string) {
+  if (!window.confirm("Delete this transaction permanently?")) return;
 
-    setData(current => ({
-      ...current,
-      transactions: current.transactions.filter(item => item.id !== id)
-    }));
-  }
+  setData(current => ({
+    ...current,
+    transactions: current.transactions.filter(item => item.id !== id),
+    deletedTransactionIds: [
+      ...new Set([
+        ...(current.deletedTransactionIds || []),
+        id
+      ])
+    ]
+  }));
+}
+
 
   async function handleRestore(event: ChangeEvent<HTMLInputElement>) {
     const file = event.target.files?.[0];

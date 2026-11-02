@@ -16,6 +16,7 @@ env:
 jobs:
   build-apk:
     runs-on: ubuntu-latest
+
     steps:
       - uses: actions/checkout@v4
 
@@ -42,7 +43,7 @@ jobs:
 
       - name: Generate Android project
         run: npx cap add android
-        
+
       - name: Copy Firebase Android configuration
         run: cp google-services.json android/app/google-services.json
 
@@ -53,6 +54,15 @@ jobs:
 
       - name: Sync Capacitor
         run: npx cap sync android
+
+      - name: Prepare Android signing key directory
+        run: mkdir -p "$HOME/.android"
+
+      - name: Restore persistent Android debug key
+        uses: actions/cache@v4
+        with:
+          path: ~/.android/debug.keystore
+          key: maxledger-android-debug-keystore-v1
 
       - name: Build APK
         run: |

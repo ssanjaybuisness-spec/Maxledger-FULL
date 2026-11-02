@@ -14,6 +14,7 @@ import {
   CartesianGrid
 } from "recharts";
 import type { Transaction } from "../types";
+import { printPeriodFinancialReport } from "../services/report";
 
 interface Props {
   transactions: Transaction[];
@@ -71,8 +72,7 @@ export default function Analytics({ transactions }: Props) {
       ...available
     ];
 
-    return [...new Set(allYears)]
-      .sort((a, b) => b - a);
+    return [...new Set(allYears)].sort((a, b) => b - a);
   }, [transactions]);
 
   const filteredTransactions = useMemo(() => {
@@ -134,12 +134,7 @@ export default function Analytics({ transactions }: Props) {
   const trendData = useMemo(() => {
     if (mode === "yearly") {
       return Array.from({ length: 12 }, (_, index) => {
-        const date = new Date(
-          Number(selectedYear),
-          index,
-          1
-        );
-
+        const date = new Date(Number(selectedYear), index, 1);
         const key = monthKey(date);
 
         const monthTransactions = transactions.filter(
@@ -234,6 +229,10 @@ export default function Analytics({ transactions }: Props) {
     [transactions, selectedYear]
   );
 
+  const exportPDF = () => {
+    printPeriodFinancialReport(filteredTransactions, periodLabel);
+  };
+
   return (
     <section className="analytics-page">
       <div className="welcome">
@@ -277,9 +276,7 @@ export default function Analytics({ transactions }: Props) {
             <input
               type="month"
               value={selectedMonth}
-              onChange={event =>
-                setSelectedMonth(event.target.value)
-              }
+              onChange={event => setSelectedMonth(event.target.value)}
             />
           </label>
         )}
@@ -289,9 +286,7 @@ export default function Analytics({ transactions }: Props) {
             Select year
             <select
               value={selectedYear}
-              onChange={event =>
-                setSelectedYear(event.target.value)
-              }
+              onChange={event => setSelectedYear(event.target.value)}
             >
               {years.map(year => (
                 <option key={year} value={year}>
@@ -310,9 +305,7 @@ export default function Analytics({ transactions }: Props) {
                 type="date"
                 value={startDate}
                 max={endDate || undefined}
-                onChange={event =>
-                  setStartDate(event.target.value)
-                }
+                onChange={event => setStartDate(event.target.value)}
               />
             </label>
 
@@ -322,9 +315,7 @@ export default function Analytics({ transactions }: Props) {
                 type="date"
                 value={endDate}
                 min={startDate || undefined}
-                onChange={event =>
-                  setEndDate(event.target.value)
-                }
+                onChange={event => setEndDate(event.target.value)}
               />
             </label>
           </div>
@@ -342,19 +333,33 @@ export default function Analytics({ transactions }: Props) {
             <h3>{periodLabel}</h3>
           </div>
 
+          <button
+            type="button"
+            onClick={exportPDF}
+            style={{
+              width: "100%",
+              padding: "13px",
+              marginBottom: "18px",
+              borderRadius: "10px",
+              border: "1px solid #34d399",
+              background: "#173b2d",
+              color: "#ffffff",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            ↓ Export PDF Report
+          </button>
+
           <div className="analytics-summary">
             <article className="analytics-card">
               <span>Total income</span>
-              <h3 className="income">
-                {currency(totalIncome)}
-              </h3>
+              <h3 className="income">{currency(totalIncome)}</h3>
             </article>
 
             <article className="analytics-card">
               <span>Total expenses</span>
-              <h3 className="expense">
-                {currency(totalExpenses)}
-              </h3>
+              <h3 className="expense">{currency(totalExpenses)}</h3>
             </article>
 
             <article className="analytics-card">
@@ -378,23 +383,17 @@ export default function Analytics({ transactions }: Props) {
               <div className="analytics-summary">
                 <article className="analytics-card">
                   <span>Yearly income</span>
-                  <h3 className="income">
-                    {currency(yearlyIncome)}
-                  </h3>
+                  <h3 className="income">{currency(yearlyIncome)}</h3>
                 </article>
 
                 <article className="analytics-card">
                   <span>Yearly expenses</span>
-                  <h3 className="expense">
-                    {currency(yearlyExpenses)}
-                  </h3>
+                  <h3 className="expense">{currency(yearlyExpenses)}</h3>
                 </article>
 
                 <article className="analytics-card">
                   <span>Yearly net savings</span>
-                  <h3>
-                    {currency(yearlyIncome - yearlyExpenses)}
-                  </h3>
+                  <h3>{currency(yearlyIncome - yearlyExpenses)}</h3>
                 </article>
               </div>
             </section>
@@ -435,9 +434,7 @@ export default function Analytics({ transactions }: Props) {
                       width={48}
                     />
                     <Tooltip
-                      formatter={(value) =>
-                        currency(Number(value))
-                      }
+                      formatter={value => currency(Number(value))}
                       contentStyle={{
                         background: "#111c17",
                         border: "1px solid #26352f",
@@ -497,9 +494,7 @@ export default function Analytics({ transactions }: Props) {
                       </Pie>
 
                       <Tooltip
-                        formatter={(value) =>
-                          currency(Number(value))
-                        }
+                        formatter={value => currency(Number(value))}
                         contentStyle={{
                           background: "#111c17",
                           border: "1px solid #26352f",
@@ -524,7 +519,6 @@ export default function Analytics({ transactions }: Props) {
                           background: COLORS[index % COLORS.length]
                         }}
                       />
-
                       <span>{item.name}</span>
                       <strong>{currency(item.value)}</strong>
                     </div>

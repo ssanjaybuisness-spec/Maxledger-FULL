@@ -1,3 +1,4 @@
+
 import type { AppData } from "../types";
 
 const money = (amount: number) =>
@@ -19,18 +20,7 @@ function escapeHTML(value: string): string {
   });
 }
 
-export function printFinancialReport(data: AppData): void {
-  const reportWindow = window.open("", "_blank");
-
-  if (!reportWindow) {
-    window.alert("Please allow pop-ups to generate your PDF report.");
-    return;
-  }
-
-  const transactions = [...data.transactions].sort(
-    (a, b) => b.date.localeCompare(a.date)
-  );
-
+function calculateTotals(transactions: AppData["transactions"]) {
   const income = transactions
     .filter(item => item.type === "income")
     .reduce((sum, item) => sum + item.amount, 0);
@@ -39,6 +29,17 @@ export function printFinancialReport(data: AppData): void {
     .filter(item => item.type === "expense")
     .reduce((sum, item) => sum + item.amount, 0);
 
+  return {
+    income,
+    expenses,
+    savings: income - expenses,
+    savingsRate: income > 0
+      ? ((income - expenses) / income) * 100
+      : 0
+  };
+}
+
+function getCategoryRows(transactions: AppData["transactions"]) {
   const categoryTotals: Record<string, number> = {};
 
   transactions
@@ -48,7 +49,7 @@ export function printFinancialReport(data: AppData): void {
         (categoryTotals[item.category] || 0) + item.amount;
     });
 
-  const categoryRows = Object.entries(categoryTotals)
+  return Object.entries(categoryTotals)
     .sort((a, b) => b[1] - a[1])
     .map(([category, amount]) => `
       <tr>
@@ -56,43 +57,29 @@ export function printFinancialReport(data: AppData): void {
         <td>${money(amount)}</td>
       </tr>
     `).join("");
+}
 
-  const transactionRows = transactions.map(item => `
-    <tr>
-      <td>${escapeHTML(item.date)}</td>
-      <td>${escapeHTML(item.title)}</td>
-      <td>${escapeHTML(item.category)}</td>
-      <td>${item.type === "income" ? "Income" : "Expense"}</td>
-      <td class="${item.type}">${money(item.amount)}</td>
-    </tr>
-  `).join("");
-
-  const monthlyTotals: Record<string, { income: number; expenses: number }> = {};
-
-  transactions.forEach(item => {
-    const month = item.date.slice(0, 7);
-
-    if (!monthlyTotals[month]) {
-      monthlyTotals[month] = { income: 0, expenses: 0 };
-    }
-
-    if (item.type === "income") {
-      monthlyTotals[month].income += item.amount;
-    } else {
-      monthlyTotals[month].expenses += item.amount;
-    }
-  });
-
-  const monthlyRows = Object.entries(monthlyTotals)
-    .sort((a, b) => b[0].localeCompare(a[0]))
-    .map(([month, totals]) => `
+function getTransactionRows(transactions: AppData["transactions"]) {
+  return [...transactions]
+    .sort((a, b) => b.date.localeCompare(a.date))
+    .map(item => `
       <tr>
-        <td>${escapeHTML(month)}</td>
-        <td class="income">${money(totals.income)}</td>
-        <td class="expense">${money(totals.expenses)}</td>
-        <td>${money(totals.income - totals.expenses)}</td>
+        <td>${escapeHTML(item.date)}</td>
+        <td>${escapeHTML(item.title)}</td>
+        <td>${escapeHTML(item.category)}</td>
+        <td>${item.type === "income" ? "Income" : "Expense"}</td>
+        <td class="${item.type}">${money(item.amount)}</td>
       </tr>
     `).join("");
+}
+
+function openReport(title: string, content: string): void {
+  const reportWindow = window.open("", "_blank");
+
+  if (!reportWindow) {
+    window.alert("Please allow pop-ups to generate your PDF report.");
+    return;
+  }
 
   reportWindow.document.write(`
     <!DOCTYPE html>
@@ -100,7 +87,7 @@ export function printFinancialReport(data: AppData): void {
     <head>
       <meta charset="UTF-8">
       <meta name="viewport" content="width=device-width, initial-scale=1">
-      <title>MaxLedger Financial Report</title>
+      <title>${escapeHTML(title)}</title>
       <style>
         body {
           font-family: Arial, sans-serif;
@@ -110,20 +97,20 @@ export function printFinancialReport(data: AppData): void {
           margin: auto;
         }
         h1 { margin-bottom: 5px; }
-        .subtitle { color: #64746a; margin-bottom: 28px; }
+        .subtitle { color: #64746a; margin-bottom: 24px; }
         .summary {
           display: grid;
-          grid-template-columns: repeat(3, 1fr);
+          grid-template-columns: repeat(2, 1fr);
           gap: 12px;
           margin: 20px 0 30px;
         }
-        .summary article {
+        .card {
           border: 1px solid #dce5df;
           border-radius: 10px;
           padding: 15px;
         }
-        .summary span { color: #64746a; font-size: 12px; }
-        .summary strong {
+        .card span { color: #64746a; font-size: 12px; }
+        .card strong {
           display: block;
           margin-top: 8px;
           font-size: 18px;
@@ -147,86 +134,198 @@ export function printFinancialReport(data: AppData): void {
         th { background: #edf4ef; }
         .income { color: #13834f; }
         .expense { color: #c04444; }
-        .empty { color: #78867d; padding: 12px 0; }
         .footer {
           margin-top: 35px;
           color: #78867d;
           font-size: 11px;
         }
+        button {
+          padding: 12px 18px;
+          border: 0;
+          border-radius: 8px;
+          background: #246b4b;
+          color: white;
+          font-weight: bold;
+        }
         @media print {
           body { padding: 0; }
-          .no-print { display: none; }
+          button { display: none; }
           tr { break-inside: avoid; }
         }
         @media (max-width: 600px) {
           body { padding: 12px; }
-          .summary { grid-template-columns: 1fr; }
           table { font-size: 10px; }
         }
       </style>
     </head>
     <body>
-      <h1>MaxLedger</h1>
-      <p class="subtitle">
-        Financial Report · Generated ${new Date().toLocaleString("en-IN")}
-      </p>
-
-      <div class="summary">
-        <article>
-          <span>Total income</span>
-          <strong class="income">${money(income)}</strong>
-        </article>
-        <article>
-          <span>Total expenses</span>
-          <strong class="expense">${money(expenses)}</strong>
-        </article>
-        <article>
-          <span>Net balance</span>
-          <strong>${money(income - expenses)}</strong>
-        </article>
-      </div>
-
-      <h2>Monthly Summary</h2>
-      ${monthlyRows
-        ? `<table>
-            <thead><tr>
-              <th>Month</th><th>Income</th><th>Expenses</th><th>Net</th>
-            </tr></thead>
-            <tbody>${monthlyRows}</tbody>
-          </table>`
-        : '<p class="empty">No monthly data available.</p>'}
-
-      <h2>Spending by Category</h2>
-      ${categoryRows
-        ? `<table>
-            <thead><tr><th>Category</th><th>Total spent</th></tr></thead>
-            <tbody>${categoryRows}</tbody>
-          </table>`
-        : '<p class="empty">No expenses recorded.</p>'}
-
-      <h2>Transaction History</h2>
-      ${transactionRows
-        ? `<table>
-            <thead><tr>
-              <th>Date</th><th>Title</th><th>Category</th>
-              <th>Type</th><th>Amount</th>
-            </tr></thead>
-            <tbody>${transactionRows}</tbody>
-          </table>`
-        : '<p class="empty">No transactions recorded.</p>'}
-
+      ${content}
       <p class="footer">
         Generated by MaxLedger. Keep this report private because it contains
         financial information.
       </p>
-
-      <button class="no-print" onclick="window.print()">
-        Print / Save as PDF
-      </button>
+      <button onclick="window.print()">Print / Save as PDF</button>
     </body>
     </html>
   `);
 
   reportWindow.document.close();
   reportWindow.focus();
+}
+
+export function printFinancialReport(data: AppData): void {
+  const transactions = [...data.transactions].sort(
+    (a, b) => b.date.localeCompare(a.date)
+  );
+
+  const totals = calculateTotals(transactions);
+
+  const monthlyTotals: Record<string, {
+    income: number;
+    expenses: number;
+  }> = {};
+
+  transactions.forEach(item => {
+    const month = item.date.slice(0, 7);
+
+    if (!monthlyTotals[month]) {
+      monthlyTotals[month] = { income: 0, expenses: 0 };
+    }
+
+    if (item.type === "income") {
+      monthlyTotals[month].income += item.amount;
+    } else {
+      monthlyTotals[month].expenses += item.amount;
+    }
+  });
+
+  const monthlyRows = Object.entries(monthlyTotals)
+    .sort((a, b) => b[0].localeCompare(a[0]))
+    .map(([month, values]) => `
+      <tr>
+        <td>${escapeHTML(month)}</td>
+        <td class="income">${money(values.income)}</td>
+        <td class="expense">${money(values.expenses)}</td>
+        <td>${money(values.income - values.expenses)}</td>
+      </tr>
+    `).join("");
+
+  const categoryRows = getCategoryRows(transactions);
+  const transactionRows = getTransactionRows(transactions);
+
+  openReport("MaxLedger Financial Report", `
+    <h1>MaxLedger</h1>
+    <p class="subtitle">
+      Financial Report · Generated ${new Date().toLocaleString("en-IN")}
+    </p>
+
+    <div class="summary">
+      <div class="card">
+        <span>Total income</span>
+        <strong class="income">${money(totals.income)}</strong>
+      </div>
+      <div class="card">
+        <span>Total expenses</span>
+        <strong class="expense">${money(totals.expenses)}</strong>
+      </div>
+      <div class="card">
+        <span>Net balance</span>
+        <strong>${money(totals.savings)}</strong>
+      </div>
+      <div class="card">
+        <span>Savings rate</span>
+        <strong>${totals.savingsRate.toFixed(1)}%</strong>
+      </div>
+    </div>
+
+    <h2>Monthly Summary</h2>
+    ${monthlyRows
+      ? `<table>
+          <thead><tr>
+            <th>Month</th><th>Income</th><th>Expenses</th><th>Net</th>
+          </tr></thead>
+          <tbody>${monthlyRows}</tbody>
+        </table>`
+      : "<p>No monthly data available.</p>"}
+
+    <h2>Spending by Category</h2>
+    ${categoryRows
+      ? `<table>
+          <thead><tr><th>Category</th><th>Total spent</th></tr></thead>
+          <tbody>${categoryRows}</tbody>
+        </table>`
+      : "<p>No expenses recorded.</p>"}
+
+    <h2>Transaction History</h2>
+    ${transactionRows
+      ? `<table>
+          <thead><tr>
+            <th>Date</th><th>Title</th><th>Category</th>
+            <th>Type</th><th>Amount</th>
+          </tr></thead>
+          <tbody>${transactionRows}</tbody>
+        </table>`
+      : "<p>No transactions recorded.</p>"}
+  `);
+}
+
+export function printPeriodFinancialReport(
+  transactions: AppData["transactions"],
+  periodLabel: string
+): void {
+  const sorted = [...transactions].sort(
+    (a, b) => b.date.localeCompare(a.date)
+  );
+
+  const totals = calculateTotals(sorted);
+  const categoryRows = getCategoryRows(sorted);
+  const transactionRows = getTransactionRows(sorted);
+
+  openReport(`MaxLedger - ${periodLabel}`, `
+    <h1>MaxLedger</h1>
+    <p class="subtitle">
+      Financial Report · ${escapeHTML(periodLabel)}
+    </p>
+    <p class="subtitle">
+      Generated ${new Date().toLocaleString("en-IN")}
+    </p>
+
+    <div class="summary">
+      <div class="card">
+        <span>Total income</span>
+        <strong class="income">${money(totals.income)}</strong>
+      </div>
+      <div class="card">
+        <span>Total expenses</span>
+        <strong class="expense">${money(totals.expenses)}</strong>
+      </div>
+      <div class="card">
+        <span>Net savings</span>
+        <strong>${money(totals.savings)}</strong>
+      </div>
+      <div class="card">
+        <span>Savings rate</span>
+        <strong>${totals.savingsRate.toFixed(1)}%</strong>
+      </div>
+    </div>
+
+    <h2>Spending by Category</h2>
+    ${categoryRows
+      ? `<table>
+          <thead><tr><th>Category</th><th>Total spent</th></tr></thead>
+          <tbody>${categoryRows}</tbody>
+        </table>`
+      : "<p>No expenses recorded.</p>"}
+
+    <h2>Transaction History</h2>
+    ${transactionRows
+      ? `<table>
+          <thead><tr>
+            <th>Date</th><th>Title</th><th>Category</th>
+            <th>Type</th><th>Amount</th>
+          </tr></thead>
+          <tbody>${transactionRows}</tbody>
+        </table>`
+      : "<p>No transactions recorded.</p>"}
+  `);
 }

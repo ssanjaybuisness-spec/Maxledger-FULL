@@ -772,20 +772,23 @@ function deleteTransaction(id: string) {
             <span>Create and restore snapshots of your MaxLedger data.</span>
           </section>
 
-          <BackupManager
-            currentData={data}
-            onRestore={restoredData => {
-              setData({
-                ...restoredData,
-                budgets: restoredData.budgets || []
-              });
-              setSearch("");
-              setFilter("all");
-              setActiveTab("home");
-            }}
-          />
-        </section>
-      )}
+          
+<BackupManager
+  currentData={data}
+  onRestore={restoredData => {
+    setData({
+      ...restoredData,
+      budgets: restoredData.budgets || [],
+      deletedTransactionIds:
+        restoredData.deletedTransactionIds || []
+    });
+
+    setSearch("");
+    setFilter("all");
+    setActiveTab("home");
+  }}
+/>
+
 
       <nav className="bottom-nav">
         <button

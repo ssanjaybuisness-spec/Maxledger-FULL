@@ -711,7 +711,7 @@ export default function App() {
         </section>
       )}
 
-      <nav className="bottom-nav">
+            <nav className="bottom-nav">
         <button
           type="button"
           className={`nav-item ${activeTab === "home" ? "active" : ""}`}
@@ -723,17 +723,49 @@ export default function App() {
 
         <button
           type="button"
-          className={`nav-item ${activeTab === "home" && filter === "income" ? "active" : ""}`}
-          onClick={() => {
-            setActiveTab("home");
-            setFilter("income");
-          }}
+          className={`nav-item ${activeTab === "pending" ? "active" : ""}`}
+          onClick={() => setActiveTab("pending")}
         >
-          <TrendingUp />
-          <span>Income</span>
+          <Clock />
+          <span>Pending</span>
         </button>
 
         <button
           type="button"
-          className={`nav-item ${activeTab === "home" && filter === "expense" ? "active" : ""}`}
-          onClick={() 
+          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          <Tags />
+          <span>Categories</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
+          onClick={() => setActiveTab("budgets")}
+        >
+          <Wallet />
+          <span>Budgets</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
+          onClick={() => setActiveTab("analytics")}
+        >
+          <BarChart3 />
+          <span>Analytics</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "backups" ? "active" : ""}`}
+          onClick={() => setActiveTab("backups")}
+        >
+          <Download />
+          <span>Backups</span>
+        </button>
+      </nav>
+    </main>
+  );
+}

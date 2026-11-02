@@ -1157,3 +1157,485 @@ button:disabled {
     padding-top: 35px;
   }
 }
+/* =================================
+   MAXLEDGER — PREMIUM UI REDESIGN
+================================= */
+
+:root {
+  color: #f3f0e6;
+  background: #0b0d0b;
+  --bg: #0b0d0b;
+  --surface: #141713;
+  --surface-2: #1b2018;
+  --border: rgba(211, 218, 190, .11);
+  --muted: #9b9d8e;
+  --green: #a7b879;
+  --green-dark: #29321e;
+  --red: #e58c82;
+  --beige: #e7dfc9;
+}
+
+html, body {
+  background: #0b0d0b;
+}
+
+body {
+  background:
+    radial-gradient(ellipse at 50% -18%, rgba(129,148,83,.16), transparent 43%),
+    #0b0d0b;
+}
+
+.app-shell {
+  max-width: 560px;
+  padding: 22px 19px calc(112px + env(safe-area-inset-bottom));
+}
+
+.topbar {
+  padding: 5px 0 17px;
+}
+
+.brand-icon {
+  width: 46px;
+  height: 46px;
+  border-radius: 15px;
+  color: #171b10;
+  background: linear-gradient(145deg,#c1ce91,#899b5b);
+  box-shadow: 0 7px 24px rgba(167,184,121,.18);
+}
+
+.brand h1 {
+  color: #f1eddf;
+  font-size: 21px;
+  letter-spacing: -.9px;
+}
+
+.brand p {
+  color: #a4a58f;
+  letter-spacing: 2px;
+}
+
+.icon-button {
+  border-color: var(--border);
+  border-radius: 14px;
+  color: #d8dcc8;
+  background: rgba(25,29,22,.88);
+}
+
+.welcome {
+  margin: 27px 0 22px;
+}
+
+.welcome > p,
+.section-heading > div > p,
+.custom-eyebrow {
+  color: #b4c48a;
+  letter-spacing: 1.8px;
+}
+
+.welcome h2 {
+  color: #f0ecdf;
+  font-size: 29px;
+  line-height: 1.12;
+  letter-spacing: -1.25px;
+}
+
+.welcome span {
+  color: #a6a696;
+  font-size: 13px;
+}
+
+.custom-dashboard {
+  gap: 14px;
+  margin-bottom: 28px;
+}
+
+.custom-dashboard-top {
+  padding: 2px 1px;
+}
+
+.custom-dashboard-top h2 {
+  color: #eeeadd;
+  font-size: 20px;
+}
+
+.custom-settings-button,
+.widget-size-button {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  color: #d4d6c6;
+  background: #171b14;
+}
+
+.custom-settings-button.selected {
+  color: #d5e1ae;
+  border-color: #68794a;
+  background: #28321e;
+}
+
+.custom-widget-list {
+  gap: 13px;
+}
+
+.custom-widget {
+  padding: 20px;
+  border: 1px solid var(--border);
+  border-radius: 22px;
+  background: linear-gradient(145deg,rgba(27,31,23,.98),rgba(18,21,17,.98));
+  box-shadow: 0 12px 28px rgba(0,0,0,.15);
+}
+
+.custom-widget:first-child {
+  border: 1px solid rgba(183,199,132,.28);
+  background:
+    radial-gradient(circle at 100% 0%, rgba(190,205,137,.2), transparent 45%),
+    linear-gradient(135deg,#303b25,#1c2518 76%);
+  box-shadow: 0 14px 34px rgba(0,0,0,.22);
+}
+
+.custom-widget-title {
+  color: #c1c5ad;
+}
+
+.custom-widget-title svg {
+  color: #b4c48a;
+}
+
+.custom-widget-title h3 {
+  font-size: 12px;
+  letter-spacing: .15px;
+}
+
+.custom-balance {
+  font-size: clamp(30px,8vw,38px);
+  letter-spacing: -1.6px;
+}
+
+.custom-widget:first-child .custom-balance {
+  color: #f3f0e5;
+}
+
+.custom-muted {
+  color: #a6a895;
+  font-size: 12px;
+}
+
+.custom-balance-details {
+  border-color: rgba(255,255,255,.13);
+}
+
+.custom-balance-details span {
+  color: #c0c7a7;
+  font-size: 11px;
+}
+
+.custom-balance-details strong {
+  color: #f1eedf;
+  font-size: 15px;
+}
+
+.custom-transaction-icon {
+  width: 39px;
+  height: 39px;
+  border-radius: 13px;
+}
+
+.custom-transaction-icon.income {
+  color: #c1d49a;
+  background: #303c25;
+}
+
+.custom-transaction-icon.expense {
+  color: #e6a098;
+  background: #3b2724;
+}
+
+.custom-transaction-info strong {
+  color: #eeecdf;
+  font-size: 12px;
+}
+
+.custom-transaction-info span {
+  color: #a4a596;
+  font-size: 10px;
+}
+
+.custom-recent-row > strong {
+  font-size: 12px;
+}
+
+.custom-recent-row > strong.income {
+  color: #c0d396;
+}
+
+.custom-recent-row > strong.expense {
+  color: #e69a91;
+}
+
+.custom-pending-row {
+  border-color: var(--border);
+}
+
+.custom-pending-row span {
+  color: #d2d1c3;
+}
+
+.custom-pending-row strong {
+  color: #e9e6d9;
+}
+
+.section-heading {
+  margin: 28px 0 16px;
+}
+
+.section-heading h2 {
+  color: #f0ecdf;
+  font-size: 19px;
+}
+
+.add-button,
+.submit-button {
+  min-height: 43px;
+  border-radius: 13px;
+  color: #171b11;
+  background: linear-gradient(135deg,#c0cc91,#94a66a);
+  box-shadow: 0 6px 17px rgba(151,173,103,.13);
+  font-size: 12px;
+}
+
+.transaction-form,
+.export-panel,
+.pending-card,
+.dashboard-editor {
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: linear-gradient(145deg,#191d16,#131610);
+}
+
+.transaction-form {
+  padding: 20px;
+}
+
+.transaction-form input,
+.transaction-form select,
+.pending-module input,
+.pending-module select,
+.pending-module textarea,
+.category-manager input,
+.category-manager select,
+.category-manager textarea,
+.analytics-page select,
+.analytics-page input {
+  border: 1px solid rgba(211,218,190,.15);
+  border-radius: 12px;
+  color: #f0eddf;
+  background: #0e110d;
+}
+
+.transaction-search {
+  border-color: var(--border);
+  border-radius: 14px;
+  background: #151912;
+}
+
+.filter-tabs button {
+  border-color: var(--border);
+  border-radius: 22px;
+  background: #171b14;
+  color: #c0c1b1;
+}
+
+.filter-tabs button.filter-active {
+  border-color: #788a53;
+  color: #d7e3b2;
+  background: #2a351f;
+}
+
+.transaction-row {
+  border-color: var(--border);
+  padding: 16px 2px;
+}
+
+.transaction-info h3 {
+  color: #efecdf;
+  font-size: 13px;
+}
+
+.transaction-info p {
+  color: #a2a493;
+}
+
+.transaction-icon.income {
+  color: #c0d396;
+  background: #303c25;
+}
+
+.transaction-icon.expense {
+  color: #e69a91;
+  background: #3b2724;
+}
+
+.row-action {
+  border-radius: 10px;
+  background: #22271d;
+}
+
+.export-panel {
+  padding: 19px;
+}
+
+.export-panel h3 {
+  color: #eeeadd;
+  font-size: 14px;
+}
+
+.export-panel p {
+  color: #a5a694;
+  font-size: 11px;
+}
+
+.export-panel .add-button {
+  color: #d8ddc6;
+  border: 1px solid var(--border);
+  background: #22281c;
+  box-shadow: none;
+}
+
+.pending-summary {
+  border: 1px solid rgba(177,196,126,.22);
+  border-radius: 21px;
+  background: linear-gradient(135deg,#303c25,#1c2819);
+}
+
+.pending-summary p {
+  color: #d1d8b9;
+}
+
+.pending-summary h2 {
+  color: #d0dfa5;
+}
+
+.pending-card {
+  padding: 19px;
+}
+
+.pending-card h3,
+.pending-amounts strong {
+  color: #efecdf;
+}
+
+.pending-card p,
+.pending-amounts span {
+  color: #a7a897;
+}
+
+.pending-amounts div {
+  border: 1px solid var(--border);
+  border-radius: 13px;
+  background: #11150f;
+}
+
+.payment-status.paid {
+  color: #d5e2b4;
+  background: #303c25;
+}
+
+.payment-status.pending {
+  color: #e8d49a;
+  background: #3a321e;
+}
+
+.payment-status.partially_paid {
+  color: #b7d6d0;
+  background: #203632;
+}
+
+.payment-status.overdue {
+  color: #efb0a8;
+  background: #402725;
+}
+
+.budget-progress {
+  background: #30352a;
+}
+
+.budget-progress-fill {
+  background: linear-gradient(90deg,#829755,#c0ce91);
+}
+
+.empty-state {
+  border-color: rgba(211,218,190,.2);
+  border-radius: 20px;
+}
+
+.empty-icon {
+  color: #c6d59e;
+  background: #303c25;
+}
+
+.bottom-nav {
+  max-width: 560px;
+  gap: 3px;
+  padding: 11px 8px calc(12px + env(safe-area-inset-bottom));
+  border-top: 1px solid rgba(211,218,190,.13);
+  background: rgba(15,18,13,.94);
+  backdrop-filter: blur(22px);
+}
+
+.nav-item {
+  color: #898d7b;
+  font-size: 9px;
+}
+
+.nav-item.active {
+  color: #c2d394;
+}
+
+.nav-item.active svg {
+  filter: drop-shadow(0 0 7px rgba(190,207,137,.28));
+}
+
+.signed-in-bar {
+  border-color: var(--border);
+  color: #a7a897;
+}
+
+.signed-in-bar button {
+  border-color: var(--border);
+  color: #c6d59e;
+  background: #1a2015;
+}
+
+.auth-card {
+  border-radius: 24px;
+  background: linear-gradient(145deg,#1b2017,#12150f);
+}
+
+.auth-card .brand-icon {
+  margin: 0 auto;
+}
+
+button {
+  transition: transform .16s ease, filter .16s ease, border-color .16s ease;
+}
+
+button:active {
+  transform: scale(.97);
+}
+
+button:focus-visible,
+input:focus-visible,
+select:focus-visible {
+  outline: 2px solid #b7c987;
+  outline-offset: 2px;
+}
+
+@media (max-width: 380px) {
+  .app-shell {
+    padding-right: 16px;
+    padding-left: 16px;
+  }
+
+  .welcome h2 {
+    font-size: 26px;
+  }
+}

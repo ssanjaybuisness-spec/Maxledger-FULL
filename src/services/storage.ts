@@ -1,4 +1,3 @@
-
 import { Preferences } from "@capacitor/preferences";
 import type { AppData, Category } from "../types";
 
@@ -6,7 +5,8 @@ import {
   auth,
   getCloudData,
   saveCloudData,
-  createCloudBackup
+  createCloudBackup,
+  createAutomaticCloudBackup
 } from "./firebase";
 
 const LEGACY_STORAGE_KEY = "maxledger_data_v1";
@@ -137,7 +137,6 @@ async function readLocalData(): Promise<AppData> {
 
   const user = auth.currentUser;
 
-  // Only the primary account may inherit old shared local data.
   if (user?.email?.toLowerCase() === PRIMARY_EMAIL.toLowerCase()) {
     const legacyData = await readFromKey(LEGACY_STORAGE_KEY);
 
@@ -207,7 +206,6 @@ export async function loadData(): Promise<AppData> {
 export async function saveData(
   data: AppData
 ): Promise<"synced" | "local-only"> {
-  // Save locally first so the user's data remains available offline.
   await writeLocalData(data);
 
   const user = auth.currentUser;
@@ -215,18 +213,14 @@ export async function saveData(
   if (!user) return "local-only";
 
   try {
-    // Update the current cloud data.
     await saveCloudData(user.uid, data);
 
-    // Create a separate historical backup.
+    // Automatic backup: at most once per UTC calendar day.
     try {
-      await createCloudBackup(user.uid, data);
+      await createAutomaticCloudBackup(user.uid, data);
     } catch (backupError) {
-      console.error("Cloud backup failed:", backupError);
-
-      throw new Error(
-        "Cloud data synced, but automatic backup failed. Your local data is safe."
-      );
+      console.error("Automatic backup failed:", backupError);
+      // Cloud data is already saved, so don't report the sync as failed.
     }
 
     return "synced";
@@ -237,7 +231,7 @@ export async function saveData(
       error instanceof Error ? error.message : String(error);
 
     throw new Error(
-      "Local data is safe, but cloud sync or backup failed: " + message
+      "Local data is safe, but cloud sync failed: " + message
     );
   }
 }

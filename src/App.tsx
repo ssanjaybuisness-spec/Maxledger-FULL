@@ -754,4 +754,112 @@ export default function App() {
         </section>
       )}
 
-      {activeTab === "anal
+            {activeTab === "analytics" && (
+        <Analytics transactions={data.transactions} />
+      )}
+
+      {activeTab === "backups" && (
+        <section className="pending-page">
+          <section className="welcome">
+            <p>CLOUD BACKUP</p>
+            <h2>Your backups.</h2>
+            <span>Create and restore snapshots of your MaxLedger data.</span>
+          </section>
+
+          <BackupManager
+            currentData={data}
+            onRestore={restoredData => {
+              setData({
+                ...restoredData,
+                budgets: restoredData.budgets || []
+              });
+              setSearch("");
+              setFilter("all");
+              setActiveTab("home");
+            }}
+          />
+        </section>
+      )}
+
+      <nav className="bottom-nav">
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "home" ? "active" : ""}`}
+          onClick={() => setActiveTab("home")}
+        >
+          <LayoutDashboard />
+          <span>Home</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "home" && filter === "income" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("home");
+            setFilter("income");
+          }}
+        >
+          <TrendingUp />
+          <span>Income</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "home" && filter === "expense" ? "active" : ""}`}
+          onClick={() => {
+            setActiveTab("home");
+            setFilter("expense");
+          }}
+        >
+          <TrendingDown />
+          <span>Expenses</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "pending" ? "active" : ""}`}
+          onClick={() => setActiveTab("pending")}
+        >
+          <Clock />
+          <span>Pending</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "budgets" ? "active" : ""}`}
+          onClick={() => setActiveTab("budgets")}
+        >
+          <ChartPie />
+          <span>Budgets</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "analytics" ? "active" : ""}`}
+          onClick={() => setActiveTab("analytics")}
+        >
+          <BarChart3 />
+          <span>Analytics</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "categories" ? "active" : ""}`}
+          onClick={() => setActiveTab("categories")}
+        >
+          <Tags />
+          <span>Categories</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "backups" ? "active" : ""}`}
+          onClick={() => setActiveTab("backups")}
+        >
+          <Download />
+          <span>Backups</span>
+        </button>
+      </nav>
+    </main>
+  );
+}

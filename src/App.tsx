@@ -384,7 +384,7 @@ export default function App() {
 
           <div>
             <h1>MaxLedger</h1>
-            <p>FINANCE</p>
+            <small className="brand-credit">Made by Sanjay S</small>
           </div>
         </div>
 
@@ -712,6 +712,10 @@ export default function App() {
       )}
 <footer className="app-branding">
   <span>Branding by</span> <strong>Sanjay S</strong>
+</footer>
+      <footer className="app-branding">
+  <span>Made by</span>
+  <strong>Sanjay S</strong>
 </footer>
       <nav className="bottom-nav">
         <button

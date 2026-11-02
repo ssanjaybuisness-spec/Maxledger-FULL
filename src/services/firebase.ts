@@ -59,8 +59,9 @@ googleProvider.setCustomParameters({
 export async function signInWithGoogle() {
   if (Capacitor.isNativePlatform()) {
     const result = await FirebaseAuthentication.signInWithGoogle({
-      skipNativeAuth: true
-    });
+  skipNativeAuth: true,
+  useCredentialManager: false
+});
 
     const idToken = result.credential?.idToken;
 

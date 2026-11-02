@@ -56,13 +56,13 @@ jobs:
         run: npx cap sync android
 
       - name: Prepare Android signing key directory
-        run: mkdir -p "$HOME/.android"
+        run: mkdir -p "$HOME/.config/.android"
 
       - name: Restore persistent Android debug key
         uses: actions/cache@v4
         with:
-          path: ~/.android/debug.keystore
-          key: maxledger-android-debug-keystore-v1
+          path: ~/.config/.android/debug.keystore
+          key: maxledger-android-debug-keystore-v2
 
       - name: Build APK
         run: |

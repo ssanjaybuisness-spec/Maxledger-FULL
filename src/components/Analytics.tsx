@@ -12,7 +12,7 @@ import {
   Legend,
   CartesianGrid
 } from "recharts";
-import type { Transaction, AppData } from "../types";
+import type { Transaction } from "../types";
 import { printPeriodFinancialReport } from "../services/report";
 
 interface Props {

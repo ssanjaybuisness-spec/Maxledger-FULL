@@ -1,15 +1,9 @@
 import { useMemo, useState } from "react";
 import {
-  Users,
-  Plus,
-  Trash2,
-  Pencil,
-  Copy,
-  CheckCircle2,
-  X,
-  Save
+  Plus, X, Pencil, Copy, Trash2, Check, Users,
+  Wallet, CalendarDays, ChevronDown, ChevronUp,
+  ReceiptText, Save
 } from "lucide-react";
-
 import type {
   CashDistribution,
   DistributionMember,
@@ -27,34 +21,24 @@ interface Props {
 type SplitMode = "equal" | "custom";
 
 const today = () => {
-  const date = new Date();
-  const year = date.getFullYear();
-  const month = String(date.getMonth() + 1).padStart(2, "0");
-  const day = String(date.getDate()).padStart(2, "0");
-  return `${year}-${month}-${day}`;
+  const d = new Date();
+  return `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
 };
 
-const money = (amount: number) =>
-  `₹${amount.toLocaleString("en-IN", {
-    minimumFractionDigits: 0,
-    maximumFractionDigits: 2
-  })}`;
+const id = () => crypto.randomUUID();
 
-const paidAmount = (member: DistributionMember) =>
-  (member.payments || []).reduce((sum, payment) => sum + payment.amount, 0);
+const money = (n: number) =>
+  `₹${Number(n || 0).toLocaleString("en-IN", { maximumFractionDigits: 2 })}`;
 
-const remainingAmount = (member: DistributionMember) =>
-  Math.max(0, member.allocatedAmount - paidAmount(member));
+const paid = (m: DistributionMember) =>
+  (m.payments || []).reduce((s, p) => s + Number(p.amount || 0), 0);
 
-const paymentStatus = (member: DistributionMember) => {
-  const paid = paidAmount(member);
+const pending = (m: DistributionMember) =>
+  Math.max(0, m.allocatedAmount - paid(m));
 
-  if (paid >= member.allocatedAmount) return "Paid";
-  if (paid > 0) return "Partially paid";
-  return "Unpaid";
-};
-
-const makeId = () => crypto.randomUUID();
+const status = (m: DistributionMember) =>
+  paid(m) >= m.allocatedAmount ? "Paid" :
+    paid(m) > 0 ? "Partially paid" : "Unpaid";
 
 export default function CashDistribution({
   distributions,
@@ -62,963 +46,1018 @@ export default function CashDistribution({
   onDistributionsChange,
   onTeamMembersChange
 }: Props) {
-  const [showForm, setShowForm] = useState(false);
+  const [formOpen, setFormOpen] = useState(false);
   const [editingId, setEditingId] = useState<string | null>(null);
-
   const [eventName, setEventName] = useState("");
   const [eventDate, setEventDate] = useState(today());
-  const [eventNotes, setEventNotes] = useState("");
-
-  const [splitMode, setSplitMode] = useState<SplitMode>("equal");
-  const [totalBudget, setTotalBudget] = useState("");
-  const [selectedMembers, setSelectedMembers] = useState<string[]>([]);
-  const [customAmounts, setCustomAmounts] = useState<Record<string, string>>({});
-  const [newMemberName, setNewMemberName] = useState("");
-
-  const [reportTab, setReportTab] = useState<"events" | "members">("events");
-  const [selectedReportMember, setSelectedReportMember] = useState("all");
+  const [notes, setNotes] = useState("");
+  const [split, setSplit] = useState<SplitMode>("equal");
+  const [total, setTotal] = useState("");
+  const [selected, setSelected] = useState<string[]>([]);
+  const [amounts, setAmounts] = useState<Record<string, string>>({});
+  const [memberName, setMemberName] = useState("");
+  const [memberSearch, setMemberSearch] = useState("");
+  const [expanded, setExpanded] = useState<string | null>(null);
+  const [report, setReport] = useState<"events" | "members">("events");
+  const [reportMember, setReportMember] = useState("all");
 
   const [paymentTarget, setPaymentTarget] = useState<{
-  distributionId: string;
-  memberId: string;
-} | null>(null);
+    eventId: string; memberId: string;
+  } | null>(null);
 
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState(today());
-  const [paymentReference, setPaymentReference] = useState("");
+  const [paymentNote, setPaymentNote] = useState("");
 
-  const totalAllocated = (distribution: CashDistribution) =>
-    distribution.members.reduce(
-      (sum, member) => sum + member.allocatedAmount,
-      0
-    );
+  const eventAllocated = (e: CashDistribution) =>
+    e.members.reduce((s, m) => s + m.allocatedAmount, 0);
 
-  const totalPaid = (distribution: CashDistribution) =>
-    distribution.members.reduce(
-      (sum, member) => sum + paidAmount(member),
-      0
-    );
+  const eventPaid = (e: CashDistribution) =>
+    e.members.reduce((s, m) => s + paid(m), 0);
 
-  const totalPending = (distribution: CashDistribution) =>
-    distribution.members.reduce(
-      (sum, member) => sum + remainingAmount(member),
-      0
-    );
+  const eventPending = (e: CashDistribution) =>
+    e.members.reduce((s, m) => s + pending(m), 0);
 
-  const allPaid = distributions.reduce(
-    (sum, event) => sum + totalPaid(event),
-    0
-  );
+  const totalPaid = distributions.reduce((s, e) => s + eventPaid(e), 0);
+  const totalPending = distributions.reduce((s, e) => s + eventPending(e), 0);
 
-  const allPending = distributions.reduce(
-    (sum, event) => sum + totalPending(event),
-    0
-  );
-
-  const uniqueMemberCount = new Set(
-    distributions.flatMap(event =>
-      event.members.map(member => member.teamMemberId)
-    )
+  const memberCount = new Set(
+    distributions.flatMap(e => e.members.map(m => m.teamMemberId))
   ).size;
 
-  const memberHistory = useMemo(() => {
-    const rows = teamMembers.map(member => {
-      const events = distributions.flatMap(event =>
-        event.members
-          .filter(item => item.teamMemberId === member.id)
-          .map(item => ({
-            eventName: event.eventName,
-            eventDate: event.eventAttendedDate,
-            allocated: item.allocatedAmount,
-            paid: paidAmount(item),
-            pending: remainingAmount(item),
-            payments: item.payments || []
-          }))
-      );
+  const memberReports = useMemo(() => teamMembers.map(member => {
+    const rows = distributions.flatMap(event =>
+      event.members.filter(m => m.teamMemberId === member.id).map(m => ({
+        event: event.eventName,
+        date: event.eventAttendedDate,
+        allocated: m.allocatedAmount,
+        paid: paid(m),
+        pending: pending(m)
+      }))
+    );
 
-      return {
-        id: member.id,
-        name: member.name,
-        totalAllocated: events.reduce(
-          (sum, item) => sum + item.allocated,
-          0
-        ),
-        totalPaid: events.reduce(
-          (sum, item) => sum + item.paid,
-          0
-        ),
-        totalPending: events.reduce(
-          (sum, item) => sum + item.pending,
-          0
-        ),
-        events
-      };
-    });
+    return {
+      ...member,
+      rows,
+      allocated: rows.reduce((s, r) => s + r.allocated, 0),
+      paid: rows.reduce((s, r) => s + r.paid, 0),
+      pending: rows.reduce((s, r) => s + r.pending, 0)
+    };
+  }), [teamMembers, distributions]);
 
-    return rows;
-  }, [teamMembers, distributions]);
-
-  function resetForm() {
-    setShowForm(false);
+  function reset() {
+    setFormOpen(false);
     setEditingId(null);
     setEventName("");
     setEventDate(today());
-    setEventNotes("");
-    setSplitMode("equal");
-    setTotalBudget("");
-    setSelectedMembers([]);
-    setCustomAmounts({});
-    setNewMemberName("");
+    setNotes("");
+    setSplit("equal");
+    setTotal("");
+    setSelected([]);
+    setAmounts({});
+    setMemberName("");
+    setMemberSearch("");
   }
 
-  function startNewEvent() {
-    resetForm();
-    setShowForm(true);
+  function startNew() {
+    reset();
+    setFormOpen(true);
   }
 
-  function addTeamMember() {
-    const name = newMemberName.trim();
-
+  function addMember() {
+    const name = memberName.trim();
     if (!name) return;
 
     const existing = teamMembers.find(
-      member => member.name.toLowerCase() === name.toLowerCase()
+      m => m.name.toLowerCase() === name.toLowerCase()
     );
 
     if (existing) {
-      if (!selectedMembers.includes(existing.id)) {
-        setSelectedMembers(current => [...current, existing.id]);
-      }
-
-      setNewMemberName("");
+      setSelected(prev =>
+        prev.includes(existing.id) ? prev : [...prev, existing.id]
+      );
+      setMemberName("");
       return;
     }
 
     const now = Date.now();
 
     const member: TeamMember = {
-      id: makeId(),
+      id: id(),
       name,
       createdAt: now,
       updatedAt: now
     };
 
     onTeamMembersChange([...teamMembers, member]);
-    setSelectedMembers(current => [...current, member.id]);
-    setNewMemberName("");
+    setSelected(prev => [...prev, member.id]);
+    setMemberName("");
   }
 
   function toggleMember(memberId: string) {
-    setSelectedMembers(current =>
-      current.includes(memberId)
-        ? current.filter(id => id !== memberId)
-        : [...current, memberId]
+    setSelected(prev => prev.includes(memberId)
+      ? prev.filter(x => x !== memberId)
+      : [...prev, memberId]
     );
   }
 
-  function editEvent(distribution: CashDistribution) {
-    setEditingId(distribution.id);
-    setEventName(distribution.eventName);
-    setEventDate(distribution.eventAttendedDate || today());
-    setEventNotes(distribution.notes || "");
-    setSplitMode("custom");
-    setSelectedMembers(
-      distribution.members.map(member => member.teamMemberId)
-    );
+  function editEvent(event: CashDistribution) {
+    setEditingId(event.id);
+    setEventName(event.eventName);
+    setEventDate(event.eventAttendedDate || today());
+    setNotes(event.notes || "");
+    setSplit("custom");
+    setSelected(event.members.map(m => m.teamMemberId));
 
-    const amounts: Record<string, string> = {};
+    setAmounts(Object.fromEntries(event.members.map(m => [
+      m.teamMemberId, String(m.allocatedAmount)
+    ])));
 
-    distribution.members.forEach(member => {
-      amounts[member.teamMemberId] = String(member.allocatedAmount);
-    });
-
-    setCustomAmounts(amounts);
-    setTotalBudget(String(totalAllocated(distribution)));
-    setShowForm(true);
+    setTotal(String(eventAllocated(event)));
+    setFormOpen(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
 
-  function duplicateEvent(distribution: CashDistribution) {
+  function duplicateEvent(event: CashDistribution) {
     setEditingId(null);
-    setEventName(`${distribution.eventName} (Copy)`);
+    setEventName(`${event.eventName} copy`);
     setEventDate(today());
-    setEventNotes(distribution.notes || "");
-    setSplitMode("custom");
-    setSelectedMembers(
-      distribution.members.map(member => member.teamMemberId)
-    );
+    setNotes(event.notes || "");
+    setSplit("custom");
+    setSelected(event.members.map(m => m.teamMemberId));
 
-    const amounts: Record<string, string> = {};
+    setAmounts(Object.fromEntries(event.members.map(m => [
+      m.teamMemberId, String(m.allocatedAmount)
+    ])));
 
-    distribution.members.forEach(member => {
-      amounts[member.teamMemberId] = String(member.allocatedAmount);
-    });
-
-    setCustomAmounts(amounts);
-    setTotalBudget(String(totalAllocated(distribution)));
-    setShowForm(true);
+    setTotal(String(eventAllocated(event)));
+    setFormOpen(true);
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }
-
-  function saveEvent(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+    function saveEvent(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
     const name = eventName.trim();
+    const eventTotal = Math.round(Number(total) * 100) / 100;
 
-    if (!name || !eventDate || selectedMembers.length === 0) {
-      window.alert("Enter an event name, date, and select at least one member.");
+    if (!name || !eventDate || selected.length === 0) {
+      alert("Enter an event name, date, and select at least one team member.");
       return;
     }
 
-    const selected = teamMembers.filter(member =>
-      selectedMembers.includes(member.id)
-    );
-
-    if (selected.length === 0) {
-      window.alert("Please select at least one team member.");
+    if (split === "equal" && (!eventTotal || eventTotal <= 0)) {
+      alert("Enter a valid total amount.");
       return;
     }
 
-    let allocations: Record<string, number> = {};
+    const old = distributions.find((event) => event.id === editingId);
 
-    if (splitMode === "equal") {
-      const amount = Number(totalBudget);
+    const eventMembers: DistributionMember[] = selected.map(
+      (memberId, index) => {
+        const teamMember = teamMembers.find((member) => member.id === memberId);
+        const oldMember = old?.members.find(
+          (member) => member.teamMemberId === memberId
+        );
 
-      if (!Number.isFinite(amount) || amount <= 0) {
-        window.alert("Enter a valid total amount.");
-        return;
-      }
+        let allocatedAmount = 0;
 
-      const base = Math.floor((amount / selected.length) * 100) / 100;
-      let assigned = 0;
+        if (split === "equal") {
+          const totalCents = Math.round(eventTotal * 100);
+          const baseCents = Math.floor(totalCents / selected.length);
+          const remainder = totalCents - baseCents * selected.length;
 
-      selected.forEach((member, index) => {
-        const value =
-          index === selected.length - 1
-            ? Math.round((amount - assigned) * 100) / 100
-            : base;
-
-        allocations[member.id] = value;
-        assigned += value;
-      });
-    } else {
-      for (const member of selected) {
-        const amount = Number(customAmounts[member.id] || 0);
-
-        if (!Number.isFinite(amount) || amount < 0) {
-          window.alert(`Enter a valid amount for ${member.name}.`);
-          return;
+          allocatedAmount =
+            (baseCents + (index === selected.length - 1 ? remainder : 0)) /
+            100;
+        } else {
+          allocatedAmount =
+            Math.round(Number(amounts[memberId] || 0) * 100) / 100;
         }
 
-        allocations[member.id] = amount;
+        return {
+          teamMemberId: memberId,
+          name: teamMember?.name || oldMember?.name || "Unknown member",
+          allocatedAmount,
+          payments: oldMember?.payments || [],
+        };
       }
+    );
+
+    if (
+      split === "custom" &&
+      eventMembers.some((member) => member.allocatedAmount < 0)
+    ) {
+      alert("Amounts cannot be negative.");
+      return;
     }
 
     const now = Date.now();
 
-    const existing = distributions.find(
-      item => item.id === editingId
-    );
-
-    const members: DistributionMember[] = selected.map(member => {
-      const oldMember = existing?.members.find(
-        item => item.teamMemberId === member.id
-      );
-
-      return {
-        id: oldMember?.id || makeId(),
-        teamMemberId: member.id,
-        memberName: member.name,
-        allocatedAmount: allocations[member.id] || 0,
-        payments: oldMember?.payments || [],
-        notes: oldMember?.notes
-      };
-    });
-
-    const updatedEvent: CashDistribution = {
-      id: editingId || makeId(),
+    const updated: CashDistribution = {
+      id: editingId || id(),
       eventName: name,
       eventAttendedDate: eventDate,
-      members,
-      notes: eventNotes.trim() || undefined,
-      createdAt: existing?.createdAt || now,
-      updatedAt: now
+      members: eventMembers,
+      notes: notes.trim() || undefined,
+      createdAt: old?.createdAt || now,
+      updatedAt: now,
     };
 
-    if (editingId) {
-      onDistributionsChange(
-        distributions.map(item =>
-          item.id === editingId ? updatedEvent : item
-        )
-      );
-    } else {
-      onDistributionsChange([updatedEvent, ...distributions]);
-    }
+    setData((previous) => ({
+      ...previous,
+      cashDistributions: editingId
+        ? (previous.cashDistributions || []).map((event) =>
+            event.id === editingId ? updated : event
+          )
+        : [updated, ...(previous.cashDistributions || [])],
+    }));
 
     resetForm();
   }
 
-  function deleteEvent(distributionId: string) {
-    if (
-      !window.confirm(
-        "Delete this event distribution and its payment history?"
-      )
-    ) {
+  function deleteEvent(eventId: string) {
+    if (!window.confirm("Delete this event and its distribution records?")) {
       return;
     }
 
-    onDistributionsChange(
-      distributions.filter(item => item.id !== distributionId)
-    );
+    setData((previous) => ({
+      ...previous,
+      cashDistributions: (previous.cashDistributions || []).filter(
+        (event) => event.id !== eventId
+      ),
+    }));
   }
 
-  function openPayment(
-    distributionId: string,
-    memberId: string
-  ) {
-    setPaymentTarget({ distributionId, memberId });
-    setPaymentAmount("");
+  function openPayment(event: CashDistribution, member: DistributionMember) {
+    setPaymentEventId(event.id);
+    setPaymentMemberId(member.teamMemberId);
+    setPaymentAmount(String(memberPending(member)));
     setPaymentDate(today());
-    setPaymentReference("");
+    setPaymentNote("");
+    setPaymentOpen(true);
   }
 
-  function savePayment(event: React.FormEvent<HTMLFormElement>) {
-    event.preventDefault();
+  function savePayment(e: React.FormEvent<HTMLFormElement>) {
+    e.preventDefault();
 
-    if (!paymentTarget) return;
+    const amount = Math.round(Number(paymentAmount) * 100) / 100;
 
-    const amount = Number(paymentAmount);
-
-    if (!Number.isFinite(amount) || amount <= 0) {
-      window.alert("Enter a valid payment amount.");
+    if (!paymentEventId || !paymentMemberId || amount <= 0) {
+      alert("Enter a valid payment amount.");
       return;
     }
 
-    const distribution = distributions.find(
-      item => item.id === paymentTarget.distributionId
+    const event = distributions.find((item) => item.id === paymentEventId);
+    const member = event?.members.find(
+      (item) => item.teamMemberId === paymentMemberId
     );
 
-    const member = distribution?.members.find(
-      item => item.id === paymentTarget.memberId
-    );
+    if (!event || !member) return;
 
-    if (!distribution || !member) return;
-
-    const remaining = remainingAmount(member);
-
-    if (amount > remaining) {
-      window.alert(
-        `Payment cannot exceed the remaining amount of ${money(remaining)}.`
-      );
+    if (amount > memberPending(member) + 0.01) {
+      alert("Payment cannot be greater than the pending amount.");
       return;
     }
 
     const payment: DistributionPayment = {
-      id: makeId(),
+      id: id(),
       amount,
       paidDate: paymentDate,
-      referenceNote: paymentReference.trim() || undefined,
-      createdAt: Date.now()
+      referenceNote: paymentNote.trim() || undefined,
+      createdAt: Date.now(),
     };
 
-    const updatedDistribution: CashDistribution = {
-      ...distribution,
-      updatedAt: Date.now(),
-      members: distribution.members.map(item =>
-        item.id === member.id
-          ? {
-              ...item,
-              payments: [...(item.payments || []), payment]
-            }
-          : item
-      )
-    };
+    setData((previous) => ({
+      ...previous,
+      cashDistributions: (previous.cashDistributions || []).map((item) => {
+        if (item.id !== paymentEventId) return item;
 
-    onDistributionsChange(
-      distributions.map(item =>
-        item.id === distribution.id ? updatedDistribution : item
-      )
-    );
+        return {
+          ...item,
+          updatedAt: Date.now(),
+          members: item.members.map((person) =>
+            person.teamMemberId === paymentMemberId
+              ? {
+                  ...person,
+                  payments: [...(person.payments || []), payment],
+                }
+              : person
+          ),
+        };
+      }),
+    }));
 
-    setPaymentTarget(null);
+    setPaymentOpen(false);
   }
 
   function deletePayment(
-    distributionId: string,
+    eventId: string,
     memberId: string,
     paymentId: string
   ) {
     if (!window.confirm("Delete this payment record?")) return;
 
-    onDistributionsChange(
-      distributions.map(event =>
-        event.id !== distributionId
-          ? event
-          : {
+    setData((previous) => ({
+      ...previous,
+      cashDistributions: (previous.cashDistributions || []).map((event) =>
+        event.id === eventId
+          ? {
               ...event,
               updatedAt: Date.now(),
-              members: event.members.map(member =>
-                member.id !== memberId
-                  ? member
-                  : {
+              members: event.members.map((member) =>
+                member.teamMemberId === memberId
+                  ? {
                       ...member,
-                      payments: member.payments.filter(
-                        payment => payment.id !== paymentId
-                      )
+                      payments: (member.payments || []).filter(
+                        (payment) => payment.id !== paymentId
+                      ),
                     }
-              )
+                  : member
+              ),
             }
-      )
-    );
+          : event
+      ),
+    }));
   }
 
-  function deleteSavedMember(memberId: string) {
-    const isUsed = distributions.some(event =>
-      event.members.some(member => member.teamMemberId === memberId)
-    );
+  const paymentEvent = distributions.find(
+    (event) => event.id === paymentEventId
+  );
 
-    if (isUsed) {
-      window.alert(
-        "This member is used in distribution history. Keep them in the team list so past records remain clear."
-      );
-      return;
-    }
+  const paymentMember = paymentEvent?.members.find(
+    (member) => member.teamMemberId === paymentMemberId
+  );
 
-    if (!window.confirm("Remove this saved team member?")) return;
-
-    onTeamMembersChange(
-      teamMembers.filter(member => member.id !== memberId)
-    );
-  }
-
-  const paymentDistribution = paymentTarget
-    ? distributions.find(
-        event => event.id === paymentTarget.distributionId
-      )
-    : undefined;
-
-  const paymentMember = paymentTarget
-    ? paymentDistribution?.members.find(
-        member => member.id === paymentTarget.memberId
-      )
-    : undefined;
+  const filteredTeam = teamMembers.filter((member) =>
+    member.name.toLowerCase().includes(memberSearch.toLowerCase())
+  );
 
   return (
-    <section className="cash-distribution-page">
-      <div className="analytics-summary">
-        <article className="analytics-card">
-          <span>Total distributed</span>
-          <h3 className="income">{money(allPaid)}</h3>
-        </article>
-
-        <article className="analytics-card">
-          <span>Total pending</span>
-          <h3 className="expense">{money(allPending)}</h3>
-        </article>
-
-        <article className="analytics-card">
-          <span>Team members</span>
-          <h3>{uniqueMemberCount}</h3>
-        </article>
-
-        <article className="analytics-card">
-          <span>Events</span>
-          <h3>{distributions.length}</h3>
-        </article>
-      </div>
-
-      <div className="section-heading">
+    <div className="cash-page">
+      <div className="cash-header">
         <div>
-          <p>TEAM PAYMENTS</p>
-          <h2>Cash distribution</h2>
+          <div className="cash-eyebrow">EVENT FINANCES</div>
+          <h1>Cash distribution</h1>
+          <p>Track team payouts, payments, and pending balances.</p>
         </div>
 
         <button
-          type="button"
-          className="add-button"
-          onClick={startNewEvent}
+          className="cash-primary-btn"
+          onClick={() => {
+            resetForm();
+            setFormOpen((open) => !open);
+          }}
         >
-          <Plus size={17} /> New event
+          {formOpen ? "Close form" : "+ New distribution"}
         </button>
       </div>
 
-      {showForm && (
-        <form className="transaction-form" onSubmit={saveEvent}>
-          <div className="form-heading">
-            <h3>{editingId ? "Edit distribution" : "Create event distribution"}</h3>
-
-            <button
-              type="button"
-              className="icon-button"
-              onClick={resetForm}
-              aria-label="Close event form"
-            >
-              <X size={18} />
-            </button>
-          </div>
-
-          <label>Event name</label>
-          <input
-            value={eventName}
-            onChange={event => setEventName(event.target.value)}
-            placeholder="e.g. College fest"
-            maxLength={100}
-            required
-          />
-
-          <label>Event attended date</label>
-          <input
-            type="date"
-            value={eventDate}
-            onChange={event => setEventDate(event.target.value)}
-            required
-          />
-
-          <label>Split type</label>
-          <select
-            value={splitMode}
-            onChange={event =>
-              setSplitMode(event.target.value as SplitMode)
-            }
-          >
-            <option value="equal">Equal split</option>
-            <option value="custom">Custom amount per member</option>
-          </select>
-
-          {splitMode === "equal" && (
-            <>
-              <label>Total distribution amount (₹)</label>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={totalBudget}
-                onChange={event => setTotalBudget(event.target.value)}
-                placeholder="Enter total amount to split"
-              />
-            </>
-          )}
-
-          <div className="analytics-heading">
-            <h3>Team members</h3>
-            <p>Select saved members or add a new one.</p>
-          </div>
-
-          <div className="transaction-search">
-            <input
-              value={newMemberName}
-              onChange={event => setNewMemberName(event.target.value)}
-              placeholder="New team member name"
-            />
-            <button
-              type="button"
-              className="add-button"
-              onClick={addTeamMember}
-            >
-              <Plus size={16} /> Add
-            </button>
-          </div>
-
-          {teamMembers.length === 0 ? (
-            <p className="analytics-empty">
-              Add your first team member above.
-            </p>
-          ) : (
-            <div className="distribution-member-picker">
-              {teamMembers.map(member => {
-                const selected = selectedMembers.includes(member.id);
-
-                return (
-                  <div className="distribution-picker-row" key={member.id}>
-                    <label className="distribution-member-check">
-                      <input
-                        type="checkbox"
-                        checked={selected}
-                        onChange={() => toggleMember(member.id)}
-                      />
-                      <span>{member.name}</span>
-                    </label>
-
-                    {selected && splitMode === "custom" && (
-                      <input
-                        className="distribution-custom-amount"
-                        type="number"
-                        min="0"
-                        step="0.01"
-                        value={customAmounts[member.id] || ""}
-                        onChange={event =>
-                          setCustomAmounts(current => ({
-                            ...current,
-                            [member.id]: event.target.value
-                          }))
-                        }
-                        placeholder="₹ amount"
-                      />
-                    )}
-                  </div>
-                );
-              })}
-            </div>
-          )}
-
-          <label>Event notes (optional)</label>
-          <textarea
-            value={eventNotes}
-            onChange={event => setEventNotes(event.target.value)}
-            placeholder="Additional event details"
-            rows={3}
-          />
-
-          <button className="submit-button" type="submit">
-            <Save size={17} /> {editingId ? "Save changes" : "Create distribution"}
-          </button>
-        </form>
-      )}
-
-      {paymentTarget && paymentDistribution && paymentMember && (
-        <form className="transaction-form" onSubmit={savePayment}>
-          <div className="form-heading">
-            <h3>Record payment</h3>
-
-            <button
-              type="button"
-              className="icon-button"
-              onClick={() => setPaymentTarget(null)}
-              aria-label="Close payment form"
-            >
-            <X size={18} />
-            </button>
-          </div>
-
-          <p>
-            <strong>{paymentMember.memberName}</strong>
-            <br />
-            Event: {paymentDistribution.eventName}
-            <br />
-            Remaining: {money(remainingAmount(paymentMember))}
-          </p>
-
-          <label>Amount paid (₹)</label>
-          <input
-            type="number"
-            min="0.01"
-            max={remainingAmount(paymentMember)}
-            step="0.01"
-            value={paymentAmount}
-            onChange={event => setPaymentAmount(event.target.value)}
-            required
-          />
-
-          <label>Payment date</label>
-          <input
-            type="date"
-            value={paymentDate}
-            onChange={event => setPaymentDate(event.target.value)}
-            required
-          />
-
-          <label>Reference / receipt note (optional)</label>
-          <input
-            value={paymentReference}
-            onChange={event => setPaymentReference(event.target.value)}
-            placeholder="Reference number or short note"
-          />
-
-          <button className="submit-button" type="submit">
-            Save payment
-          </button>
-        </form>
-      )}
-
-      <section className="analytics-panel">
-        <div className="analytics-heading">
-          <h3>Reports & history</h3>
-          <p>View event-wise and member-wise distribution records.</p>
+      <div className="cash-stats">
+        <div className="cash-stat">
+          <span>Total paid</span>
+          <strong>{money(stats.paid)}</strong>
         </div>
 
-        <div className="filter-tabs">
+        <div className="cash-stat">
+          <span>Pending</span>
+          <strong>{money(stats.pending)}</strong>
+        </div>
+
+        <div className="cash-stat">
+          <span>Events</span>
+          <strong>{distributions.length}</strong>
+        </div>
+
+        <div className="cash-stat">
+          <span>Team members</span>
+          <strong>{teamMembers.length}</strong>
+        </div>
+      </div>
+
+      {formOpen && (
+        <section className="cash-panel cash-form-panel">
+          <div className="cash-section-heading">
+            <div>
+              <h2>{editingId ? "Edit distribution" : "New distribution"}</h2>
+              <p>Enter event details and select the team.</p>
+            </div>
+          </div>
+
+          <form onSubmit={saveEvent}>
+            <div className="cash-form-grid">
+              <label className="cash-field">
+                <span>Event name</span>
+                <input
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                  placeholder="e.g. Wedding reception"
+                  required
+                />
+              </label>
+
+              <label className="cash-field">
+                <span>Event attended date</span>
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  required
+                />
+              </label>
+            </div>
+
+            <div className="cash-form-grid">
+              <label className="cash-field">
+                <span>Distribution method</span>
+                <select
+                  value={split}
+                  onChange={(e) =>
+                    setSplit(e.target.value as "equal" | "custom")
+                  }
+                >
+                  <option value="equal">Split equally</option>
+                  <option value="custom">Custom amount per member</option>
+                </select>
+              </label>
+
+              {split === "equal" && (
+                <label className="cash-field">
+                  <span>Total distribution amount (₹)</span>
+                  <input
+                    type="number"
+                    min="0"
+                    step="0.01"
+                    value={total}
+                    onChange={(e) => setTotal(e.target.value)}
+                    placeholder="0.00"
+                    required
+                  />
+                </label>
+              )}
+            </div>
+
+            <div className="cash-team-heading">
+              <div>
+                <h3>Team members</h3>
+                <p>Select the people who attended this event.</p>
+              </div>
+
+              <span className="cash-selected-count">
+                {selected.length} selected
+              </span>
+            </div>
+
+            <div className="cash-add-member">
+              <input
+                value={newMemberName}
+                onChange={(e) => setNewMemberName(e.target.value)}
+                placeholder="Add a new team member"
+              />
+
+              <button
+                type="button"
+                className="cash-secondary-btn"
+                onClick={addMember}
+              >
+                Add member
+              </button>
+            </div>
+
+            <input
+              className="cash-search"
+              value={memberSearch}
+              onChange={(e) => setMemberSearch(e.target.value)}
+              placeholder="Search team members..."
+            />
+
+            {filteredTeam.length === 0 ? (
+              <div className="cash-empty-small">
+                No team members found. Add someone above.
+              </div>
+            ) : (
+              <div className="cash-member-picker">
+                {filteredTeam.map((member) => {
+                  const isSelected = selected.includes(member.id);
+
+                  return (
+                    <button
+                      key={member.id}
+                      type="button"
+                      className={`cash-member-option ${
+                        isSelected ? "selected" : ""
+                      }`}
+                      onClick={() => toggleMember(member.id)}
+                    >
+                      <span className="cash-member-check">
+                        {isSelected ? "✓" : "+"}
+                      </span>
+
+                      <span>{member.name}</span>
+                    </button>
+                  );
+                })}
+              </div>
+            )}
+
+            {selected.length > 0 && (
+              <div className="cash-selected-members">
+                <div className="cash-selected-title">
+                  <strong>Selected members</strong>
+                  <span>{selected.length} people</span>
+                </div>
+
+                {selected.map((memberId) => {
+                  const member = teamMembers.find(
+                    (item) => item.id === memberId
+                  );
+
+                  if (!member) return null;
+
+                  return (
+                    <div className="cash-allocation-row" key={memberId}>
+                      <span>{member.name}</span>
+
+                      {split === "custom" ? (
+                        <label className="cash-amount-input">
+                          <span>₹</span>
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            value={amounts[memberId] || ""}
+                            onChange={(e) =>
+                              setAmounts((previous) => ({
+                                ...previous,
+                                [memberId]: e.target.value,
+                              }))
+                            }
+                            placeholder="Amount"
+                            required
+                          />
+                        </label>
+                      ) : (
+                        <strong>
+                          {money(
+                            selected.length > 0
+                              ? Math.round(
+                                  (Number(total) * 100) / selected.length
+                                ) / 100
+                              : 0
+                          )}
+                        </strong>
+                      )}
+
+                      <button
+                        type="button"
+                        className="cash-remove-btn"
+                        onClick={() => toggleMember(memberId)}
+                        aria-label={`Remove ${member.name}`}
+                      >
+                        ×
+                      </button>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+
+            {split === "custom" && selected.length > 0 && (
+              <div className="cash-total-preview">
+                <span>Total allocated</span>
+                <strong>
+                  {money(
+                    selected.reduce(
+                      (sum, memberId) =>
+                        sum + Number(amounts[memberId] || 0),
+                      0
+                    )
+                  )}
+                </strong>
+              </div>
+            )}
+
+            <label className="cash-field">
+              <span>Notes (optional)</span>
+              <textarea
+                value={notes}
+                onChange={(e) => setNotes(e.target.value)}
+                placeholder="Add any event or payout notes..."
+                rows={3}
+              />
+            </label>
+
+            <div className="cash-form-actions">
+              <button
+                type="button"
+                className="cash-secondary-btn"
+                onClick={resetForm}
+              >
+                Cancel
+              </button>
+
+              <button type="submit" className="cash-primary-btn">
+                {editingId ? "Save changes" : "Create distribution"}
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+
+      {paymentOpen && paymentEvent && paymentMember && (
+        <section className="cash-panel cash-payment-panel">
+          <div className="cash-section-heading">
+            <div>
+              <h2>Record payment</h2>
+              <p>
+                {paymentMember.name} · {paymentEvent.eventName}
+              </p>
+            </div>
+
+            <button
+              type="button"
+              className="cash-remove-btn"
+              onClick={() => setPaymentOpen(false)}
+            >
+              ×
+            </button>
+          </div>
+
+          <div className="cash-payment-summary">
+            <div>
+              <span>Allocated</span>
+              <strong>{money(paymentMember.allocatedAmount)}</strong>
+            </div>
+
+            <div>
+              <span>Already paid</span>
+              <strong>{money(memberPaid(paymentMember))}</strong>
+            </div>
+
+            <div>
+              <span>Remaining</span>
+              <strong>{money(memberPending(paymentMember))}</strong>
+            </div>
+          </div>
+
+          <form onSubmit={savePayment}>
+            <div className="cash-form-grid">
+              <label className="cash-field">
+                <span>Payment amount (₹)</span>
+                <input
+                  type="number"
+                  min="0.01"
+                  max={memberPending(paymentMember)}
+                  step="0.01"
+                  value={paymentAmount}
+                  onChange={(e) => setPaymentAmount(e.target.value)}
+                  required
+                />
+              </label>
+
+              <label className="cash-field">
+                <span>Payment date</span>
+                <input
+                  type="date"
+                  value={paymentDate}
+                  onChange={(e) => setPaymentDate(e.target.value)}
+                  required
+                />
+              </label>
+            </div>
+
+            <label className="cash-field">
+              <span>Reference / receipt note (optional)</span>
+              <input
+                value={paymentNote}
+                onChange={(e) => setPaymentNote(e.target.value)}
+                placeholder="Reference, receipt, or note"
+              />
+            </label>
+
+            <div className="cash-form-actions">
+              <button
+                type="button"
+                className="cash-secondary-btn"
+                onClick={() => setPaymentOpen(false)}
+              >
+                Cancel
+              </button>
+
+              <button type="submit" className="cash-primary-btn">
+                Record payment
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+            <section className="cash-history-section">
+        <div className="cash-section-heading">
+          <div>
+            <h2>Distribution history</h2>
+            <p>Your event payouts and team payment status.</p>
+          </div>
+
+          <span className="cash-count-badge">
+            {distributions.length} events
+          </span>
+        </div>
+
+        {distributions.length === 0 ? (
+          <div className="cash-panel cash-empty">
+            <div className="cash-empty-icon">₹</div>
+            <h3>No distributions yet</h3>
+            <p>Create your first event distribution to track team payments.</p>
+            <button
+              className="cash-primary-btn"
+              onClick={() => setFormOpen(true)}
+            >
+              + Create distribution
+            </button>
+          </div>
+        ) : (
+          <div className="cash-event-list">
+            {distributions.map((event) => {
+              const allocated = eventAllocated(event);
+              const paid = eventPaid(event);
+              const pending = eventPending(event);
+              const progress =
+                allocated > 0 ? Math.min((paid / allocated) * 100, 100) : 0;
+              const expanded = expandedEventId === event.id;
+
+              return (
+                <article className="cash-panel cash-event-card" key={event.id}>
+                  <div className="cash-event-top">
+                    <div className="cash-event-title">
+                      <div className="cash-event-icon">₹</div>
+
+                      <div>
+                        <h3>{event.eventName}</h3>
+                        <span>
+                          {formatDate(event.eventAttendedDate)} ·{" "}
+                          {event.members.length} team members
+                        </span>
+                      </div>
+                    </div>
+
+                    <div className="cash-event-total">
+                      <strong>{money(allocated)}</strong>
+                      <span>Total allocated</span>
+                    </div>
+                  </div>
+
+                  <div className="cash-event-summary">
+                    <div>
+                      <span>Paid</span>
+                      <strong className="cash-paid-text">{money(paid)}</strong>
+                    </div>
+
+                    <div>
+                      <span>Pending</span>
+                      <strong className="cash-pending-text">
+                        {money(pending)}
+                      </strong>
+                    </div>
+
+                    <div>
+                      <span>Status</span>
+                      <strong>
+                        {pending <= 0
+                          ? "Completed"
+                          : paid > 0
+                            ? "Partially paid"
+                            : "Unpaid"}
+                      </strong>
+                    </div>
+                  </div>
+
+                  <div className="cash-progress-track">
+                    <div
+                      className="cash-progress-fill"
+                      style={{ width: `${progress}%` }}
+                    />
+                  </div>
+
+                  <div className="cash-progress-caption">
+                    <span>{Math.round(progress)}% paid</span>
+                    <span>{money(pending)} remaining</span>
+                  </div>
+
+                  {event.notes && (
+                    <div className="cash-event-notes">{event.notes}</div>
+                  )}
+
+                  <div className="cash-event-actions">
+                    <button
+                      className="cash-secondary-btn"
+                      onClick={() =>
+                        setExpandedEventId(expanded ? null : event.id)
+                      }
+                    >
+                      {expanded ? "Hide details" : "View team & payments"}
+                    </button>
+
+                    <button
+                      className="cash-secondary-btn"
+                      onClick={() => duplicateEvent(event)}
+                    >
+                      Duplicate
+                    </button>
+
+                    <button
+                      className="cash-secondary-btn"
+                      onClick={() => editEvent(event)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="cash-danger-btn"
+                      onClick={() => deleteEvent(event.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  {expanded && (
+                    <div className="cash-event-details">
+                      <div className="cash-details-heading">
+                        <h4>Team payment details</h4>
+                      </div>
+
+                      {event.members.map((member) => {
+                        const memberPaidAmount = memberPaid(member);
+                        const memberPendingAmount = memberPending(member);
+
+                        const status =
+                          memberPendingAmount <= 0
+                            ? "Paid"
+                            : memberPaidAmount > 0
+                              ? "Partially paid"
+                              : "Unpaid";
+
+                        return (
+                          <div
+                            className="cash-payout-member"
+                            key={member.teamMemberId}
+                          >
+                            <div className="cash-payout-member-top">
+                              <div>
+                                <strong>{member.name}</strong>
+                                <span>
+                                  Allocated: {money(member.allocatedAmount)}
+                                </span>
+                              </div>
+
+                              <span
+                                className={`cash-status cash-status-${status
+                                  .toLowerCase()
+                                  .replace(" ", "-")}`}
+                              >
+                                {status}
+                              </span>
+                            </div>
+
+                            <div className="cash-payout-values">
+                              <span>
+                                Paid{" "}
+                                <strong>{money(memberPaidAmount)}</strong>
+                              </span>
+
+                              <span>
+                                Pending{" "}
+                                <strong>{money(memberPendingAmount)}</strong>
+                              </span>
+                            </div>
+
+                            {memberPendingAmount > 0 && (
+                              <button
+                                className="cash-primary-btn cash-pay-btn"
+                                onClick={() => openPayment(event, member)}
+                              >
+                                + Record payment
+                              </button>
+                            )}
+
+                            {(member.payments || []).length > 0 && (
+                              <div className="cash-payment-history">
+                                <span className="cash-payment-history-label">
+                                  Payment history
+                                </span>
+
+                                {(member.payments || []).map((payment) => (
+                                  <div
+                                    className="cash-payment-row"
+                                    key={payment.id}
+                                  >
+                                    <div>
+                                      <strong>{money(payment.amount)}</strong>
+                                      <span>
+                                        {formatDate(payment.paidDate)}
+                                        {payment.referenceNote
+                                          ? ` · ${payment.referenceNote}`
+                                          : ""}
+                                      </span>
+                                    </div>
+
+                                    <button
+                                      className="cash-remove-btn"
+                                      onClick={() =>
+                                        deletePayment(
+                                          event.id,
+                                          member.teamMemberId,
+                                          payment.id
+                                        )
+                                      }
+                                      aria-label="Delete payment"
+                                    >
+                                      ×
+                                    </button>
+                                  </div>
+                                ))}
+                              </div>
+                            )}
+                          </div>
+                        );
+                      })}
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+
+      <section className="cash-report-section">
+        <div className="cash-section-heading">
+          <div>
+            <h2>Reports</h2>
+            <p>Review distribution totals by event or team member.</p>
+          </div>
+        </div>
+
+        <div className="cash-report-tabs">
           <button
-            className={reportTab === "events" ? "filter-active" : ""}
+            className={reportTab === "events" ? "active" : ""}
             onClick={() => setReportTab("events")}
-            type="button"
           >
             Event report
           </button>
 
           <button
-            className={reportTab === "members" ? "filter-active" : ""}
+            className={reportTab === "members" ? "active" : ""}
             onClick={() => setReportTab("members")}
-            type="button"
           >
             Member report
           </button>
         </div>
 
-        {reportTab === "events" && (
-          <div className="distribution-event-list">
+        {reportTab === "events" ? (
+          <div className="cash-report-list">
             {distributions.length === 0 ? (
-              <div className="empty-state">
-                <Users />
-                <h3>No distributions yet</h3>
-                <p>Create an event to start tracking team payments.</p>
-              </div>
+              <p className="cash-muted">No event data available yet.</p>
             ) : (
-              distributions.map(distribution => (
-                <article
-                  className="analytics-panel"
-                  key={distribution.id}
-                >
-                  <div className="analytics-heading">
-                    <div>
-                      <h3>{distribution.eventName}</h3>
-                      <p>Event attended: {distribution.eventAttendedDate}</p>
-                    </div>
-
-                    <div className="distribution-event-actions">
-                      <button
-                        type="button"
-                        className="row-action"
-                        onClick={() => duplicateEvent(distribution)}
-                        aria-label="Duplicate event"
-                        title="Duplicate event"
-                      >
-                        <Copy size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="row-action"
-                        onClick={() => editEvent(distribution)}
-                        aria-label="Edit event"
-                        title="Edit event"
-                      >
-                        <Pencil size={16} />
-                      </button>
-
-                      <button
-                        type="button"
-                        className="row-action delete-action"
-                        onClick={() => deleteEvent(distribution.id)}
-                        aria-label="Delete event"
-                        title="Delete event"
-                      >
-                        <Trash2 size={16} />
-                      </button>
-                    </div>
+              distributions.map((event) => (
+                <div className="cash-report-row" key={event.id}>
+                  <div>
+                    <strong>{event.eventName}</strong>
+                    <span>{formatDate(event.eventAttendedDate)}</span>
                   </div>
 
-                  <div className="analytics-summary">
-                    <article className="analytics-card">
-                      <span>Allocated</span>
-                      <h3>{money(totalAllocated(distribution))}</h3>
-                    </article>
-
-                    <article className="analytics-card">
-                      <span>Paid</span>
-                      <h3 className="income">{money(totalPaid(distribution))}</h3>
-                    </article>
-
-                    <article className="analytics-card">
-                      <span>Pending</span>
-                      <h3 className="expense">{money(totalPending(distribution))}</h3>
-                    </article>
+                  <div className="cash-report-numbers">
+                    <span>Paid {money(eventPaid(event))}</span>
+                    <strong>{money(eventPending(event))} pending</strong>
+                  </div>
+                </div>
+              ))
+            )}
+          </div>
+        ) : (
+          <div className="cash-report-list">
+            {memberReports.length === 0 ? (
+              <p className="cash-muted">No team member data available yet.</p>
+            ) : (
+              memberReports.map((member) => (
+                <div className="cash-report-row" key={member.id}>
+                  <div>
+                    <strong>{member.name}</strong>
+                    <span>{member.eventCount} events</span>
                   </div>
 
-                  {distribution.notes && (
-                    <p>{distribution.notes}</p>
-                  )}
-
-                  {distribution.members.map(member => (
-                    <div
-                      className="distribution-member-card"
-                      key={member.id}
-                    >
-                      <div className="analytics-heading">
-                        <div>
-                          <h3>{member.memberName}</h3>
-                          <p>
-                            Allocated: {money(member.allocatedAmount)}
-                            {" · "}
-                            Paid: {money(paidAmount(member))}
-                            {" · "}
-                            Remaining: {money(remainingAmount(member))}
-                          </p>
-                        </div>
-
-                        <span
-                          className={`distribution-status ${
-                            paymentStatus(member) === "Paid"
-                              ? "paid"
-                              : paymentStatus(member) === "Partially paid"
-                                ? "partial"
-                                : "unpaid"
-                          }`}
-                        >
-                          {paymentStatus(member)}
-                        </span>
-                      </div>
-
-                      {remainingAmount(member) > 0 && (
-                        <button
-                          type="button"
-                          className="add-button"
-                          onClick={() =>
-                            openPayment(distribution.id, member.id)
-                          }
-                        >
-                          <Plus size={16} /> Record payment
-                        </button>
-                      )}
-
-                      {(member.payments || []).length > 0 && (
-                        <div className="distribution-payment-history">
-                          <strong>Payment history</strong>
-
-                          {member.payments.map(payment => (
-                            <div
-                              className="distribution-payment-row"
-                              key={payment.id}
-                            >
-                              <div>
-                                <strong>{money(payment.amount)}</strong>
-                                <p>
-                                  {payment.paidDate}
-                                  {payment.referenceNote
-                                    ? ` · ${payment.referenceNote}`
-                                    : ""}
-                                </p>
-                              </div>
-
-                              <button
-                                type="button"
-                                className="row-action delete-action"
-                                onClick={() =>
-                                  deletePayment(
-                                    distribution.id,
-                                    member.id,
-                                    payment.id
-                                  )
-                                }
-                                aria-label="Delete payment entry"
-                              >
-                                <Trash2 size={15} />
-                              </button>
-                            </div>
-                          ))}
-                        </div>
-                      )}
-                    </div>
-                  ))}
-                </article>
+                  <div className="cash-report-numbers">
+                    <span>Paid {money(member.paid)}</span>
+                    <strong>{money(member.pending)} pending</strong>
+                  </div>
+                </div>
               ))
             )}
           </div>
         )}
-
-        {reportTab === "members" && (
-          <>
-            <label className="analytics-date-control">
-              Select team member
-              <select
-                value={selectedReportMember}
-                onChange={event =>
-                  setSelectedReportMember(event.target.value)
-                }
-              >
-                <option value="all">All team members</option>
-                {teamMembers.map(member => (
-                  <option key={member.id} value={member.id}>
-                    {member.name}
-                  </option>
-                ))}
-              </select>
-            </label>
-
-            {memberHistory
-              .filter(member =>
-                selectedReportMember === "all" ||
-                member.id === selectedReportMember
-              )
-              .map(member => (
-                <article className="analytics-panel" key={member.id}>
-                  <div className="analytics-heading">
-                    <h3>{member.name}</h3>
-                  </div>
-
-                  <div className="analytics-summary">
-                    <article className="analytics-card">
-                      <span>Total allocated</span>
-                      <h3>{money(member.totalAllocated)}</h3>
-                    </article>
-
-                    <article className="analytics-card">
-                      <span>Total paid</span>
-                      <h3 className="income">{money(member.totalPaid)}</h3>
-                    </article>
-
-                    <article className="analytics-card">
-                      <span>Total pending</span>
-                      <h3 className="expense">{money(member.totalPending)}</h3>
-                    </article>
-                  </div>
-
-                  {member.events.map((event, index) => (
-                    <div
-                      className="distribution-payment-row"
-                      key={`${event.eventName}-${event.eventDate}-${index}`}
-                    >
-                      <div>
-                        <strong>{event.eventName}</strong>
-                        <p>
-                          {event.eventDate}
-                          {" · "}
-                          Paid {money(event.paid)}
-                          {" · "}
-                          Pending {money(event.pending)}
-                        </p>
-                      </div>
-                    </div>
-                  ))}
-                </article>
-              ))}
-          </>
-        )}
       </section>
 
-      <section className="analytics-panel">
-        <div className="analytics-heading">
-          <h3>Saved team members</h3>
-          <p>Members are reused across future events.</p>
-        </div>
-
-        {teamMembers.length === 0 ? (
-          <p className="analytics-empty">
-            Team members you add to an event will appear here.
-          </p>
-        ) : (
-          teamMembers.map(member => (
-            <div
-              className="distribution-payment-row"
-              key={member.id}
-            >
-              <div>
-                <strong>{member.name}</strong>
-              </div>
-
-              <button
-                type="button"
-                className="row-action delete-action"
-                onClick={() => deleteSavedMember(member.id)}
-                aria-label={`Remove ${member.name}`}
-              >
-                <Trash2 size={16} />
-              </button>
-            </div>
-          ))
-        )}
-      </section>
-
-      <p className="analytics-empty">
-        <CheckCircle2 size={15} /> Cash distribution is kept separate from income and expenses.
-      </p>
-    </section>
+      <div className="cash-footer-note">
+        Cash distributions are tracked separately from income and expenses.
+      </div>
+    </div>
   );
 }

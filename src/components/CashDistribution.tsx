@@ -1049,16 +1049,6 @@ export default function CashDistribution({
     return Array.from(years).sort((a, b) => b.localeCompare(a));
   }
 
-  const previousMonthAllocated = previousMonthEvents.reduce(
-    (sum, event) => sum + eventAllocated(event),
-    0
-  );
-
-  const previousMonthPending = previousMonthEvents.reduce(
-    (sum, event) => sum + eventPending(event),
-    0
-  );
-
   // Reusable team-member row inside an event
   function renderEventMember(
     event: CashDistribution,

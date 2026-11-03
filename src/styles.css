@@ -4056,3 +4056,215 @@ select:focus-visible {
     flex: 1;
   }
 }
+/* ==========================================
+   MAXLEDGER CASH DISTRIBUTION - MOBILE FIX
+   Fix event card grid, text wrapping and buttons
+========================================== */
+
+/* Event card must never exceed its parent */
+.cash-event-card {
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  overflow: hidden;
+}
+
+/* Main event summary: title column + financial column */
+.cash-event-card .cash-event-summary {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(145px, 220px);
+  align-items: start;
+  gap: 16px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 16px;
+  margin: 0;
+}
+
+/* Event title/date/location button */
+.cash-event-card .cash-event-main {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: start;
+  gap: 10px;
+  width: 100%;
+  min-width: 0;
+  padding: 0;
+  margin: 0;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
+  color: var(--cash-text);
+  text-align: left;
+  font: inherit;
+  box-shadow: none;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+/* Allow the event text to use its full available width */
+.cash-event-card .cash-event-main > div {
+  display: block;
+  min-width: 0;
+  width: 100%;
+}
+
+.cash-event-card .cash-event-main h3 {
+  margin: 0 0 8px;
+  font-size: 15px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.cash-event-card .cash-event-main p {
+  margin: 4px 0 0;
+  color: var(--cash-muted);
+  font-size: 12px;
+  line-height: 1.6;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Payment status badge */
+.cash-event-card .cash-event-main .cash-status {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  white-space: nowrap;
+  max-width: 100%;
+  box-sizing: border-box;
+}
+
+/* Event payment summary */
+.cash-event-card .cash-event-total {
+  display: block;
+  width: 100%;
+  min-width: 0;
+  max-width: 100%;
+  box-sizing: border-box;
+  text-align: right;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+.cash-event-card .cash-event-total strong {
+  display: block;
+  margin: 0 0 7px;
+  font-size: 17px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+/* Critical fix: received and pending must be separate lines */
+.cash-event-card .cash-event-total small {
+  display: block;
+  margin-top: 5px;
+  color: var(--cash-muted);
+  font-size: 11px;
+  line-height: 1.5;
+  overflow-wrap: anywhere;
+  word-break: normal;
+}
+
+/* Event action buttons */
+.cash-event-card .cash-event-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+  width: 100%;
+  min-width: 0;
+  box-sizing: border-box;
+  margin-top: 12px;
+  padding: 12px 16px 16px;
+  border-top: 1px solid var(--cash-border);
+}
+
+.cash-event-card .cash-event-actions button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 0;
+  min-height: 40px;
+  width: 100%;
+  box-sizing: border-box;
+  padding: 8px 10px;
+  border: 1px solid var(--cash-border);
+  border-radius: 9px;
+  background: var(--cash-card-soft);
+  color: var(--cash-text);
+  font: inherit;
+  font-size: 12px;
+  font-weight: 600;
+  white-space: normal;
+  overflow-wrap: anywhere;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.cash-event-card .cash-event-actions button:hover {
+  border-color: var(--cash-accent);
+}
+
+/* Event expanded details */
+.cash-event-card .cash-event-details {
+  min-width: 0;
+  box-sizing: border-box;
+  padding: 14px 16px 16px;
+  border-top: 1px solid var(--cash-border);
+}
+
+/* Android / small phone layout */
+@media (max-width: 480px) {
+  .cash-event-card .cash-event-summary {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 12px;
+    padding: 14px;
+  }
+
+  .cash-event-card .cash-event-main {
+    grid-template-columns: minmax(0, 1fr) auto;
+    gap: 8px;
+  }
+
+  .cash-event-card .cash-event-total {
+    text-align: left;
+    padding-top: 10px;
+    border-top: 1px solid var(--cash-border);
+  }
+
+  .cash-event-card .cash-event-total strong {
+    font-size: 17px;
+  }
+
+  .cash-event-card .cash-event-actions {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 6px;
+    padding: 12px;
+  }
+
+  .cash-event-card .cash-event-actions button {
+    padding: 8px 5px;
+    font-size: 11px;
+  }
+
+  .cash-event-card .cash-event-details {
+    padding: 12px;
+  }
+}
+
+/* Extra narrow phones */
+@media (max-width: 360px) {
+  .cash-event-card .cash-event-main {
+    grid-template-columns: minmax(0, 1fr);
+  }
+
+  .cash-event-card .cash-event-main .cash-status {
+    justify-self: start;
+  }
+
+  .cash-event-card .cash-event-actions {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}

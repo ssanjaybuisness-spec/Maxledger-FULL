@@ -203,22 +203,6 @@ export default function CashDistribution({
     ),
     eventCount: periodEvents.length,
   }), [periodEvents, periodPayments]);
-
-  const previousMonth = useMemo(() => {
-    const [year, month] = selectedMonth.split("-").map(Number);
-    const date = new Date(year, month - 2, 1);
-
-    return `${date.getFullYear()}-${String(
-      date.getMonth() + 1
-    ).padStart(2, "0")}`;
-  }, [selectedMonth]);
-
-  const previousMonthEvents = useMemo(
-    () => distributions.filter((event) =>
-      event.eventAttendedDate?.startsWith(previousMonth)
-    ),
-    [distributions, previousMonth]
-  );
   
   const filteredEvents = useMemo(
     () => distributions.filter((event) => {
@@ -1018,17 +1002,6 @@ export default function CashDistribution({
     }
   }
 
-  function getMonthName(month: string) {
-    if (!month) return "";
-
-    const [year, monthNumber] = month.split("-").map(Number);
-
-    return new Date(year, monthNumber - 1, 1).toLocaleDateString(
-      "en-IN",
-      { month: "long", year: "numeric" }
-    );
-  }
-
   function getYearOptions() {
     const years = new Set<string>([today().slice(0, 4)]);
 
@@ -1087,7 +1060,7 @@ export default function CashDistribution({
             onClick={() => openPayment(event, member)}
           >
             Record Payment
-          </button>
+            </button>
         )}
 
         {member.payments?.length ? (
@@ -1732,11 +1705,11 @@ export default function CashDistribution({
           <select
             className="cash-input"
             value={paymentFilter}
-            onChange={(e) => setPaymentFilter(e.target.value)}
+            onChange={(e) => setPaymentFilter(e.target.value as PaymentFilter)}
           >
             <option value="all">All payment statuses</option>
             <option value="paid">Fully paid</option>
-            <option value="pending">Pending payments</option>
+            <option value="unpaid">Pending payments</option>
             <option value="partial">Partially paid</option>
           </select>
 
@@ -1906,8 +1879,8 @@ export default function CashDistribution({
             </button>
             <button
               type="button"
-              className={`cash-tab ${reportTab === "period" ? "active" : ""}`}
-              onClick={() => setReportTab("period")}
+              className={`cash-tab ${reportTab === "events" ? "active" : ""}`}
+              onClick={() => setReportTab("events")}
             >
               Period Summary
             </button>
@@ -1942,8 +1915,8 @@ export default function CashDistribution({
                   </thead>
                   <tbody>
                     {filteredMemberReports.map((report) => (
-                      <tr key={report.teamMemberId}>
-                        <td>{report.memberName}</td>
+                      <tr key={report.id}>
+                        <td>{report.name}</td>
                         <td>{report.eventCount}</td>
                         <td>{money(report.allocated)}</td>
                         <td className="cash-positive">{money(report.paid)}</td>
@@ -1962,31 +1935,26 @@ export default function CashDistribution({
                 className="cash-input"
                 value={periodMode}
                 onChange={(e) =>
-                  setPeriodMode(e.target.value as "month" | "year")
+                  setPeriodMode(e.target.value as PeriodMode)
                 }
               >
-                <option value="month">Monthly</option>
-                <option value="year">Yearly</option>
+                <option value="monthly">Monthly</option>
+                <option value="yearly">Yearly</option>
               </select>
 
-              {periodMode === "month" && (
-                <select
+              {periodMode === "monthly" && (
+                <input
                   className="cash-input"
-                  value={periodMonth}
-                  onChange={(e) => setPeriodMonth(Number(e.target.value))}
-                >
-                  {Array.from({ length: 12 }, (_, index) => (
-                    <option key={index} value={index}>
-                      {getMonthName(index)}
-                    </option>
-                  ))}
-                </select>
+                  type="month"
+                  value={selectedMonth}
+                  onChange={(e) => setSelectedMonth(e.target.value)}
+                />
               )}
 
               <select
                 className="cash-input"
-                value={periodYear}
-                onChange={(e) => setPeriodYear(Number(e.target.value))}
+                value={selectedYear}
+                onChange={(e) => setSelectedYear(e.target.value)}
               >
                 {getYearOptions().map((year) => (
                   <option key={year} value={year}>
@@ -2015,7 +1983,7 @@ export default function CashDistribution({
               </div>
               <div className="cash-stat-card">
                 <span>Payments Received</span>
-                <strong>{periodSummary.paymentCount}</strong>
+                <strong>{periodPayments.length}</strong>
               </div>
             </div>
           </>
@@ -2052,15 +2020,15 @@ export default function CashDistribution({
                   <label>Event</label>
                   <select
                     className="cash-input"
-                    value={paymentEventId}
+                    value={paymentEventId || ""}
                     onChange={(e) => {
-                      setPaymentEventId(e.target.value);
-                      setPaymentMemberId("");
+                      setPaymentEventId(e.target.value || null);
+                      setPaymentMemberId(null);
                     }}
                     required
                   >
                     <option value="">Select event</option>
-                    {events.map((event) => (
+                    {distributions.map((event) => (
                       <option key={event.id} value={event.id}>
                         {event.eventName}
                       </option>
@@ -2072,12 +2040,12 @@ export default function CashDistribution({
                   <label>Team Member</label>
                   <select
                     className="cash-input"
-                    value={paymentMemberId}
-                    onChange={(e) => setPaymentMemberId(e.target.value)}
+                    value={paymentMemberId || ""}
+                    onChange={(e) => setPaymentMemberId(e.target.value || null)}
                     required
                   >
                     <option value="">Select member</option>
-                    {events
+                    {distributions
                       .find((event) => event.id === paymentEventId)
                       ?.members.map((member) => (
                         <option key={member.id} value={member.id}>

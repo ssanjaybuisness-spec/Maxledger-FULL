@@ -48,7 +48,6 @@ const currentDate = new Date();
 
 export default function Analytics({
   transactions,
-  data,
   onExportCSV,
   onDownloadPDF,
   onBackup,

@@ -10,7 +10,7 @@ import {
 import {
   Wallet, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags, BarChart3, Download
+  Search, X, Tags, BarChart3, Download, Users
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -24,6 +24,7 @@ import BudgetManager, { type Budget } from "./components/BudgetManager";
 import Analytics from "./components/Analytics";
 import CustomDashboard from "./components/CustomDashboard";
 import BackupManager from "./components/BackupManager";
+import CashDistribution from "./components/CashDistribution";
 
 import { exportTransactionsCSV } from "./services/export";
 import { exportBackup } from "./services/backup";
@@ -48,6 +49,7 @@ type Tab =
   | "categories"
   | "budgets"
   | "analytics"
+  | "distribution"
   | "backups";
 
 export default function App() {
@@ -412,7 +414,6 @@ export default function App() {
         <p role="alert">{storageError}</p>
       )}
 
-      {/* Shared restore input: Analytics can trigger this */}
       <input
         ref={backupInputRef}
         type="file"
@@ -666,6 +667,32 @@ export default function App() {
         />
       )}
 
+      {activeTab === "distribution" && (
+        <section className="pending-page">
+          <section className="welcome">
+            <p>TEAM PAYMENTS</p>
+            <h2>Cash distribution</h2>
+          </section>
+
+          <CashDistribution
+            distributions={data.cashDistributions || []}
+            teamMembers={data.teamMembers || []}
+            onDistributionsChange={items =>
+              setData(current => ({
+                ...current,
+                cashDistributions: items
+              }))
+            }
+            onTeamMembersChange={items =>
+              setData(current => ({
+                ...current,
+                teamMembers: items
+              }))
+            }
+          />
+        </section>
+      )}
+
       {activeTab === "backups" && (
         <section className="pending-page">
           <section className="welcome">
@@ -742,6 +769,15 @@ export default function App() {
         >
           <BarChart3 />
           <span>Analytics</span>
+        </button>
+
+        <button
+          type="button"
+          className={`nav-item ${activeTab === "distribution" ? "active" : ""}`}
+          onClick={() => setActiveTab("distribution")}
+        >
+          <Users />
+          <span>Distribution</span>
         </button>
 
         <button

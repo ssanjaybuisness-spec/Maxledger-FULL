@@ -6,7 +6,6 @@ import {
   Pencil,
   Copy,
   CheckCircle2,
-  Clock,
   X,
   Save
 } from "lucide-react";

@@ -1143,90 +1143,984 @@ export default function CashDistribution({
       </div>
     );
   }
-  {filteredMemberReports.length === 0 ? (
-  <div className="cash-empty">
-    No team members found.
-  </div>
-) : (
-  <table className="cash-report-table">
-    <thead>
-      <tr>
-        <th>Team Member</th>
-        <th>Events</th>
-        <th>Allocated</th>
-        <th>Paid</th>
-        <th>Pending</th>
-      </tr>
-    </thead>
-    <tbody>
-      {filteredMemberReports.map((member) => (
-        <tr key={member.id}>
-          <td>{member.name}</td>
-          <td>{member.eventCount}</td>
-          <td>{money(member.allocated)}</td>
-          <td>{money(member.paid)}</td>
-          <td>{money(member.pending)}</td>
-        </tr>
-      ))}
-    </tbody>
-  </table>
-)}
+    return (
+    <div className="cash-page-midnight">
+      <style>{`
+        .cash-page-midnight {
+          --cash-bg: #080f1f;
+          --cash-card: #111c32;
+          --cash-card2: #17243d;
+          --cash-border: #263651;
+          --cash-text: #f1f5fc;
+          --cash-muted: #9aa9c2;
+          --cash-blue: #5b8cff;
+          --cash-green: #36d399;
+          --cash-red: #ff657a;
+          color: var(--cash-text);
+          background: var(--cash-bg);
+          padding: 20px;
+          border-radius: 18px;
+          font-family: inherit;
+        }
+        .cash-page-midnight * { box-sizing: border-box; }
+        .cash-page-midnight input,
+        .cash-page-midnight select,
+        .cash-page-midnight textarea {
+          width: 100%;
+          background: #0b1426;
+          color: var(--cash-text);
+          border: 1px solid var(--cash-border);
+          border-radius: 9px;
+          padding: 11px 12px;
+          font: inherit;
+        }
+        .cash-page-midnight label {
+          display: block;
+          margin-bottom: 6px;
+          color: var(--cash-muted);
+          font-size: 13px;
+        }
+        .cash-header {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          gap: 14px;
+          flex-wrap: wrap;
+          margin-bottom: 20px;
+        }
+        .cash-header h2 { margin: 0 0 5px; font-size: 25px; }
+        .cash-muted { color: var(--cash-muted); font-size: 13px; }
+        .cash-grid {
+          display: grid;
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 12px;
+          margin-bottom: 18px;
+        }
+        .cash-stat, .cash-section {
+          background: var(--cash-card);
+          border: 1px solid var(--cash-border);
+          border-radius: 14px;
+          padding: 16px;
+        }
+        .cash-stat span {
+          display: block;
+          color: var(--cash-muted);
+          font-size: 12px;
+          margin-bottom: 8px;
+        }
+        .cash-stat strong { font-size: 22px; }
+        .cash-section { margin-bottom: 18px; }
+        .cash-section h3 { margin: 0 0 14px; }
+        .cash-actions {
+          display: flex;
+          flex-wrap: wrap;
+          gap: 8px;
+        }
+        .cash-button {
+          border: 1px solid var(--cash-border);
+          background: var(--cash-card2);
+          color: var(--cash-text);
+          border-radius: 9px;
+          padding: 10px 13px;
+          cursor: pointer;
+          font: inherit;
+        }
+        .cash-button-primary {
+          background: var(--cash-blue);
+          border-color: var(--cash-blue);
+          color: white;
+        }
+        .cash-button-danger { color: #ff8292; }
+        .cash-button-small { padding: 7px 10px; font-size: 12px; }
+        .cash-form-grid {
+          display: grid;
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+          gap: 12px;
+        }
+        .cash-field-full { grid-column: 1 / -1; }
+        .cash-team-list, .cash-event-list {
+          display: grid;
+          gap: 10px;
+        }
+        .cash-team-row, .cash-event-card {
+          background: var(--cash-card2);
+          border: 1px solid var(--cash-border);
+          border-radius: 12px;
+          padding: 14px;
+        }
+        .cash-team-row, .cash-event-heading {
+          display: flex;
+          justify-content: space-between;
+          align-items: center;
+          flex-wrap: wrap;
+          gap: 10px;
+        }
+        .cash-event-heading h4 { margin: 0 0 5px; }
+        .cash-event-meta { color: var(--cash-muted); font-size: 12px; }
+        .cash-member-row {
+          display: grid;
+          grid-template-columns: 1fr 1fr auto auto;
+          gap: 12px;
+          align-items: center;
+          padding: 12px 0;
+          border-top: 1px solid var(--cash-border);
+        }
+        .cash-member-info strong, .cash-member-info span {
+          display: block;
+        }
+        .cash-member-info span, .cash-member-amounts {
+          color: var(--cash-muted);
+          font-size: 12px;
+        }
+        .cash-member-amounts span { display: block; }
+        .cash-paid { color: var(--cash-green); }
+        .cash-pending { color: #ffbd69; }
+        .cash-status { font-size: 12px; }
+        .cash-payment-history {
+          grid-column: 1 / -1;
+          display: grid;
+          gap: 6px;
+        }
+        .cash-payment-history-row {
+          display: flex;
+          justify-content: space-between;
+          flex-wrap: wrap;
+          gap: 8px;
+          color: var(--cash-muted);
+          font-size: 12px;
+        }
+        .cash-delete-link {
+          border: 0;
+          background: transparent;
+          color: var(--cash-red);
+          cursor: pointer;
+        }
+        .cash-empty { color: var(--cash-muted); padding: 18px 0; }
+        .cash-modal-backdrop {
+          position: fixed;
+          inset: 0;
+          background: #000b;
+          display: grid;
+          place-items: center;
+          padding: 16px;
+          z-index: 9999;
+        }
+        .cash-modal {
+          width: min(560px, 100%);
+          max-height: 90vh;
+          overflow: auto;
+          background: var(--cash-card);
+          border: 1px solid var(--cash-border);
+          border-radius: 16px;
+          padding: 20px;
+        }
+        .cash-report-table-wrap { overflow-x: auto; }
+        .cash-report-table {
+          width: 100%;
+          border-collapse: collapse;
+          min-width: 500px;
+        }
+        .cash-report-table th, .cash-report-table td {
+          text-align: left;
+          padding: 10px;
+          border-bottom: 1px solid var(--cash-border);
+          font-size: 13px;
+        }
+        @media(max-width: 650px) {
+          .cash-grid { grid-template-columns: 1fr; }
+          .cash-form-grid { grid-template-columns: 1fr; }
+          .cash-member-row { grid-template-columns: 1fr 1fr; }
+          .cash-page-midnight { padding: 12px; }
+        }
+      `}</style>
+
+      <header className="cash-header">
+        <div>
+          <h2>Cash Distribution</h2>
+          <div className="cash-muted">
+            Track event payments, team allocations and pending balances.
+          </div>
+        </div>
+        <div className="cash-actions">
+          <button className="cash-button" onClick={exportCSV}>
+            Export CSV
+          </button>
+          <button className="cash-button" onClick={exportPDF}>
+            Export PDF
+          </button>
+          <button
+            className="cash-button cash-button-primary"
+            onClick={startNew}
+          >
+            + New Event
+          </button>
+        </div>
+      </header>
+
+      <div className="cash-grid">
+        <div className="cash-stat">
+          <span>Total Allocated</span>
+          <strong>{money(stats.allocated)}</strong>
+        </div>
+        <div className="cash-stat">
+          <span>Total Paid</span>
+          <strong className="cash-paid">{money(stats.paid)}</strong>
+        </div>
+        <div className="cash-stat">
+          <span>Total Pending</span>
+          <strong className="cash-pending">{money(stats.pending)}</strong>
+        </div>
+      </div>
+
+      <section className="cash-section">
+        <h3>Quick Payment</h3>
+        <form onSubmit={savePayment}>
+          <div className="cash-form-grid">
+            <div className="cash-field">
+              <label>Event</label>
+              <select
+                value={paymentEventId || ""}
+                onChange={(e) => {
+                  setPaymentEventId(e.target.value || null);
+                  setPaymentMemberId(null);
+                }}
+                required
+              >
+                <option value="">Select event</option>
+                {distributions.map((event) => (
+                  <option key={event.id} value={event.id}>
+                    {event.eventName}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="cash-field">
+              <label>Team Member</label>
+              <select
+                value={paymentMemberId || ""}
+                onChange={(e) => {
+                  const id = e.target.value;
+                  setPaymentMemberId(id || null);
+
+                  const member = distributions
+                    .find((event) => event.id === paymentEventId)
+                    ?.members.find((item) => item.id === id);
+
+                  if (member) {
+                    setPaymentAmount(String(memberPending(member)));
+                  }
+                }}
+                required
+              >
+                <option value="">Select member</option>
+                {distributions
+                  .find((event) => event.id === paymentEventId)
+                  ?.members.filter((member) => memberPending(member) > 0.009)
+                  .map((member) => (
+                    <option key={member.id} value={member.id}>
+                      {member.memberName}
+                    </option>
+                  ))}
+              </select>
+            </div>
+
+            <div className="cash-field">
+              <label>Amount (₹)</label>
+              <input
+                type="number"
+                min="0.01"
+                step="0.01"
+                value={paymentAmount}
+                onChange={(e) => setPaymentAmount(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="cash-field">
+              <label>Payment Date</label>
+              <input
+                type="date"
+                value={paymentDate}
+                onChange={(e) => setPaymentDate(e.target.value)}
+                required
+              />
+            </div>
+
+            <div className="cash-field cash-field-full">
+              <label>Payment Note</label>
+              <input
+                value={paymentNote}
+                onChange={(e) => setPaymentNote(e.target.value)}
+                placeholder="Optional payment reference"
+              />
+            </div>
+          </div>
+
+          <div className="cash-actions" style={{ marginTop: 12 }}>
+            <button
+              type="submit"
+              className="cash-button cash-button-primary"
+            >
+              Record Payment
+            </button>
+          </div>
+        </form>
+      </section>
+            {/* Event form */}
+      {formOpen && (
+        <section className="cash-section">
+          <h3>{editingId ? "Edit Event" : "Create Event"}</h3>
+
+          <form onSubmit={saveEvent}>
+            <div className="cash-form-grid">
+              <div className="cash-field cash-field-full">
+                <label>Event Name</label>
+                <input
+                  value={eventName}
+                  onChange={(e) => setEventName(e.target.value)}
+                  required
+                  placeholder="Enter event name"
+                />
+              </div>
+
+              <div className="cash-field">
+                <label>Event Date</label>
+                <input
+                  type="date"
+                  value={eventDate}
+                  onChange={(e) => setEventDate(e.target.value)}
+                  required
+                />
+              </div>
+
+              <div className="cash-field">
+                <label>Location</label>
+                <input
+                  value={location}
+                  onChange={(e) => setLocation(e.target.value)}
+                  placeholder="Event location"
+                />
+              </div>
+
+              <div className="cash-field">
+                <label>In Time</label>
+                <input
+                  type="time"
+                  value={inTime}
+                  onChange={(e) => setInTime(e.target.value)}
+                />
+              </div>
+
+              <div className="cash-field">
+                <label>Out Time</label>
+                <input
+                  type="time"
+                  value={outTime}
+                  onChange={(e) => setOutTime(e.target.value)}
+                />
+              </div>
+
+              <div className="cash-field cash-field-full">
+                <label>Notes</label>
+                <textarea
+                  value={notes}
+                  onChange={(e) => setNotes(e.target.value)}
+                  rows={2}
+                  placeholder="Optional event notes"
+                />
+              </div>
+
+              <div className="cash-field">
+                <label>Allocation Method</label>
+                <select
+                  value={split}
+                  onChange={(e) => setSplit(e.target.value as SplitMode)}
+                >
+                  <option value="equal">Equal Split</option>
+                  <option value="custom">Custom Amount</option>
+                </select>
+              </div>
+
+              <div className="cash-field">
+                <label>
+                  {split === "equal"
+                    ? "Total Amount (₹)"
+                    : "Optional Total (₹)"}
+                </label>
+                <input
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  value={total}
+                  onChange={(e) => setTotal(e.target.value)}
+                  required={split === "equal"}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginTop: 16 }}>
+              <h4>Select Team Members</h4>
+
+              <div className="cash-form-grid">
+                <div className="cash-field">
+                  <label>Search Members</label>
+                  <input
+                    value={memberSearch}
+                    onChange={(e) => setMemberSearch(e.target.value)}
+                    placeholder="Search team"
+                  />
+                </div>
+
+                <div className="cash-field">
+                  <label>Add Team Member</label>
+                  <div className="cash-actions">
+                    <input
+                      value={newMemberName}
+                      onChange={(e) => setNewMemberName(e.target.value)}
+                      placeholder="Member name"
+                    />
+                    <button
+                      type="button"
+                      className="cash-button"
+                      onClick={addTeamMember}
+                    >
+                      Add
+                    </button>
+                  </div>
+                </div>
+              </div>
+
+              <div className="cash-team-list" style={{ marginTop: 12 }}>
+                {teamMembers
+                  .filter((member) =>
+                    member.name.toLowerCase().includes(
+                      memberSearch.toLowerCase()
+                    )
+                  )
+                  .map((member) => (
+                    <div className="cash-team-row" key={member.id}>
+                      <label style={{ margin: 0 }}>
+                        <input
+                          type="checkbox"
+                          checked={selected.includes(member.id)}
+                          onChange={() => toggleMember(member.id)}
+                          style={{ width: "auto", marginRight: 8 }}
+                        />
+                        {member.name}
+                      </label>
+
+                      {selected.includes(member.id) &&
+                        split === "custom" && (
+                          <input
+                            type="number"
+                            min="0"
+                            step="0.01"
+                            placeholder="Allocation ₹"
+                            value={amounts[member.id] || ""}
+                            onChange={(e) =>
+                              setAmounts((previous) => ({
+                                ...previous,
+                                [member.id]: e.target.value,
+                              }))
+                            }
+                            style={{ maxWidth: 150 }}
+                          />
+                        )}
+                    </div>
+                  ))}
+              </div>
+            </div>
+
+            <div className="cash-actions" style={{ marginTop: 16 }}>
+              <button
+                type="submit"
+                className="cash-button cash-button-primary"
+              >
+                {editingId ? "Update Event" : "Save Event"}
+              </button>
+
+              <button
+                type="button"
+                className="cash-button"
+                onClick={resetForm}
+              >
+                Cancel
+              </button>
+            </div>
+          </form>
+        </section>
+      )}
+
+      {/* Team member management */}
+      <section className="cash-section">
+        <h3>Team Management</h3>
+
+        <div className="cash-field" style={{ marginBottom: 12 }}>
+          <label>Search Team Members</label>
+          <input
+            value={memberSearch}
+            onChange={(e) => setMemberSearch(e.target.value)}
+            placeholder="Search members"
+          />
+        </div>
+
+        <div className="cash-team-list">
+          {teamMembers
+            .filter((member) =>
+              member.name.toLowerCase().includes(
+                memberSearch.toLowerCase()
+              )
+            )
+            .map((member) => (
+              <div className="cash-team-row" key={member.id}>
+                {editingTeamMemberId === member.id ? (
+                  <>
+                    <input
+                      value={teamMemberEditName}
+                      onChange={(e) =>
+                        setTeamMemberEditName(e.target.value)
+                      }
+                    />
+                    <div className="cash-actions">
+                      <button
+                        className="cash-button cash-button-primary"
+                        onClick={() => saveTeamMemberEdit(member.id)}
+                      >
+                        Save
+                      </button>
+                      <button
+                        className="cash-button"
+                        onClick={() => setEditingTeamMemberId(null)}
+                      >
+                        Cancel
+                      </button>
+                    </div>
+                  </>
+                ) : (
+                  <>
+                    <strong>{member.name}</strong>
+                    <div className="cash-actions">
+                      <button
+                        className="cash-button cash-button-small"
+                        onClick={() => {
+                          setEditingTeamMemberId(member.id);
+                          setTeamMemberEditName(member.name);
+                        }}
+                      >
+                        Edit
+                      </button>
+                      <button
+                        className="cash-button cash-button-small cash-button-danger"
+                        onClick={() => deleteTeamMember(member.id)}
+                      >
+                        Delete
+                      </button>
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+
+          {teamMembers.length === 0 && (
+            <div className="cash-empty">No team members yet.</div>
+          )}
+        </div>
+      </section>
+            {/* EVENT HISTORY */}
+      <section className="cash-section">
+        <div className="cash-section-head">
+          <div>
+            <h2>Event History</h2>
+            <p>View, manage, and track every event payment.</p>
+          </div>
+          <span className="cash-badge">
+            {filteredEvents.length} events
+          </span>
+        </div>
+
+        <div className="cash-filter-grid">
+          <input
+            className="cash-input"
+            placeholder="Search event, location, member..."
+            value={eventSearch}
+            onChange={(e) => setEventSearch(e.target.value)}
+          />
+
+          <input
+            className="cash-input"
+            type="date"
+            value={filterDate}
+            onChange={(e) => setFilterDate(e.target.value)}
+          />
+
+          <select
+            className="cash-input"
+            value={paymentFilter}
+            onChange={(e) => setPaymentFilter(e.target.value)}
+          >
+            <option value="all">All payment statuses</option>
+            <option value="paid">Fully paid</option>
+            <option value="pending">Pending payments</option>
+            <option value="partial">Partially paid</option>
+          </select>
+
+          <select
+            className="cash-input"
+            value={teamFilter}
+            onChange={(e) => setTeamFilter(e.target.value)}
+          >
+            <option value="all">All team members</option>
+            {teamMembers.map((member) => (
+              <option key={member.id} value={member.id}>
+                {member.name}
+              </option>
+            ))}
+          </select>
+        </div>
+
+        {filteredEvents.length === 0 ? (
+          <div className="cash-empty">
+            <h3>No events found</h3>
+            <p>Try changing your filters or create a new event.</p>
+          </div>
+        ) : (
+          <div className="cash-event-list">
+            {filteredEvents.map((event) => {
+              const allocated = eventAllocated(event);
+              const paid = eventPaid(event);
+              const pending = eventPending(event);
+              const expanded = expandedEventId === event.id;
+
+              return (
+                <article className="cash-event-card" key={event.id}>
+                  <div className="cash-event-top">
+                    <div>
+                      <div className="cash-event-title-row">
+                        <h3>{event.eventName}</h3>
+                        <span
+                          className={`cash-status cash-status-${eventStatus(event)}`}
+                        >
+                          {statusLabel(eventStatus(event))}
+                        </span>
+                      </div>
+
+                      <div className="cash-event-meta">
+                        <span>{formatDate(event.eventAttendedDate)}</span>
+                        {event.location && <span>📍 {event.location}</span>}
+                        {event.inTime && <span>In: {event.inTime}</span>}
+                        {event.outTime && <span>Out: {event.outTime}</span>}
+                      </div>
+                    </div>
+
+                    <button
+                      className="cash-btn cash-btn-secondary"
+                      type="button"
+                      onClick={() =>
+                        setExpandedEventId(expanded ? null : event.id)
+                      }
+                    >
+                      {expanded ? "Hide Details" : "View Details"}
+                    </button>
+                  </div>
+
+                  <div className="cash-event-summary">
+                    <div>
+                      <span>Allocated</span>
+                      <strong>{money(allocated)}</strong>
+                    </div>
+                    <div>
+                      <span>Paid</span>
+                      <strong className="cash-positive">{money(paid)}</strong>
+                    </div>
+                    <div>
+                      <span>Pending</span>
+                      <strong className="cash-negative">{money(pending)}</strong>
+                    </div>
+                    <div>
+                      <span>Members</span>
+                      <strong>{event.members.length}</strong>
+                    </div>
+                  </div>
+
+                  <div className="cash-progress">
+                    <div
+                      className="cash-progress-bar"
+                      style={{
+                        width: `${
+                          allocated > 0
+                            ? Math.min((paid / allocated) * 100, 100)
+                            : 0
+                        }%`,
+                      }}
+                    />
+                  </div>
+
+                  <div className="cash-event-actions">
+                    <button
+                      className="cash-btn cash-btn-secondary"
+                      type="button"
+                      onClick={() => openEditEvent(event)}
+                    >
+                      Edit
+                    </button>
+
+                    <button
+                      className="cash-btn cash-btn-secondary"
+                      type="button"
+                      onClick={() => duplicateEvent(event)}
+                    >
+                      Duplicate
+                    </button>
+
+                    {pending > 0 && (
+                      <button
+                        className="cash-btn cash-btn-primary"
+                        type="button"
+                        onClick={() => payAllPendingMembers(event)}
+                      >
+                        Pay All Pending
+                      </button>
+                    )}
+
+                    <button
+                      className="cash-btn cash-btn-danger"
+                      type="button"
+                      onClick={() => deleteEvent(event.id)}
+                    >
+                      Delete
+                    </button>
+                  </div>
+
+                  {expanded && (
+                    <div className="cash-event-details">
+                      {event.notes && (
+                        <div className="cash-notes">
+                          <strong>Notes:</strong> {event.notes}
+                        </div>
+                      )}
+
+                      <div className="cash-member-list">
+                        {event.members.map((member) =>
+                          renderEventMember(event, member)
+                        )}
+                      </div>
+                    </div>
+                  )}
+                </article>
+              );
+            })}
+          </div>
+        )}
+      </section>
+            {/* REPORTS */}
+      <section className="cash-section">
+        <div className="cash-section-head">
+          <div>
+            <h2>Reports & Analytics</h2>
+            <p>Track payments and pending balances across your team.</p>
+          </div>
+
+          <div className="cash-tabs">
+            <button
+              type="button"
+              className={`cash-tab ${reportTab === "members" ? "active" : ""}`}
+              onClick={() => setReportTab("members")}
+            >
+              Team Reports
+            </button>
+            <button
+              type="button"
+              className={`cash-tab ${reportTab === "period" ? "active" : ""}`}
+              onClick={() => setReportTab("period")}
+            >
+              Period Summary
+            </button>
+          </div>
+        </div>
+
+        {reportTab === "members" ? (
+          <>
+            <input
+              className="cash-input cash-report-search"
+              placeholder="Search team member..."
+              value={reportSearch}
+              onChange={(e) => setReportSearch(e.target.value)}
+            />
+
+            {filteredMemberReports.length === 0 ? (
+              <div className="cash-empty">
+                <h3>No report data found</h3>
+                <p>Try another search or add team members.</p>
+              </div>
+            ) : (
+              <div className="cash-table-wrap">
+                <table className="cash-table">
+                  <thead>
+                    <tr>
+                      <th>Team Member</th>
+                      <th>Events</th>
+                      <th>Allocated</th>
+                      <th>Paid</th>
+                      <th>Pending</th>
+                    </tr>
+                  </thead>
+                  <tbody>
+                    {filteredMemberReports.map((report) => (
+                      <tr key={report.teamMemberId}>
+                        <td>{report.memberName}</td>
+                        <td>{report.eventCount}</td>
+                        <td>{money(report.allocated)}</td>
+                        <td className="cash-positive">{money(report.paid)}</td>
+                        <td className="cash-negative">{money(report.pending)}</td>
+                      </tr>
+                    ))}
+                  </tbody>
+                </table>
+              </div>
+            )}
+          </>
+        ) : (
+          <>
+            <div className="cash-filter-grid">
+              <select
+                className="cash-input"
+                value={periodMode}
+                onChange={(e) =>
+                  setPeriodMode(e.target.value as "month" | "year")
+                }
+              >
+                <option value="month">Monthly</option>
+                <option value="year">Yearly</option>
+              </select>
+
+              {periodMode === "month" && (
+                <select
+                  className="cash-input"
+                  value={periodMonth}
+                  onChange={(e) => setPeriodMonth(Number(e.target.value))}
+                >
+                  {Array.from({ length: 12 }, (_, index) => (
+                    <option key={index} value={index}>
+                      {getMonthName(index)}
+                    </option>
+                  ))}
+                </select>
+              )}
+
+              <select
+                className="cash-input"
+                value={periodYear}
+                onChange={(e) => setPeriodYear(Number(e.target.value))}
+              >
+                {getYearOptions().map((year) => (
+                  <option key={year} value={year}>
+                    {year}
+                  </option>
+                ))}
+              </select>
+            </div>
+
+            <div className="cash-stats-grid cash-period-stats">
+              <div className="cash-stat-card">
+                <span>Allocated</span>
+                <strong>{money(periodSummary.allocated)}</strong>
+              </div>
+              <div className="cash-stat-card">
+                <span>Paid</span>
+                <strong className="cash-positive">
+                  {money(periodSummary.paid)}
+                </strong>
+              </div>
+              <div className="cash-stat-card">
+                <span>Pending</span>
+                <strong className="cash-negative">
+                  {money(periodSummary.pending)}
+                </strong>
+              </div>
+              <div className="cash-stat-card">
+                <span>Payments Received</span>
+                <strong>{periodSummary.paymentCount}</strong>
+              </div>
             </div>
           </>
         )}
       </section>
-
-      {/* Payment modal for event-member Record Payment buttons */}
+            {/* PAYMENT MODAL */}
       {paymentOpen && (
         <div
-          className="cash-modal-backdrop"
-          onClick={(event) => {
-            if (event.target === event.currentTarget) {
-              setPaymentOpen(false);
-            }
-          }}
+          className="cash-modal-overlay"
+          onClick={() => setPaymentOpen(false)}
         >
-          <div className="cash-modal">
-            <h3>Record Payment</h3>
+          <div
+            className="cash-modal"
+            onClick={(e) => e.stopPropagation()}
+          >
+            <div className="cash-modal-head">
+              <div>
+                <h2>Record Payment</h2>
+                <p>Enter the payment details below.</p>
+              </div>
+
+              <button
+                className="cash-modal-close"
+                type="button"
+                onClick={() => setPaymentOpen(false)}
+              >
+                ×
+              </button>
+            </div>
 
             <form onSubmit={savePayment}>
               <div className="cash-form-grid">
-                <div className="cash-field cash-field-full">
+                <div className="cash-field full">
                   <label>Event</label>
-                  <input
-                    value={
-                      distributions.find(
-                        (event) => event.id === paymentEventId
-                      )?.eventName || ""
-                    }
-                    readOnly
-                  />
+                  <select
+                    className="cash-input"
+                    value={paymentEventId}
+                    onChange={(e) => {
+                      setPaymentEventId(e.target.value);
+                      setPaymentMemberId("");
+                    }}
+                    required
+                  >
+                    <option value="">Select event</option>
+                    {events.map((event) => (
+                      <option key={event.id} value={event.id}>
+                        {event.eventName}
+                      </option>
+                    ))}
+                  </select>
                 </div>
 
-                <div className="cash-field cash-field-full">
+                <div className="cash-field full">
                   <label>Team Member</label>
-                  <input
-                    value={
-                      distributions
-                        .find((event) => event.id === paymentEventId)
-                        ?.members.find(
-                          (member) => member.id === paymentMemberId
-                        )?.memberName || ""
-                    }
-                    readOnly
-                  />
+                  <select
+                    className="cash-input"
+                    value={paymentMemberId}
+                    onChange={(e) => setPaymentMemberId(e.target.value)}
+                    required
+                  >
+                    <option value="">Select member</option>
+                    {events
+                      .find((event) => event.id === paymentEventId)
+                      ?.members.map((member) => (
+                        <option key={member.id} value={member.id}>
+                          {member.memberName}
+                        </option>
+                      ))}
+                  </select>
                 </div>
 
                 <div className="cash-field">
                   <label>Amount (₹)</label>
                   <input
+                    className="cash-input"
                     type="number"
                     min="0.01"
                     step="0.01"
                     value={paymentAmount}
-                    onChange={(event) =>
-                      setPaymentAmount(event.target.value)
-                    }
+                    onChange={(e) => setPaymentAmount(e.target.value)}
                     required
                   />
                 </div>
@@ -1234,41 +2128,39 @@ export default function CashDistribution({
                 <div className="cash-field">
                   <label>Payment Date</label>
                   <input
+                    className="cash-input"
                     type="date"
                     value={paymentDate}
-                    onChange={(event) =>
-                      setPaymentDate(event.target.value)
-                    }
+                    onChange={(e) => setPaymentDate(e.target.value)}
                     required
                   />
                 </div>
 
-                <div className="cash-field cash-field-full">
+                <div className="cash-field full">
                   <label>Payment Note / Reference</label>
                   <input
+                    className="cash-input"
+                    placeholder="Optional note"
                     value={paymentNote}
-                    onChange={(event) =>
-                      setPaymentNote(event.target.value)
-                    }
-                    placeholder="Optional reference"
+                    onChange={(e) => setPaymentNote(e.target.value)}
                   />
                 </div>
               </div>
 
-              <div className="cash-actions" style={{ marginTop: 18 }}>
+              <div className="cash-modal-actions">
                 <button
-                  type="submit"
-                  className="cash-button cash-button-primary"
-                >
-                  Save Payment
-                </button>
-
-                <button
+                  className="cash-btn cash-btn-secondary"
                   type="button"
-                  className="cash-button"
                   onClick={() => setPaymentOpen(false)}
                 >
                   Cancel
+                </button>
+
+                <button
+                  className="cash-btn cash-btn-primary"
+                  type="submit"
+                >
+                  Save Payment
                 </button>
               </div>
             </form>
@@ -1278,4 +2170,4 @@ export default function CashDistribution({
     </div>
   );
 }
-  
+      

@@ -219,22 +219,7 @@ export default function CashDistribution({
     ),
     [distributions, previousMonth]
   );
-
-  const previousMonthPayments = useMemo(
-    () => distributions
-      .flatMap((event) =>
-        event.members.flatMap((member) =>
-          (member.payments || [])
-            .filter((payment) =>
-              payment.paidDate?.startsWith(previousMonth)
-            )
-            .map((payment) => payment.amount)
-        )
-      )
-      .reduce((sum, amount) => sum + amount, 0),
-    [distributions, previousMonth]
-  );
-
+  
   const filteredEvents = useMemo(
     () => distributions.filter((event) => {
       const query = eventSearch.trim().toLowerCase();

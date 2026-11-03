@@ -1060,7 +1060,7 @@ export default function CashDistribution({
             onClick={() => openPayment(event, member)}
           >
             Record Payment
-            </button>
+          </button>
         )}
 
         {member.payments?.length ? (
@@ -1274,6 +1274,132 @@ export default function CashDistribution({
           border-bottom: 1px solid var(--cash-border);
           font-size: 13px;
         }
+
+        /* Premium reporting dashboard */
+        .cash-report-shell {
+          overflow: hidden;
+          padding: 0;
+          background: linear-gradient(145deg, #111c32 0%, #0d1729 100%);
+          border-color: #2a3c58;
+        }
+        .cash-report-hero {
+          display: flex; align-items: flex-start; justify-content: space-between;
+          gap: 18px; flex-wrap: wrap; padding: 22px 22px 18px;
+          border-bottom: 1px solid #263651;
+          background: radial-gradient(ellipse at top right, rgba(52,211,153,.12), transparent 48%);
+        }
+        .cash-report-eyebrow {
+          display: inline-flex; align-items: center; gap: 7px;
+          color: #5ee4b4; font-size: 11px; font-weight: 800;
+          letter-spacing: .12em; text-transform: uppercase; margin-bottom: 8px;
+        }
+        .cash-report-hero h2 { margin: 0 0 7px; font-size: 23px; letter-spacing: -.03em; }
+        .cash-report-hero p { margin: 0; color: #9aa9c2; font-size: 13px; line-height: 1.5; }
+        .cash-report-tabs {
+          display: inline-flex; gap: 5px; padding: 5px;
+          background: #091323; border: 1px solid #263651; border-radius: 12px;
+        }
+        .cash-report-tabs .cash-tab {
+          border: 0; border-radius: 8px; padding: 10px 13px;
+          background: transparent; color: #9aa9c2; font-size: 12px; font-weight: 700;
+          cursor: pointer; transition: .18s ease;
+        }
+        .cash-report-tabs .cash-tab.active {
+          background: linear-gradient(135deg, #16a875, #0f8f68);
+          color: #fff; box-shadow: 0 5px 18px rgba(16,185,129,.18);
+        }
+        .cash-report-body { padding: 20px 22px 22px; }
+        .cash-report-kpis {
+          display: grid; grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 12px; margin-bottom: 18px;
+        }
+        .cash-report-kpi {
+          min-width: 0; padding: 15px; border: 1px solid #293b57;
+          border-radius: 13px; background: linear-gradient(160deg, #172640, #101b30);
+        }
+        .cash-report-kpi-label {
+          display: flex; align-items: center; gap: 7px; color: #a6b4ca;
+          font-size: 11px; font-weight: 700; letter-spacing: .04em; margin-bottom: 10px;
+        }
+        .cash-report-kpi strong { display: block; font-size: clamp(17px, 2.4vw, 23px); letter-spacing: -.025em; overflow-wrap: anywhere; }
+        .cash-report-kpi small { display: block; margin-top: 6px; color: #8496b1; font-size: 10px; }
+        .cash-report-kpi.green { border-top: 2px solid #34d399; }
+        .cash-report-kpi.blue { border-top: 2px solid #60a5fa; }
+        .cash-report-kpi.amber { border-top: 2px solid #fbbf24; }
+        .cash-report-kpi.violet { border-top: 2px solid #a78bfa; }
+        .cash-report-toolbar {
+          display: flex; align-items: center; justify-content: space-between;
+          flex-wrap: wrap; gap: 12px; margin-bottom: 15px;
+        }
+        .cash-report-toolbar-title h3 { margin: 0 0 4px; font-size: 15px; }
+        .cash-report-toolbar-title p { margin: 0; color: #8496b1; font-size: 12px; }
+        .cash-report-search { max-width: 280px; }
+        .cash-report-period-controls {
+          display: grid; grid-template-columns: minmax(130px, .7fr) minmax(150px, 1fr) minmax(100px, .6fr);
+          gap: 10px; margin-bottom: 17px;
+        }
+        .cash-report-progress {
+          height: 7px; width: 100%; overflow: hidden; border-radius: 999px;
+          background: #263651; margin-top: 7px;
+        }
+        .cash-report-progress > span {
+          display: block; height: 100%; border-radius: inherit;
+          background: linear-gradient(90deg, #10b981, #5ee4b4);
+        }
+        .cash-report-table-wrap {
+          overflow-x: auto; border: 1px solid #263651; border-radius: 12px;
+          background: rgba(7,15,29,.35);
+        }
+        .cash-report-table { width: 100%; border-collapse: collapse; min-width: 620px; }
+        .cash-report-table th {
+          padding: 12px 14px; text-align: left; color: #8fa2bd;
+          background: #0b1628; font-size: 10px; font-weight: 800;
+          text-transform: uppercase; letter-spacing: .08em; white-space: nowrap;
+        }
+        .cash-report-table td {
+          padding: 14px; border-top: 1px solid #21314a; font-size: 12px;
+          color: #dce6f5; vertical-align: middle;
+        }
+        .cash-report-table tbody tr:hover { background: rgba(96,165,250,.045); }
+        .cash-report-person { display: flex; align-items: center; gap: 10px; min-width: 150px; }
+        .cash-report-avatar {
+          display: grid; place-items: center; flex: 0 0 34px; height: 34px;
+          border-radius: 10px; color: #a7f3d0; background: #123a32;
+          border: 1px solid #1e5a49; font-size: 12px; font-weight: 800;
+        }
+        .cash-report-person strong { display: block; font-size: 12px; }
+        .cash-report-person small { display: block; color: #8496b1; font-size: 10px; margin-top: 3px; }
+        .cash-report-status {
+          display: inline-flex; align-items: center; border-radius: 999px;
+          padding: 5px 8px; font-size: 10px; font-weight: 800; white-space: nowrap;
+        }
+        .cash-report-status.paid { background: rgba(52,211,153,.12); color: #5ee4b4; }
+        .cash-report-status.partial { background: rgba(251,191,36,.12); color: #fbbf24; }
+        .cash-report-status.unpaid { background: rgba(248,113,113,.12); color: #fb8b96; }
+        .cash-report-empty {
+          padding: 28px 16px; text-align: center; color: #9aa9c2;
+          border: 1px dashed #31435f; border-radius: 12px;
+        }
+        .cash-report-empty strong { display: block; color: #e5edf8; margin-bottom: 5px; }
+        .cash-report-period-footer {
+          display: flex; justify-content: space-between; flex-wrap: wrap; gap: 12px;
+          margin-top: 16px; padding: 14px 16px; border: 1px solid #263651;
+          border-radius: 12px; background: #0b1628; color: #9aa9c2; font-size: 12px;
+        }
+        .cash-report-period-footer strong { color: #e5edf8; }
+        @media(max-width: 760px) {
+          .cash-report-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+          .cash-report-period-controls { grid-template-columns: 1fr 1fr; }
+          .cash-report-period-controls > :last-child { grid-column: 1 / -1; }
+          .cash-report-hero, .cash-report-body { padding-left: 15px; padding-right: 15px; }
+          .cash-report-tabs { width: 100%; }
+          .cash-report-tabs .cash-tab { flex: 1; }
+        }
+        @media(max-width: 420px) {
+          .cash-report-kpis { grid-template-columns: 1fr 1fr; gap: 8px; }
+          .cash-report-kpi { padding: 12px; }
+          .cash-report-kpi-label { font-size: 10px; }
+        }
         @media(max-width: 650px) {
           .cash-grid { grid-template-columns: 1fr; }
           .cash-form-grid { grid-template-columns: 1fr; }
@@ -1320,101 +1446,6 @@ export default function CashDistribution({
         </div>
       </div>
 
-      <section className="cash-section">
-        <h3>Quick Payment</h3>
-        <form onSubmit={savePayment}>
-          <div className="cash-form-grid">
-            <div className="cash-field">
-              <label>Event</label>
-              <select
-                value={paymentEventId || ""}
-                onChange={(e) => {
-                  setPaymentEventId(e.target.value || null);
-                  setPaymentMemberId(null);
-                }}
-                required
-              >
-                <option value="">Select event</option>
-                {distributions.map((event) => (
-                  <option key={event.id} value={event.id}>
-                    {event.eventName}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="cash-field">
-              <label>Team Member</label>
-              <select
-                value={paymentMemberId || ""}
-                onChange={(e) => {
-                  const id = e.target.value;
-                  setPaymentMemberId(id || null);
-
-                  const member = distributions
-                    .find((event) => event.id === paymentEventId)
-                    ?.members.find((item) => item.id === id);
-
-                  if (member) {
-                    setPaymentAmount(String(memberPending(member)));
-                  }
-                }}
-                required
-              >
-                <option value="">Select member</option>
-                {distributions
-                  .find((event) => event.id === paymentEventId)
-                  ?.members.filter((member) => memberPending(member) > 0.009)
-                  .map((member) => (
-                    <option key={member.id} value={member.id}>
-                      {member.memberName}
-                    </option>
-                  ))}
-              </select>
-            </div>
-
-            <div className="cash-field">
-              <label>Amount (₹)</label>
-              <input
-                type="number"
-                min="0.01"
-                step="0.01"
-                value={paymentAmount}
-                onChange={(e) => setPaymentAmount(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="cash-field">
-              <label>Payment Date</label>
-              <input
-                type="date"
-                value={paymentDate}
-                onChange={(e) => setPaymentDate(e.target.value)}
-                required
-              />
-            </div>
-
-            <div className="cash-field cash-field-full">
-              <label>Payment Note</label>
-              <input
-                value={paymentNote}
-                onChange={(e) => setPaymentNote(e.target.value)}
-                placeholder="Optional payment reference"
-              />
-            </div>
-          </div>
-
-          <div className="cash-actions" style={{ marginTop: 12 }}>
-            <button
-              type="submit"
-              className="cash-button cash-button-primary"
-            >
-              Record Payment
-            </button>
-          </div>
-        </form>
-      </section>
             {/* Event form */}
       {formOpen && (
         <section className="cash-section">
@@ -1861,15 +1892,15 @@ export default function CashDistribution({
           </div>
         )}
       </section>
-            {/* REPORTS */}
-      <section className="cash-section">
-        <div className="cash-section-head">
+            {/* PREMIUM REPORTS & ANALYTICS */}
+      <section className="cash-section cash-report-shell">
+        <div className="cash-report-hero">
           <div>
-            <h2>Reports & Analytics</h2>
-            <p>Track payments and pending balances across your team.</p>
+            <div className="cash-report-eyebrow">✦ Insights dashboard</div>
+            <h2>Reports &amp; Analytics</h2>
+            <p>Understand team payouts, event performance and outstanding balances.</p>
           </div>
-
-          <div className="cash-tabs">
+          <div className="cash-report-tabs">
             <button
               type="button"
               className={`cash-tab ${reportTab === "members" ? "active" : ""}`}
@@ -1887,107 +1918,194 @@ export default function CashDistribution({
           </div>
         </div>
 
-        {reportTab === "members" ? (
-          <>
-            <input
-              className="cash-input cash-report-search"
-              placeholder="Search team member..."
-              value={reportSearch}
-              onChange={(e) => setReportSearch(e.target.value)}
-            />
-
-            {filteredMemberReports.length === 0 ? (
-              <div className="cash-empty">
-                <h3>No report data found</h3>
-                <p>Try another search or add team members.</p>
+        <div className="cash-report-body">
+          {reportTab === "members" ? (
+            <>
+              <div className="cash-report-kpis">
+                <div className="cash-report-kpi blue">
+                  <div className="cash-report-kpi-label">◈ TEAM MEMBERS</div>
+                  <strong>{filteredMemberReports.length}</strong>
+                  <small>Members matching your search</small>
+                </div>
+                <div className="cash-report-kpi violet">
+                  <div className="cash-report-kpi-label">▤ EVENTS ASSIGNED</div>
+                  <strong>{filteredMemberReports.reduce((sum, person) => sum + person.eventCount, 0)}</strong>
+                  <small>Total team event assignments</small>
+                </div>
+                <div className="cash-report-kpi green">
+                  <div className="cash-report-kpi-label">↗ TOTAL PAID</div>
+                  <strong>{money(filteredMemberReports.reduce((sum, person) => sum + person.paid, 0))}</strong>
+                  <small>Payments recorded for this team</small>
+                </div>
+                <div className="cash-report-kpi amber">
+                  <div className="cash-report-kpi-label">◷ OUTSTANDING</div>
+                  <strong>{money(filteredMemberReports.reduce((sum, person) => sum + person.pending, 0))}</strong>
+                  <small>Amount still to be paid</small>
+                </div>
               </div>
-            ) : (
-              <div className="cash-table-wrap">
-                <table className="cash-table">
-                  <thead>
-                    <tr>
-                      <th>Team Member</th>
-                      <th>Events</th>
-                      <th>Allocated</th>
-                      <th>Paid</th>
-                      <th>Pending</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {filteredMemberReports.map((report) => (
-                      <tr key={report.id}>
-                        <td>{report.name}</td>
-                        <td>{report.eventCount}</td>
-                        <td>{money(report.allocated)}</td>
-                        <td className="cash-positive">{money(report.paid)}</td>
-                        <td className="cash-negative">{money(report.pending)}</td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            )}
-          </>
-        ) : (
-          <>
-            <div className="cash-filter-grid">
-              <select
-                className="cash-input"
-                value={periodMode}
-                onChange={(e) =>
-                  setPeriodMode(e.target.value as PeriodMode)
-                }
-              >
-                <option value="monthly">Monthly</option>
-                <option value="yearly">Yearly</option>
-              </select>
 
-              {periodMode === "monthly" && (
+              <div className="cash-report-toolbar">
+                <div className="cash-report-toolbar-title">
+                  <h3>Team payment performance</h3>
+                  <p>Allocation, payment progress and outstanding amount by member.</p>
+                </div>
                 <input
-                  className="cash-input"
-                  type="month"
-                  value={selectedMonth}
-                  onChange={(e) => setSelectedMonth(e.target.value)}
+                  className="cash-input cash-report-search"
+                  placeholder="⌕  Search team member..."
+                  value={reportSearch}
+                  onChange={(e) => setReportSearch(e.target.value)}
                 />
+              </div>
+
+              {filteredMemberReports.length === 0 ? (
+                <div className="cash-report-empty">
+                  <strong>No report data found</strong>
+                  Try another search or add team members to your roster.
+                </div>
+              ) : (
+                <div className="cash-report-table-wrap">
+                  <table className="cash-report-table">
+                    <thead>
+                      <tr>
+                        <th>Team Member</th>
+                        <th>Events</th>
+                        <th>Allocated</th>
+                        <th>Paid</th>
+                        <th>Payment progress</th>
+                        <th>Pending</th>
+                        <th>Status</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {filteredMemberReports.map((report) => {
+                        const progress = report.allocated > 0
+                          ? Math.min(100, (report.paid / report.allocated) * 100)
+                          : 0;
+                        const status = report.pending <= 0.009
+                          ? "paid"
+                          : report.paid > 0
+                            ? "partial"
+                            : "unpaid";
+                        return (
+                          <tr key={report.id}>
+                            <td>
+                              <div className="cash-report-person">
+                                <div className="cash-report-avatar">
+                                  {(report.name || "?").trim().slice(0, 1).toUpperCase()}
+                                </div>
+                                <div>
+                                  <strong>{report.name}</strong>
+                                  <small>Team member</small>
+                                </div>
+                              </div>
+                            </td>
+                            <td>{report.eventCount}</td>
+                            <td>{money(report.allocated)}</td>
+                            <td className="cash-positive">{money(report.paid)}</td>
+                            <td>
+                              <div style={{ minWidth: 95 }}>
+                                <small style={{ color: "#9aa9c2" }}>{progress.toFixed(0)}%</small>
+                                <div className="cash-report-progress">
+                                  <span style={{ width: `${progress}%` }} />
+                                </div>
+                              </div>
+                            </td>
+                            <td className="cash-negative">{money(report.pending)}</td>
+                            <td>
+                              <span className={`cash-report-status ${status}`}>
+                                {status === "paid" ? "Paid" : status === "partial" ? "Partial" : "Unpaid"}
+                              </span>
+                            </td>
+                          </tr>
+                        );
+                      })}
+                    </tbody>
+                  </table>
+                </div>
               )}
-
-              <select
-                className="cash-input"
-                value={selectedYear}
-                onChange={(e) => setSelectedYear(e.target.value)}
-              >
-                {getYearOptions().map((year) => (
-                  <option key={year} value={year}>
-                    {year}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="cash-stats-grid cash-period-stats">
-              <div className="cash-stat-card">
-                <span>Allocated</span>
-                <strong>{money(periodSummary.allocated)}</strong>
+            </>
+          ) : (
+            <>
+              <div className="cash-report-toolbar">
+                <div className="cash-report-toolbar-title">
+                  <h3>Period performance</h3>
+                  <p>Review allocations and payments for a selected period.</p>
+                </div>
               </div>
-              <div className="cash-stat-card">
-                <span>Paid</span>
-                <strong className="cash-positive">
-                  {money(periodSummary.paid)}
+
+              <div className="cash-report-period-controls">
+                <select
+                  className="cash-input"
+                  value={periodMode}
+                  onChange={(e) => setPeriodMode(e.target.value as PeriodMode)}
+                >
+                  <option value="monthly">Monthly view</option>
+                  <option value="yearly">Yearly view</option>
+                </select>
+
+                {periodMode === "monthly" && (
+                  <input
+                    className="cash-input"
+                    type="month"
+                    value={selectedMonth}
+                    onChange={(e) => setSelectedMonth(e.target.value)}
+                  />
+                )}
+
+                <select
+                  className="cash-input"
+                  value={selectedYear}
+                  onChange={(e) => setSelectedYear(e.target.value)}
+                >
+                  {getYearOptions().map((year) => (
+                    <option key={year} value={year}>{year}</option>
+                  ))}
+                </select>
+              </div>
+
+              <div className="cash-report-kpis">
+                <div className="cash-report-kpi blue">
+                  <div className="cash-report-kpi-label">▤ ALLOCATED</div>
+                  <strong>{money(periodSummary.allocated)}</strong>
+                  <small>{periodSummary.eventCount} event{periodSummary.eventCount === 1 ? "" : "s"} in period</small>
+                </div>
+                <div className="cash-report-kpi green">
+                  <div className="cash-report-kpi-label">↗ PAID</div>
+                  <strong>{money(periodSummary.paid)}</strong>
+                  <small>{periodPayments.length} payment{periodPayments.length === 1 ? "" : "s"} received</small>
+                </div>
+                <div className="cash-report-kpi amber">
+                  <div className="cash-report-kpi-label">◷ PENDING</div>
+                  <strong>{money(periodSummary.pending)}</strong>
+                  <small>Outstanding balance</small>
+                </div>
+                <div className="cash-report-kpi violet">
+                  <div className="cash-report-kpi-label">◎ COLLECTION RATE</div>
+                  <strong>{periodSummary.allocated > 0
+                    ? `${Math.min(100, (periodSummary.paid / periodSummary.allocated) * 100).toFixed(1)}%`
+                    : "0.0%"}</strong>
+                  <small>Paid compared with allocated</small>
+                </div>
+              </div>
+
+              <div className="cash-report-period-footer">
+                <span>Collection progress</span>
+                <strong>
+                  {periodSummary.allocated > 0
+                    ? `${Math.min(100, (periodSummary.paid / periodSummary.allocated) * 100).toFixed(1)}% collected`
+                    : "No allocation recorded"}
                 </strong>
               </div>
-              <div className="cash-stat-card">
-                <span>Pending</span>
-                <strong className="cash-negative">
-                  {money(periodSummary.pending)}
-                </strong>
+              <div className="cash-report-progress" style={{ height: 10, marginTop: 10 }}>
+                <span style={{
+                  width: `${periodSummary.allocated > 0
+                    ? Math.min(100, (periodSummary.paid / periodSummary.allocated) * 100)
+                    : 0}%`
+                }} />
               </div>
-              <div className="cash-stat-card">
-                <span>Payments Received</span>
-                <strong>{periodPayments.length}</strong>
-              </div>
-            </div>
-          </>
-        )}
+            </>
+          )}
+        </div>
       </section>
             {/* PAYMENT MODAL */}
       {paymentOpen && (

@@ -5,6 +5,7 @@ import App from "./App";
 import GoogleAuth from "./components/GoogleAuth";
 import { auth, onAuthStateChanged, logout } from "./services/firebase";
 import "./styles.css";
+import "./styles/premium-ui.css";
 
 function Root() {
   const [user, setUser] = useState<typeof auth.currentUser>(null);

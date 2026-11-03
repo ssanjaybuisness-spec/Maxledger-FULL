@@ -91,6 +91,9 @@ export interface CashDistribution {
   id: string;
   eventName: string;
   eventAttendedDate: string;
+  location?: string;
+  inTime?: string;
+  outTime?: string;
   members: DistributionMember[];
   notes?: string;
   createdAt: number;

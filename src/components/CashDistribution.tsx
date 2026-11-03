@@ -1396,19 +1396,19 @@ export default function CashDistribution({
               <p className="cash-empty-small">No member records found.</p>
             ) : (
               filteredMemberReports.map((member) => (
-                <div className="cash-report-row" key={member.memberName}>
-                  <div>
-                    <strong>{member.memberName}</strong>
-                    <span>{member.eventCount} event(s)</span>
-                  </div>
-                  <div>
-                    <strong>{money(member.allocated)}</strong>
-                    <span>
-                      {money(member.paid)} received · {money(member.pending)} pending
-                    </span>
-                  </div>
-                </div>
-              ))
+  <div className="cash-report-row" key={member.id}>
+    <div>
+      <strong>{member.name}</strong>
+      <span>{member.eventCount} event(s)</span>
+    </div>
+    <div>
+      <strong>{money(member.allocated)}</strong>
+      <span>
+        {money(member.paid)} received · {money(member.pending)} pending
+      </span>
+    </div>
+  </div>
+))
             )}
           </div>
         )}

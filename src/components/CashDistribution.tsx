@@ -1003,6 +1003,251 @@ export default function CashDistribution({
     }
   }
 
+  // Generate a standalone, branded receipt for an individual team-member payment.
+  async function exportPaymentReceipt(
+    event: CashDistribution,
+    member: DistributionMember,
+    payment: DistributionPayment
+  ) {
+    const payments = member.payments || [];
+    const paymentIndex = payments.findIndex((item) => item.id === payment.id);
+    const cumulativePaid = payments
+      .slice(0, paymentIndex >= 0 ? paymentIndex + 1 : payments.length)
+      .reduce((sum, item) => sum + Number(item.amount || 0), 0);
+    const remainingBalance = Math.max(
+      0,
+      Number(member.allocatedAmount || 0) - cumulativePaid
+    );
+    const receiptReference = `ML-${String(payment.id || "").slice(0, 8).toUpperCase() || "PAYMENT"}`;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Payment Receipt - ${escapeHtml(event.eventName)}</title>
+        <style>
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            padding: 28px;
+            background: #f3f6f5;
+            color: #17231f;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          .receipt {
+            width: 100%;
+            max-width: 720px;
+            margin: 0 auto;
+            padding: 34px;
+            background: #fff;
+            border: 1px solid #dce7e1;
+            border-radius: 18px;
+          }
+          .brand {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: 16px;
+            padding-bottom: 22px;
+            border-bottom: 2px solid #d9eee5;
+          }
+          .brand h1 {
+            margin: 0;
+            color: #087a55;
+            font-size: 28px;
+            letter-spacing: -1px;
+          }
+          .brand p {
+            margin: 6px 0 0;
+            color: #718078;
+            font-size: 12px;
+          }
+          .receipt-label {
+            color: #087a55;
+            font-size: 11px;
+            font-weight: 800;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            text-align: right;
+          }
+          .reference {
+            margin-top: 7px;
+            color: #52645b;
+            font-size: 11px;
+            text-align: right;
+            overflow-wrap: anywhere;
+          }
+          .amount-block {
+            margin: 26px 0;
+            padding: 22px;
+            border-radius: 14px;
+            background: #effaf4;
+            text-align: center;
+          }
+          .amount-block span {
+            display: block;
+            color: #60756a;
+            font-size: 12px;
+          }
+          .amount-block strong {
+            display: block;
+            margin-top: 7px;
+            color: #087a55;
+            font-size: 32px;
+          }
+          h2 {
+            margin: 26px 0 12px;
+            font-size: 14px;
+            color: #263b31;
+          }
+          .details {
+            width: 100%;
+            border-collapse: collapse;
+          }
+          .details td {
+            padding: 12px 4px;
+            border-bottom: 1px solid #edf1ee;
+            font-size: 13px;
+            vertical-align: top;
+          }
+          .details td:first-child {
+            width: 42%;
+            color: #718078;
+          }
+          .details td:last-child {
+            color: #1e3027;
+            font-weight: 700;
+            text-align: right;
+            overflow-wrap: anywhere;
+          }
+          .balance {
+            margin-top: 20px;
+            padding: 16px;
+            border: 1px solid #dce7e1;
+            border-radius: 12px;
+          }
+          .balance-row {
+            display: flex;
+            justify-content: space-between;
+            gap: 12px;
+            padding: 5px 0;
+            font-size: 13px;
+          }
+          .balance-row strong { color: #087a55; }
+          .note {
+            margin-top: 22px;
+            padding: 13px 15px;
+            border-left: 3px solid #0b9a6a;
+            background: #f7faf8;
+            color: #52645b;
+            font-size: 12px;
+            line-height: 1.5;
+            overflow-wrap: anywhere;
+          }
+          .footer {
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid #e7eee9;
+            color: #849189;
+            font-size: 11px;
+            line-height: 1.6;
+            text-align: center;
+          }
+          @media print {
+            body { padding: 0; background: #fff; }
+            .receipt {
+              max-width: none;
+              border: 0;
+              border-radius: 0;
+              padding: 20px;
+            }
+          }
+        </style>
+      </head>
+      <body>
+        <main class="receipt">
+          <header class="brand">
+            <div>
+              <h1>MaxLedger</h1>
+              <p>Event cash distribution</p>
+            </div>
+            <div>
+              <div class="receipt-label">Payment Receipt</div>
+              <div class="reference">Receipt ref: ${escapeHtml(receiptReference)}</div>
+            </div>
+          </header>
+
+          <section class="amount-block">
+            <span>Payment received by team member</span>
+            <strong>${money(payment.amount)}</strong>
+          </section>
+
+          <h2>Payment details</h2>
+          <table class="details">
+            <tr><td>Team member</td><td>${escapeHtml(member.memberName)}</td></tr>
+            <tr><td>Event</td><td>${escapeHtml(event.eventName)}</td></tr>
+            <tr><td>Event date</td><td>${escapeHtml(formatDate(event.eventAttendedDate))}</td></tr>
+            <tr><td>Location</td><td>${escapeHtml(event.location || "—")}</td></tr>
+            <tr><td>Payment date</td><td>${escapeHtml(formatDate(payment.paidDate))}</td></tr>
+            <tr><td>Payment reference / note</td><td>${escapeHtml(payment.referenceNote || "—")}</td></tr>
+          </table>
+
+          <h2>Allocation summary</h2>
+          <div class="balance">
+            <div class="balance-row">
+              <span>Total allocated</span>
+              <strong>${money(member.allocatedAmount)}</strong>
+            </div>
+            <div class="balance-row">
+              <span>Total paid up to this receipt</span>
+              <strong>${money(cumulativePaid)}</strong>
+            </div>
+            <div class="balance-row">
+              <span>Remaining balance</span>
+              <strong>${money(remainingBalance)}</strong>
+            </div>
+          </div>
+
+          <div class="note">
+            This receipt records a payment entry saved in MaxLedger. Keep it for your records.
+          </div>
+          <footer class="footer">
+            Generated on ${escapeHtml(formatDate(today()))}<br />
+            Generated by MaxLedger
+          </footer>
+        </main>
+      </body>
+      </html>
+    `;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Printer.printHtml({ html });
+      } else {
+        const printWindow = window.open("", "_blank");
+
+        if (!printWindow) {
+          alert("Allow pop-ups to print or save this receipt as a PDF.");
+          return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+        };
+      }
+    } catch (error) {
+      console.error("Payment receipt export failed:", error);
+      alert("Unable to create the payment receipt. Please try again.");
+    }
+  }
+
   function getYearOptions() {
     const years = new Set<string>([today().slice(0, 4)]);
 
@@ -1076,15 +1321,24 @@ export default function CashDistribution({
                 {payment.referenceNote && (
                   <span>{payment.referenceNote}</span>
                 )}
-                <button
-                  type="button"
-                  className="cash-delete-link"
-                  onClick={() =>
-                    deletePayment(event.id, member.id, payment.id)
-                  }
-                >
-                  Delete
-                </button>
+                <div className="cash-payment-actions">
+                  <button
+                    type="button"
+                    className="cash-receipt-link"
+                    onClick={() => exportPaymentReceipt(event, member, payment)}
+                  >
+                    Receipt PDF
+                  </button>
+                  <button
+                    type="button"
+                    className="cash-delete-link"
+                    onClick={() =>
+                      deletePayment(event.id, member.id, payment.id)
+                    }
+                  >
+                    Delete
+                  </button>
+                </div>
               </div>
             ))}
           </div>
@@ -1237,6 +1491,21 @@ export default function CashDistribution({
           gap: 8px;
           color: var(--cash-muted);
           font-size: 12px;
+        }
+        .cash-payment-actions {
+          display: inline-flex;
+          align-items: center;
+          gap: 12px;
+        }
+        .cash-receipt-link {
+          border: 0;
+          background: transparent;
+          color: var(--cash-green);
+          cursor: pointer;
+          font: inherit;
+          font-size: 12px;
+          font-weight: 700;
+          white-space: nowrap;
         }
         .cash-delete-link {
           border: 0;

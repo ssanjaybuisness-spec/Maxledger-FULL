@@ -1,3 +1,4 @@
+import "../styles/cash-distribution-premium.css";
 import { useMemo, useState, type FormEvent } from "react";
 import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";

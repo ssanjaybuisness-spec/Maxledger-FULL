@@ -17,7 +17,6 @@ import { printPeriodFinancialReport } from "../services/report";
 
 interface Props {
   transactions: Transaction[];
-  data: AppData;
   onExportCSV: () => void;
   onDownloadPDF: () => void;
   onBackup: () => void;

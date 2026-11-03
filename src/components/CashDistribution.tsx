@@ -80,9 +80,9 @@ export default function CashDistribution({
   const [selectedReportMember, setSelectedReportMember] = useState("all");
 
   const [paymentTarget, setPaymentTarget] = useState<{
-    distributionId: string;
-    memberId: string;
-  } | null>(null>();
+  distributionId: string;
+  memberId: string;
+} | null>(null);
 
   const [paymentAmount, setPaymentAmount] = useState("");
   const [paymentDate, setPaymentDate] = useState(today());
@@ -685,7 +685,7 @@ export default function CashDistribution({
               onClick={() => setPaymentTarget(null)}
               aria-label="Close payment form"
             >
-           y   <X size={18} />
+            <X size={18} />
             </button>
           </div>
 

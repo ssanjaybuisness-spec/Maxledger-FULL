@@ -1,4 +1,3 @@
-
 import {
   useEffect,
   useMemo,
@@ -11,7 +10,7 @@ import {
 import {
   Wallet, Clock, Plus, Eye, EyeOff,
   LayoutDashboard, ArrowDownLeft, ArrowUpRight, Pencil, Trash2,
-  Search, X, Tags, BarChart3, Download, Upload
+  Search, X, Tags, BarChart3, Download
 } from "lucide-react";
 
 import { loadData, saveData } from "./services/storage";
@@ -36,7 +35,9 @@ const EMPTY_DATA: AppData = {
   pendingPayments: [],
   categories: [],
   accounts: [],
-  budgets: []
+  budgets: [],
+  teamMembers: [],
+  cashDistributions: []
 };
 
 type Filter = "all" | "income" | "expense";
@@ -61,6 +62,7 @@ export default function App() {
   const [storageError, setStorageError] = useState("");
   const [formType, setFormType] = useState<TransactionType>("income");
   const [selectedCategory, setSelectedCategory] = useState("");
+
   const backupInputRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
@@ -69,7 +71,12 @@ export default function App() {
     loadData()
       .then(saved => {
         if (active) {
-          setData({ ...saved, budgets: saved.budgets || [] });
+          setData({
+            ...saved,
+            budgets: saved.budgets || [],
+            teamMembers: saved.teamMembers || [],
+            cashDistributions: saved.cashDistributions || []
+          });
           setLoaded(true);
         }
       })
@@ -258,7 +265,11 @@ export default function App() {
       ) {
         setData({
           ...restoredData,
-          budgets: restoredData.budgets || []
+          budgets: restoredData.budgets || [],
+          teamMembers: restoredData.teamMembers || [],
+          cashDistributions: restoredData.cashDistributions || [],
+          deletedTransactionIds:
+            restoredData.deletedTransactionIds || []
         });
 
         setActiveTab("home");
@@ -401,6 +412,15 @@ export default function App() {
         <p role="alert">{storageError}</p>
       )}
 
+      {/* Shared restore input: Analytics can trigger this */}
+      <input
+        ref={backupInputRef}
+        type="file"
+        accept=".json,application/json"
+        hidden
+        onChange={handleRestore}
+      />
+
       {activeTab === "home" && (
         <>
           <section className="welcome">
@@ -416,53 +436,6 @@ export default function App() {
             pendingPayments={data.pendingPayments}
             money={money}
           />
-
-          <section className="export-panel">
-            <div>
-              <h3>Data & reports</h3>
-            </div>
-
-            <button
-              type="button"
-              className="add-button"
-              onClick={() => exportTransactionsCSV(data.transactions)}
-              disabled={data.transactions.length === 0}
-            >
-              <Download size={17} /> Export CSV
-            </button>
-
-            <button
-              type="button"
-              className="add-button"
-              onClick={() => printFinancialReport(data)}
-            >
-              <Download size={17} /> Download PDF
-            </button>
-
-            <button
-              type="button"
-              className="add-button"
-              onClick={() => exportBackup(data)}
-            >
-              <Download size={17} /> Backup data
-            </button>
-
-            <input
-              ref={backupInputRef}
-              type="file"
-              accept=".json,application/json"
-              hidden
-              onChange={handleRestore}
-            />
-
-            <button
-              type="button"
-              className="add-button"
-              onClick={() => backupInputRef.current?.click()}
-            >
-              <Upload size={17} /> Restore backup
-            </button>
-          </section>
 
           <section className="section-heading">
             <div>
@@ -683,7 +656,14 @@ export default function App() {
       )}
 
       {activeTab === "analytics" && (
-        <Analytics transactions={data.transactions} />
+        <Analytics
+          transactions={data.transactions}
+          data={data}
+          onExportCSV={() => exportTransactionsCSV(data.transactions)}
+          onDownloadPDF={() => printFinancialReport(data)}
+          onBackup={() => exportBackup(data)}
+          onRestore={() => backupInputRef.current?.click()}
+        />
       )}
 
       {activeTab === "backups" && (
@@ -699,6 +679,8 @@ export default function App() {
               setData({
                 ...restoredData,
                 budgets: restoredData.budgets || [],
+                teamMembers: restoredData.teamMembers || [],
+                cashDistributions: restoredData.cashDistributions || [],
                 deletedTransactionIds:
                   restoredData.deletedTransactionIds || []
               });
@@ -710,10 +692,12 @@ export default function App() {
           />
         </section>
       )}
+
       <footer className="app-branding">
-  <span>Made by</span>
-  <strong>Sanjay S</strong>
-</footer>
+        <span>Made by</span>
+        <strong>Sanjay S</strong>
+      </footer>
+
       <nav className="bottom-nav">
         <button
           type="button"
@@ -740,7 +724,7 @@ export default function App() {
         >
           <Tags />
           <span>Categories</span>
-            </button>
+        </button>
 
         <button
           type="button"
@@ -772,5 +756,3 @@ export default function App() {
     </main>
   );
 }
-          
-     

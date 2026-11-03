@@ -763,3 +763,234 @@ textarea:focus-visible {
     animation: none !important;
   }
 }
+/* =========================================
+   MAXLEDGER — DASHBOARD V2
+========================================= */
+
+.custom-dashboard {
+  display: flex;
+  flex-direction: column;
+  gap: 18px;
+  margin-top: 8px;
+}
+
+.custom-dashboard-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 2px;
+}
+
+.custom-dashboard-top h2 {
+  font-size: 22px;
+  font-weight: 750;
+  letter-spacing: -0.9px;
+  color: #f0f7f2;
+}
+
+.custom-eyebrow {
+  color: #48d99a !important;
+  font-size: 10px !important;
+  letter-spacing: 2px !important;
+  font-weight: 800 !important;
+}
+
+.custom-settings-button {
+  min-height: 43px;
+  padding: 0 15px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  border-radius: 13px;
+  color: #c6d8cd;
+  background: #121c17;
+  border: 1px solid rgba(110, 160, 130, 0.2);
+  font-weight: 700;
+  font-size: 12px;
+}
+
+.custom-settings-button.selected {
+  color: #54e5a3;
+  background: rgba(50, 205, 130, 0.12);
+  border-color: rgba(66, 223, 152, 0.4);
+}
+
+.custom-widget-list {
+  display: flex;
+  flex-direction: column;
+  gap: 13px;
+}
+
+.custom-widget {
+  padding: 19px;
+  border-radius: 20px;
+  border: 1px solid rgba(130, 165, 145, 0.14);
+  background:
+    linear-gradient(145deg, #151f19, #0e1511);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.2);
+  overflow: hidden;
+}
+
+.custom-widget:first-child {
+  border-color: rgba(66, 223, 152, 0.3);
+  background:
+    radial-gradient(
+      circle at 100% 0%,
+      rgba(66, 223, 152, 0.17),
+      transparent 55%
+    ),
+    linear-gradient(135deg, #153b29, #102219);
+}
+
+.custom-widget-heading {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 17px;
+}
+
+.custom-widget-title h3 {
+  color: #b9cec1;
+  font-size: 13px;
+  font-weight: 650;
+}
+
+.custom-balance {
+  color: #f3fff7;
+  font-size: clamp(29px, 8vw, 39px);
+  font-weight: 800;
+  letter-spacing: -1.8px;
+  overflow-wrap: anywhere;
+}
+
+.custom-balance-details {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 20px;
+  padding-top: 15px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+}
+
+.custom-balance-details div {
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.custom-balance-details span,
+.custom-muted {
+  color: #91a69a;
+  font-size: 11px;
+}
+
+.custom-balance-details strong {
+  color: #e8f5ed;
+  font-size: 14px;
+}
+
+.custom-recent-list {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.custom-recent-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  min-width: 0;
+}
+
+.custom-transaction-icon {
+  width: 41px;
+  height: 41px;
+  flex-shrink: 0;
+  display: grid;
+  place-items: center;
+  border-radius: 13px;
+  background: rgba(66, 223, 152, 0.1);
+  color: #52dfa0;
+}
+
+.custom-transaction-icon.expense {
+  background: rgba(255, 137, 130, 0.1);
+  color: #ff8982;
+}
+
+.custom-transaction-info {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.custom-transaction-info strong {
+  color: #eaf3ed;
+  font-size: 12px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.custom-transaction-info span {
+  color: #83988b;
+  font-size: 10px;
+}
+
+.custom-recent-row > strong {
+  flex-shrink: 0;
+  font-size: 12px;
+  white-space: nowrap;
+}
+
+.custom-recent-row > strong.income {
+  color: #51dfa0;
+}
+
+.custom-recent-row > strong.expense {
+  color: #ff8982;
+}
+
+.custom-pending-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 0;
+  border-top: 1px solid rgba(150, 180, 160, 0.1);
+  color: #c5d7ca;
+  font-size: 12px;
+}
+
+.custom-pending-row strong {
+  color: #54dfa0;
+}
+
+.dashboard-editor {
+  padding: 17px;
+  background: #111a15;
+  border: 1px solid rgba(66, 223, 152, 0.2);
+  border-radius: 18px;
+}
+
+.dashboard-editor-row {
+  min-height: 48px;
+  border-bottom: 1px solid rgba(150, 180, 160, 0.1);
+}
+
+@media (max-width: 420px) {
+  .custom-widget {
+    padding: 16px;
+    border-radius: 18px;
+  }
+
+  .custom-recent-row {
+    gap: 9px;
+  }
+
+  .custom-transaction-info strong {
+    max-width: 150px;
+  }
+}

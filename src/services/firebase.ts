@@ -1,4 +1,3 @@
-
 import { initializeApp } from "firebase/app";
 
 import {
@@ -40,6 +39,40 @@ const firebaseConfig = {
   measurementId: "G-4D925NZPM4"
 };
 
+/**
+ * Recursively removes undefined values before sending data to Firestore.
+ * Undefined object properties are omitted; undefined array entries become null.
+ */
+function removeUndefined(value: unknown): unknown {
+  if (value === undefined) {
+    return null;
+  }
+
+  if (value === null || typeof value !== "object") {
+    return value;
+  }
+
+  if (value instanceof Date) {
+    return value;
+  }
+
+  if (Array.isArray(value)) {
+    return value.map(item =>
+      item === undefined ? null : removeUndefined(item)
+    );
+  }
+
+  const cleaned: Record<string, unknown> = {};
+
+  for (const [key, item] of Object.entries(value)) {
+    if (item !== undefined) {
+      cleaned[key] = removeUndefined(item);
+    }
+  }
+
+  return cleaned;
+}
+
 const app = initializeApp(firebaseConfig);
 
 export const auth = Capacitor.isNativePlatform()
@@ -59,9 +92,9 @@ googleProvider.setCustomParameters({
 export async function signInWithGoogle() {
   if (Capacitor.isNativePlatform()) {
     const result = await FirebaseAuthentication.signInWithGoogle({
-  skipNativeAuth: true,
-  useCredentialManager: false
-});
+      skipNativeAuth: true,
+      useCredentialManager: false
+    });
 
     const idToken = result.credential?.idToken;
 
@@ -94,11 +127,14 @@ export async function getCloudData(userId: string) {
   return snapshot.exists() ? snapshot.data() : null;
 }
 
-export async function saveCloudData(userId: string, data: unknown) {
+export async function saveCloudData(
+  userId: string,
+  data: unknown
+) {
   const userRef = doc(db, "users", userId);
 
   await setDoc(userRef, {
-    data,
+    data: removeUndefined(data),
     updatedAt: serverTimestamp()
   });
 }
@@ -127,14 +163,13 @@ export async function createCloudBackup(
   const backupsRef = collection(db, "users", userId, "backups");
 
   await addDoc(backupsRef, {
-    data,
+    data: removeUndefined(data),
     createdAt: serverTimestamp(),
     kind: "manual"
   });
 
   await trimCloudBackups(userId);
 }
-
 
 export async function createAutomaticCloudBackup(
   userId: string,
@@ -169,7 +204,7 @@ export async function createAutomaticCloudBackup(
   }
 
   await addDoc(backupsRef, {
-    data,
+    data: removeUndefined(data),
     createdAt: serverTimestamp(),
     kind: "automatic"
   });
@@ -178,7 +213,6 @@ export async function createAutomaticCloudBackup(
 
   return true;
 }
-
 
 export async function getCloudBackups(userId: string) {
   const backupsRef = collection(db, "users", userId, "backups");
@@ -228,7 +262,7 @@ export async function restoreCloudBackup(
   }
 
   await setDoc(userRef, {
-    data: backupData,
+    data: removeUndefined(backupData),
     updatedAt: serverTimestamp()
   });
 

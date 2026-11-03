@@ -659,7 +659,6 @@ export default function App() {
       {activeTab === "analytics" && (
         <Analytics
           transactions={data.transactions}
-          data={data}
           onExportCSV={() => exportTransactionsCSV(data.transactions)}
           onDownloadPDF={() => printFinancialReport(data)}
           onBackup={() => exportBackup(data)}

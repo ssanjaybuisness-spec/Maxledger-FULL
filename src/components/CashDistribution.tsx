@@ -1439,7 +1439,7 @@ export default function CashDistribution({
       alert("Unable to create the event receipt. Please try again.");
     }
   }
-    
+    function getYearOptions() {
     const years = new Set<string>([today().slice(0, 4)]);
 
     distributions.forEach((event) => {

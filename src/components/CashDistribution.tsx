@@ -1259,6 +1259,9 @@ export default function CashDistribution({
       const memberPaidAmount = memberPaid(member);
       const memberPendingAmount = memberPending(member);
       const status = statusLabel(memberStatus(member));
+      const paidDates = (member.payments || [])
+  .map((payment) => formatDate(payment.paidDate))
+  .join(", ") || "—";
 
       return `
         <tr>

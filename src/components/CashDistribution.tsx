@@ -1395,6 +1395,27 @@ export default function CashDistribution({
             font-size: 12px;
           }
           th { background: #effaf4; color: #087a55; }
+          
+          .payment-entry {
+            display: flex;
+            flex-direction: column;
+            gap: 3px;
+            padding: 6px 0;
+            border-bottom: 1px solid #e7eee9;
+          }
+          .payment-entry strong {
+            color: #087a55;
+          }
+          .payment-entry span,
+          .payment-entry small,
+          .no-payment {
+            color: #718078;
+            font-size: 10px;
+          }
+          .payment-entry small {
+            overflow-wrap: anywhere;
+          }
+          
           td:not(:first-child), th:not(:first-child) { text-align: right; }
           .footer {
             margin-top: 25px;

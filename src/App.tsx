@@ -467,8 +467,8 @@ export default function App() {
       {activeTab === "home" && (
         <>
           <section className="welcome">
-            <p>OVERVIEW</p>
-            <h2>Dashboard</h2>
+          <p>OVERVIEW</p>
+          <h2>Dashboard</h2>
           </section>
 
           <CustomDashboard

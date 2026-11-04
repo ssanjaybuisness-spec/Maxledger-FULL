@@ -1188,13 +1188,45 @@ export default function CashDistribution({
             line-height: 1.6;
             text-align: center;
           }
-          @media print {
-            body { padding: 0; background: #fff; }
+                    @media print {
+            @page {
+              size: A4;
+              margin: 12mm;
+            }
+
+            body {
+              padding: 0;
+              background: #fff;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
             .receipt {
               max-width: none;
+              width: 100%;
               border: 0;
               border-radius: 0;
-              padding: 20px;
+              padding: 0;
+              box-shadow: none;
+            }
+
+            header,
+            .amount-block,
+            .balance,
+            .note,
+            .footer {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            h2 {
+              break-after: avoid;
+              page-break-after: avoid;
+            }
+
+            tr {
+              break-inside: avoid;
+              page-break-inside: avoid;
             }
           }
         </style>

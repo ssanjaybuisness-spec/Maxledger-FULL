@@ -1187,8 +1187,7 @@ body {
 
 .app-shell {
   max-width: 560px;
-  padding: calc(22px + env(safe-area-inset-top, 0px)) 19px calc(112px + env(safe-area-inset-bottom));
-}
+    padding: calc(22px + env(safe-area-inset-top, 0px)) 19px calc(160px + env(safe-area-inset-bottom));
 
 .topbar {
   padding: 5px 0 17px;

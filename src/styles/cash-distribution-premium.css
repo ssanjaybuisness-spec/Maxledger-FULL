@@ -1629,3 +1629,137 @@
   }
 }
 
+/* PHASE 2 — PREMIUM MEMBER PAYMENT CARDS */
+
+.cash-member-list {
+  display: grid;
+  gap: 12px !important;
+}
+
+.cash-member-row {
+  display: grid !important;
+  grid-template-columns: minmax(0, 1fr) auto !important;
+  gap: 13px !important;
+  align-items: center;
+  padding: 16px !important;
+  border: 1px solid rgba(85, 217, 149, 0.12) !important;
+  border-radius: 16px !important;
+  background: linear-gradient(145deg, #142019, #0d140f) !important;
+  box-shadow: inset 0 1px 0 rgba(255,255,255,.02);
+}
+
+.cash-member-info strong {
+  color: #f0f8f2 !important;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cash-member-info span {
+  margin-top: 5px;
+  color: #91a096 !important;
+  font-size: 11px;
+}
+
+.cash-member-amounts {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px 14px;
+  color: #aebdb3 !important;
+  font-size: 11px !important;
+}
+
+.cash-member-amounts span {
+  font-weight: 700;
+}
+
+.cash-member-row > .cash-status {
+  justify-self: start;
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 10px !important;
+  font-weight: 800;
+}
+
+.cash-member-row .cash-status-paid {
+  color: #75e5ad;
+  background: rgba(53, 209, 138, .12);
+}
+
+.cash-member-row .cash-status-partial {
+  color: #8ed5ee;
+  background: rgba(78, 170, 208, .12);
+}
+
+.cash-member-row .cash-status-unpaid {
+  color: #f0c879;
+  background: rgba(219, 164, 68, .12);
+}
+
+.cash-member-row .cash-button-small {
+  min-height: 38px;
+  padding: 8px 13px !important;
+  border: 1px solid rgba(85, 217, 149, .2);
+  border-radius: 10px;
+  color: #07150c;
+  background: linear-gradient(135deg, #65e6a5, #35c982);
+  font-size: 11px;
+  font-weight: 800;
+}
+
+.cash-payment-history {
+  gap: 9px !important;
+  padding-top: 12px;
+  border-top: 1px solid rgba(184, 204, 190, .09);
+}
+
+.cash-payment-history-row {
+  display: flex;
+  align-items: center;
+  padding: 11px;
+  border: 1px solid rgba(184, 204, 190, .08);
+  border-radius: 11px;
+  background: rgba(0, 0, 0, .18);
+  font-size: 11px !important;
+}
+
+.cash-payment-history-row strong {
+  color: #75e5ad;
+  font-variant-numeric: tabular-nums;
+}
+
+.cash-payment-actions {
+  gap: 12px !important;
+}
+
+.cash-receipt-link,
+.cash-delete-link {
+  font-size: 11px !important;
+  font-weight: 750 !important;
+}
+
+@media (max-width: 650px) {
+  .cash-member-row {
+    grid-template-columns: minmax(0, 1fr) !important;
+    gap: 11px !important;
+  }
+
+  .cash-member-row > * {
+    min-width: 0;
+  }
+
+  .cash-member-row .cash-button-small {
+    width: 100%;
+  }
+
+  .cash-payment-history-row {
+    align-items: flex-start;
+    flex-direction: column;
+  }
+
+  .cash-payment-actions {
+    width: 100%;
+    justify-content: flex-start;
+  }
+}
+
+

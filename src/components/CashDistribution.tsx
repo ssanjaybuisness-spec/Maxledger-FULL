@@ -136,6 +136,7 @@ export default function CashDistribution({
   const [paymentFilter, setPaymentFilter] =
     useState<PaymentFilter>("all");
   const [teamFilter, setTeamFilter] = useState("all");
+  const [eventSort, setEventSort] = useState("newest");
 
   const [paymentEventId, setPaymentEventId] = useState<string | null>(null);
   const [paymentMemberId, setPaymentMemberId] = useState<string | null>(null);

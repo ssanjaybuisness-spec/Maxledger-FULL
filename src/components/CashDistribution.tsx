@@ -2233,6 +2233,16 @@ export default function CashDistribution({
             <option value="unpaid">Pending payments</option>
             <option value="partial">Partially paid</option>
           </select>
+           <select
+            className="cash-input"
+            value={eventSort}
+            onChange={(e) => setEventSort(e.target.value)}
+            >
+            <option value="newest">Newest events</option>
+            <option value="oldest">Oldest events</option>
+            <option value="pending">Highest pending amount</option>
+            <option value="paid">Highest paid amount</option>
+           </select>
 
           <select
             className="cash-input"

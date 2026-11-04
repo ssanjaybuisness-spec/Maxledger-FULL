@@ -1418,10 +1418,63 @@ export default function CashDistribution({
             .stats { grid-template-columns: 1fr; }
             th, td { padding: 8px 4px; font-size: 10px; }
           }
+          
           @media print {
-            body { padding: 0; background: white; }
-            .receipt { max-width: none; border: 0; border-radius: 0; }
+            @page {
+              size: A4;
+              margin: 12mm;
+            }
+
+            body {
+              padding: 0;
+              background: white;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .receipt {
+              max-width: none;
+              width: 100%;
+              padding: 0;
+              border: 0;
+              border-radius: 0;
+              box-shadow: none;
+            }
+
+            header,
+            .hero,
+            .stats,
+            .stat,
+            .payment-entry {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            h2 {
+              break-after: avoid;
+              page-break-after: avoid;
+            }
+
+            table {
+              width: 100%;
+              page-break-inside: auto;
+            }
+
+            thead {
+              display: table-header-group;
+            }
+
+            tr {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            th,
+            td {
+              overflow-wrap: anywhere;
+            }
           }
+
         </style>
       </head>
       <body>

@@ -4271,16 +4271,17 @@ select:focus-visible {
 .transaction-advanced-filters {
   display: grid;
   grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 9px;
+  gap: 10px;
   margin: 12px 0 16px;
 }
 
 .transaction-advanced-filters input,
 .transaction-advanced-filters select {
+  box-sizing: border-box;
   min-width: 0;
   width: 100%;
-  min-height: 42px;
-  padding: 10px 12px;
+  min-height: 44px;
+  padding: 10px;
   border: 1px solid var(--border);
   border-radius: 12px;
   color: #edf5ef;
@@ -4290,17 +4291,30 @@ select:focus-visible {
 
 .transaction-advanced-filters button {
   grid-column: 1 / -1;
-  min-height: 40px;
-  border: 1px solid rgba(53, 209, 138, 0.25);
+  min-height: 44px;
+  border: 1px solid var(--green);
   border-radius: 12px;
   color: var(--green);
-  background: rgba(53, 209, 138, 0.07);
+  background: var(--green-dark);
   font-size: 12px;
   font-weight: 700;
+}
+
+.transaction-advanced-filters input:focus,
+.transaction-advanced-filters select:focus {
+  outline: 1px solid var(--green);
+  outline-offset: 1px;
 }
 
 @media (max-width: 380px) {
   .transaction-advanced-filters {
     grid-template-columns: minmax(0, 1fr);
+    gap: 9px;
+  }
+
+  .transaction-advanced-filters input,
+  .transaction-advanced-filters select {
+    min-height: 46px;
+    font-size: 13px;
   }
 }

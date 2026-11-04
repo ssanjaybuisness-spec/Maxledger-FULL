@@ -1249,6 +1249,199 @@ export default function CashDistribution({
   }
 
   function getYearOptions() {
+    
+  // Generate a complete receipt for an entire event.
+  async function exportEventReceipt(event: CashDistribution) {
+    const allocated = eventAllocated(event);
+    const paid = eventPaid(event);
+    const pending = eventPending(event);
+    const receiptReference = `ML-EVENT-${String(event.id).slice(0, 8).toUpperCase()}`;
+
+    const memberRows = event.members.map((member) => {
+      const memberPaidAmount = memberPaid(member);
+      const memberPendingAmount = memberPending(member);
+      const status = statusLabel(memberStatus(member));
+
+      return `
+        <tr>
+          <td>${escapeHtml(member.memberName)}</td>
+          <td>${money(member.allocatedAmount)}</td>
+          <td>${money(memberPaidAmount)}</td>
+          <td>${money(memberPendingAmount)}</td>
+          <td>${escapeHtml(status)}</td>
+        </tr>
+      `;
+    }).join("");
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+      <head>
+        <meta charset="UTF-8" />
+        <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+        <title>Event Receipt - ${escapeHtml(event.eventName)}</title>
+        <style>
+          * { box-sizing: border-box; }
+          body {
+            margin: 0;
+            padding: 28px;
+            color: #17231f;
+            background: #f3f6f5;
+            font-family: Arial, Helvetica, sans-serif;
+          }
+          .receipt {
+            max-width: 850px;
+            margin: auto;
+            padding: 32px;
+            background: white;
+            border: 1px solid #dce7e1;
+            border-radius: 16px;
+          }
+          header {
+            display: flex;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            padding-bottom: 20px;
+            border-bottom: 2px solid #d9eee5;
+          }
+          h1 { margin: 0; color: #087a55; font-size: 28px; }
+          h2 { margin: 24px 0 12px; font-size: 18px; }
+          .muted { color: #718078; font-size: 12px; }
+          .ref { text-align: right; color: #087a55; font-weight: bold; }
+          .hero {
+            margin: 22px 0;
+            padding: 20px;
+            border-radius: 14px;
+            background: #effaf4;
+          }
+          .hero h2 { margin: 0 0 8px; color: #087a55; }
+          .stats {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 12px;
+          }
+          .stat {
+            padding: 14px;
+            border: 1px solid #dce7e1;
+            border-radius: 12px;
+          }
+          .stat span { display: block; color: #718078; font-size: 11px; }
+          .stat strong { display: block; margin-top: 8px; font-size: 20px; }
+          table { width: 100%; border-collapse: collapse; }
+          th, td {
+            padding: 11px 8px;
+            border-bottom: 1px solid #e7eee9;
+            text-align: left;
+            font-size: 12px;
+          }
+          th { background: #effaf4; color: #087a55; }
+          td:not(:first-child), th:not(:first-child) { text-align: right; }
+          .footer {
+            margin-top: 25px;
+            padding-top: 15px;
+            border-top: 1px solid #e7eee9;
+            text-align: center;
+            color: #849189;
+            font-size: 11px;
+          }
+          @media (max-width: 600px) {
+            body { padding: 8px; }
+            .receipt { padding: 16px; }
+            .stats { grid-template-columns: 1fr; }
+            th, td { padding: 8px 4px; font-size: 10px; }
+          }
+          @media print {
+            body { padding: 0; background: white; }
+            .receipt { max-width: none; border: 0; border-radius: 0; }
+          }
+        </style>
+      </head>
+      <body>
+        <main class="receipt">
+          <header>
+            <div>
+              <h1>MaxLedger</h1>
+              <p class="muted">Event Cash Distribution Summary</p>
+            </div>
+            <div class="ref">
+              EVENT RECEIPT
+              <p class="muted">${escapeHtml(receiptReference)}</p>
+            </div>
+          </header>
+
+          <section class="hero">
+            <h2>${escapeHtml(event.eventName)}</h2>
+            <p>Event date: ${escapeHtml(formatDate(event.eventAttendedDate))}</p>
+            <p>Location: ${escapeHtml(event.location || "—")}</p>
+          </section>
+
+          <section class="stats">
+            <div class="stat">
+              <span>Total Allocated</span>
+              <strong>${money(allocated)}</strong>
+            </div>
+            <div class="stat">
+              <span>Total Paid</span>
+              <strong>${money(paid)}</strong>
+            </div>
+            <div class="stat">
+              <span>Outstanding Balance</span>
+              <strong>${money(pending)}</strong>
+            </div>
+          </section>
+
+          <h2>Team Payment Breakdown</h2>
+          <table>
+            <thead>
+              <tr>
+                <th>Team Member</th>
+                <th>Allocated</th>
+                <th>Paid</th>
+                <th>Pending</th>
+                <th>Status</th>
+              </tr>
+            </thead>
+            <tbody>
+              ${memberRows}
+            </tbody>
+          </table>
+
+          <div class="footer">
+            Generated on ${escapeHtml(formatDate(today()))}<br />
+            Generated by MaxLedger
+          </div>
+        </main>
+      </body>
+      </html>
+    `;
+
+    try {
+      if (Capacitor.isNativePlatform()) {
+        await Printer.printHtml({ html });
+      } else {
+        const printWindow = window.open("", "_blank");
+
+        if (!printWindow) {
+          alert("Allow pop-ups to print or save this receipt as a PDF.");
+          return;
+        }
+
+        printWindow.document.open();
+        printWindow.document.write(html);
+        printWindow.document.close();
+
+        printWindow.onload = () => {
+          printWindow.focus();
+          printWindow.print();
+        };
+      }
+    } catch (error) {
+      console.error("Event receipt export failed:", error);
+      alert("Unable to create the event receipt. Please try again.");
+    }
+  }
+    
     const years = new Set<string>([today().slice(0, 4)]);
 
     distributions.forEach((event) => {

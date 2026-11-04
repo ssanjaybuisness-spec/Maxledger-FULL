@@ -1402,6 +1402,7 @@ export default function CashDistribution({
                 <th>Team Member</th>
                 <th>Allocated</th>
                 <th>Paid</th>
+                <th>Paid Date(s)</th>
                 <th>Pending</th>
                 <th>Status</th>
               </tr>

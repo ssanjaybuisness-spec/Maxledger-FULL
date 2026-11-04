@@ -974,9 +974,54 @@ export default function CashDistribution({
             font-size: 11px;
             margin-top: 28px;
           }
-          @media print {
-            body { padding: 0; background: white; }
-            .event { box-shadow: none; }
+                    @media print {
+            @page {
+              size: A4;
+              margin: 12mm;
+            }
+
+            body {
+              padding: 0;
+              background: white;
+              -webkit-print-color-adjust: exact;
+              print-color-adjust: exact;
+            }
+
+            .header {
+              border-radius: 0;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .summary {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .event {
+              box-shadow: none;
+              border-radius: 0;
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .event-heading {
+              break-after: avoid;
+              page-break-after: avoid;
+            }
+
+            thead {
+              display: table-header-group;
+            }
+
+            tr {
+              break-inside: avoid;
+              page-break-inside: avoid;
+            }
+
+            .footer {
+              break-inside: avoid;
+            }
           }
         </style>
       </head>

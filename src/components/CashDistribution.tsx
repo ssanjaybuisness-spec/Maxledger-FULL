@@ -2298,8 +2298,8 @@ export default function CashDistribution({
                     />
                   </div>
 
-                  <div className="cash-event-actions">
-                                        <button
+                                    <div className="cash-event-actions">
+                    <button
                       className="cash-btn cash-btn-secondary"
                       type="button"
                       onClick={() => openEditEvent(event)}
@@ -2321,10 +2321,6 @@ export default function CashDistribution({
                       onClick={() => exportEventReceipt(event)}
                     >
                       Event Receipt PDF
-                    </button>
-                    
-                    >
-                      Duplicate
                     </button>
 
                     {pending > 0 && (

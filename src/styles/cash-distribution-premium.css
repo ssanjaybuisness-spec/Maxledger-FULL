@@ -1762,4 +1762,116 @@
   }
 }
 
+/* PHASE 2 — STEP 3: PAYMENT STATUS & FILTER POLISH */
+
+.cash-status {
+  display: inline-flex !important;
+  align-items: center;
+  gap: 7px;
+  min-height: 27px;
+  padding: 6px 11px !important;
+  border: 1px solid transparent !important;
+  border-radius: 999px !important;
+  font-size: 10px !important;
+  font-weight: 850 !important;
+  letter-spacing: 0.25px;
+  white-space: nowrap;
+}
+
+.cash-status::before {
+  content: "";
+  width: 6px;
+  height: 6px;
+  flex: 0 0 6px;
+  border-radius: 50%;
+}
+
+.cash-status-paid {
+  color: #75e5ad !important;
+  background: rgba(53, 209, 138, 0.11) !important;
+  border-color: rgba(53, 209, 138, 0.2) !important;
+}
+
+.cash-status-paid::before {
+  background: #55d995;
+  box-shadow: 0 0 8px rgba(85, 217, 149, 0.5);
+}
+
+.cash-status-partial {
+  color: #8ed5ee !important;
+  background: rgba(78, 170, 208, 0.11) !important;
+  border-color: rgba(78, 170, 208, 0.2) !important;
+}
+
+.cash-status-partial::before {
+  background: #70c8e8;
+}
+
+.cash-status-unpaid {
+  color: #f0c879 !important;
+  background: rgba(219, 164, 68, 0.11) !important;
+  border-color: rgba(219, 164, 68, 0.2) !important;
+}
+
+.cash-status-unpaid::before {
+  background: #e9b957;
+}
+
+/* Event History filter polish */
+
+.cash-filter-grid {
+  gap: 12px !important;
+  margin: 20px 0 !important;
+}
+
+.cash-filter-grid .cash-input {
+  min-width: 0;
+  min-height: 45px;
+  border: 1px solid rgba(85, 217, 149, 0.13) !important;
+  border-radius: 12px !important;
+  background: #101912 !important;
+  color: #e5eee8 !important;
+  font-size: 12px !important;
+  transition: border-color 0.2s ease,
+              box-shadow 0.2s ease;
+}
+
+.cash-filter-grid .cash-input:focus {
+  border-color: rgba(85, 217, 149, 0.55) !important;
+  box-shadow: 0 0 0 3px rgba(53, 209, 138, 0.09) !important;
+  outline: none;
+}
+
+.cash-filter-grid .cash-input::placeholder {
+  color: #78877d;
+}
+
+@media (max-width: 650px) {
+  .cash-filter-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr)) !important;
+    gap: 9px !important;
+  }
+
+  .cash-filter-grid .cash-input {
+    width: 100%;
+    min-height: 43px;
+    font-size: 11px !important;
+  }
+
+  .cash-filter-grid .cash-input:first-child {
+    grid-column: 1 / -1;
+  }
+}
+
+@media (max-width: 380px) {
+  .cash-filter-grid {
+    grid-template-columns: 1fr !important;
+  }
+
+  .cash-filter-grid .cash-input:first-child {
+    grid-column: auto;
+  }
+}
+
+
 

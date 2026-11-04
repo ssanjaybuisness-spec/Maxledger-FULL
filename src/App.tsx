@@ -586,6 +586,77 @@ export default function App() {
               placeholder="Search transactions"
             />
           </div>
+          <div className="transaction-advanced-filters">
+  <select
+    value={categoryFilter}
+    onChange={e => setCategoryFilter(e.target.value)}
+  >
+    <option value="all">All categories</option>
+    {[...new Set(data.transactions.map(item => item.category))]
+      .sort()
+      .map(category => (
+        <option key={category} value={category}>
+          {category}
+        </option>
+      ))}
+  </select>
+
+  <input
+    type="date"
+    aria-label="From date"
+    value={dateFrom}
+    onChange={e => setDateFrom(e.target.value)}
+  />
+
+  <input
+    type="date"
+    aria-label="To date"
+    value={dateTo}
+    onChange={e => setDateTo(e.target.value)}
+  />
+
+  <input
+    type="number"
+    min="0"
+    placeholder="Min ₹"
+    aria-label="Minimum amount"
+    value={amountMin}
+    onChange={e => setAmountMin(e.target.value)}
+  />
+
+  <input
+    type="number"
+    min="0"
+    placeholder="Max ₹"
+    aria-label="Maximum amount"
+    value={amountMax}
+    onChange={e => setAmountMax(e.target.value)}
+  />
+
+  <select
+    value={sortOrder}
+    onChange={e => setSortOrder(e.target.value as "newest" | "oldest")}
+  >
+    <option value="newest">Newest first</option>
+    <option value="oldest">Oldest first</option>
+  </select>
+
+  <button
+    type="button"
+    onClick={() => {
+      setCategoryFilter("all");
+      setDateFrom("");
+      setDateTo("");
+      setAmountMin("");
+      setAmountMax("");
+      setSortOrder("newest");
+      setSearch("");
+      setFilter("all");
+    }}
+  >
+    Clear filters
+  </button>
+</div>
 
           <div className="filter-tabs">
             {(["all", "income", "expense"] as Filter[]).map(option => (

@@ -1482,4 +1482,57 @@
     width: 100%;
   }
 }
+/* MAXLEDGER — DASHBOARD FINANCIAL CARDS */
 
+.cash-grid .cash-stat {
+  position: relative;
+  isolation: isolate;
+  border-color: rgba(85, 217, 149, 0.14) !important;
+  background:
+    linear-gradient(
+      145deg,
+      rgba(25, 39, 31, 0.98),
+      rgba(11, 17, 13, 0.98)
+    ) !important;
+  box-shadow:
+    0 12px 28px rgba(0, 0, 0, 0.22),
+    inset 0 1px 0 rgba(255, 255, 255, 0.025);
+}
+
+.cash-grid .cash-stat:nth-child(1) {
+  border-top: 2px solid #35d18a !important;
+}
+
+.cash-grid .cash-stat:nth-child(2) {
+  border-top: 2px solid #4fd1b5 !important;
+}
+
+.cash-grid .cash-stat:nth-child(3) {
+  border-top: 2px solid #e7b45b !important;
+}
+
+.cash-grid .cash-stat strong {
+  position: relative;
+  z-index: 1;
+  margin-top: 14px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.2;
+}
+
+.cash-grid .cash-stat:hover {
+  transform: translateY(-3px);
+  border-color: rgba(53, 209, 138, 0.35) !important;
+  box-shadow: 0 16px 35px rgba(0, 0, 0, 0.28);
+}
+
+@media (max-width: 650px) {
+  .cash-grid .cash-stat {
+    min-width: 0;
+    padding: 15px !important;
+    border-radius: 15px !important;
+  }
+
+  .cash-grid .cash-stat strong {
+    font-size: clamp(18px, 5vw, 24px) !important;
+  }
+}

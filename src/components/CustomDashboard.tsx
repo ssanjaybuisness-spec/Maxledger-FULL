@@ -1,8 +1,19 @@
 
 import { useEffect, useState } from "react";
 import {
-  Settings2, GripVertical, Eye, EyeOff, RotateCcw,
-  ArrowDownLeft, ArrowUpRight, ChevronDown
+  Settings2,
+  GripVertical,
+  Eye,
+  EyeOff,
+  RotateCcw,
+  ArrowDownLeft,
+  ArrowUpRight,
+  ChevronDown,
+  Wallet,
+  TrendingUp,
+  TrendingDown,
+  Clock3,
+  CircleDollarSign
 } from "lucide-react";
 import type { Transaction, PendingPayment } from "../types";
 
@@ -92,7 +103,7 @@ export default function CustomDashboard({
     try {
       localStorage.setItem(STORAGE_KEY, JSON.stringify(next));
     } catch {
-      // Preferences remain active for this session if storage is unavailable.
+      // Keep preferences active for this session.
     }
   }
 
@@ -111,9 +122,10 @@ export default function CustomDashboard({
       ...preferences,
       sizes: {
         ...preferences.sizes,
-        [id]: preferences.sizes[id] === "compact"
-          ? "expanded"
-          : "compact"
+        [id]:
+          preferences.sizes[id] === "compact"
+            ? "expanded"
+            : "compact"
       }
     });
   }
@@ -142,20 +154,20 @@ export default function CustomDashboard({
     });
   }
 
-  const outstanding = pendingPayments
-    .filter(
-      payment =>
-        payment.status !== "paid" &&
-        payment.status !== "cancelled"
-    )
-    .reduce((total, payment) => {
-      const received = payment.receipts.reduce(
-        (sum, receipt) => sum + receipt.amount,
-        0
-      );
+  const activePayments = pendingPayments.filter(
+    payment =>
+      payment.status !== "paid" &&
+      payment.status !== "cancelled"
+  );
 
-      return total + Math.max(0, payment.expectedAmount - received);
-    }, 0);
+  const outstanding = activePayments.reduce((total, payment) => {
+    const received = payment.receipts.reduce(
+      (sum, receipt) => sum + receipt.amount,
+      0
+    );
+
+    return total + Math.max(0, payment.expectedAmount - received);
+  }, 0);
 
   const recent = [...transactions]
     .sort((a, b) => b.createdAt - a.createdAt)
@@ -169,129 +181,194 @@ export default function CustomDashboard({
     return (
       <section
         key={id}
-        className={`custom-widget ${size}`}
+        className={`premium-dashboard-widget premium-widget-${id} ${size}`}
         draggable={editing}
         onDragStart={() => setDragged(id)}
         onDragOver={event => event.preventDefault()}
         onDrop={() => moveWidget(id)}
         onDragEnd={() => setDragged(null)}
       >
-        <div className="custom-widget-heading">
-          <div className="custom-widget-title">
-            {editing && <GripVertical size={16} />}
-            <h3>{LABELS[id]}</h3>
-          </div>
-
-          {editing && (
+        {editing && (
+          <div className="premium-widget-edit-bar">
+            <GripVertical size={15} />
+            <span>Drag to reorder</span>
             <button
-              className="widget-size-button"
-              onClick={() => toggleSize(id)}
               type="button"
+              onClick={() => toggleSize(id)}
             >
               {size === "compact" ? "Expand" : "Compact"}
             </button>
-          )}
-        </div>
+          </div>
+        )}
 
         {id === "balance" && (
-          <>
-            <h2 className="custom-balance">{money(balance)}</h2>
-
-            {size === "expanded" && (
-              <div className="custom-balance-details">
+          <div className="premium-balance-card">
+            <div className="premium-balance-top">
+              <div className="premium-balance-label">
+                <span className="premium-icon-box">
+                  <Wallet size={19} />
+                </span>
                 <div>
-                  <span>Total income</span>
+                  <span className="premium-label">TOTAL BALANCE</span>
+                  <span className="premium-caption">Your financial overview</span>
+                </div>
+              </div>
+
+              <span className="premium-live-dot" />
+            </div>
+
+            <h2 className="premium-balance-amount">
+              {money(balance)}
+            </h2>
+
+            <div className="premium-balance-divider" />
+
+            <div className="premium-balance-stats">
+              <div className="premium-stat">
+                <span className="premium-stat-icon income">
+                  <TrendingUp size={15} />
+                </span>
+                <div>
+                  <span className="premium-stat-label">Income</span>
                   <strong>{money(income)}</strong>
                 </div>
+              </div>
+
+              <div className="premium-stat">
+                <span className="premium-stat-icon expense">
+                  <TrendingDown size={15} />
+                </span>
                 <div>
-                  <span>Total expenses</span>
+                  <span className="premium-stat-label">Expenses</span>
                   <strong>{money(expenses)}</strong>
                 </div>
               </div>
+            </div>
+
+            {size === "expanded" && (
+              <div className="premium-balance-extra">
+                <span>Available balance</span>
+                <strong>{money(balance)}</strong>
+              </div>
             )}
-          </>
+          </div>
         )}
 
         {id === "recent" && (
-          <div className="custom-recent-list">
+          <div className="premium-widget-content">
+            <div className="premium-section-header">
+              <div>
+                <span className="premium-label">ACTIVITY</span>
+                <h3>Recent transactions</h3>
+              </div>
+              <span className="premium-count">{recent.length}</span>
+            </div>
+
             {recent.length === 0 ? (
-              <p className="custom-muted">No transactions yet.</p>
+              <div className="premium-empty-state">
+                <CircleDollarSign size={25} />
+                <p>No transactions yet</p>
+                <span>Your activity will appear here.</span>
+              </div>
             ) : (
-              recent.slice(0, size === "compact" ? 3 : 5).map(item => (
-                <div className="custom-recent-row" key={item.id}>
-                  <div className={`custom-transaction-icon ${item.type}`}>
-                    {item.type === "income"
-                      ? <ArrowDownLeft size={17} />
-                      : <ArrowUpRight size={17} />}
-                  </div>
+              <div className="premium-transaction-list">
+                {recent.slice(0, size === "compact" ? 3 : 5).map(item => (
+                  <div className="premium-transaction-row" key={item.id}>
+                    <div className={`premium-transaction-symbol ${item.type}`}>
+                      {item.type === "income"
+                        ? <ArrowDownLeft size={19} />
+                        : <ArrowUpRight size={19} />}
+                    </div>
 
-                  <div className="custom-transaction-info">
-                    <strong>{item.title}</strong>
-                    <span>{item.category} · {item.date}</span>
-                  </div>
+                    <div className="premium-transaction-details">
+                      <strong>{item.title}</strong>
+                      <span>{item.category} · {item.date}</span>
+                    </div>
 
-                  <strong className={item.type}>
-                    {item.type === "income" ? "+" : "-"}
-                    {money(item.amount)}
-                  </strong>
-                </div>
-              ))
+                    <div className={`premium-transaction-amount ${item.type}`}>
+                      <strong>
+                        {item.type === "income" ? "+" : "−"}
+                        {money(item.amount)}
+                      </strong>
+                    </div>
+                  </div>
+                ))}
+              </div>
             )}
           </div>
         )}
 
         {id === "pending" && (
-          <>
-            <h2 className="custom-balance">{money(outstanding)}</h2>
+          <div className="premium-widget-content">
+            <div className="premium-section-header">
+              <div>
+                <span className="premium-label">TO BE COLLECTED</span>
+                <h3>Pending payments</h3>
+              </div>
+              <span className="premium-pending-icon">
+                <Clock3 size={18} />
+              </span>
+            </div>
 
-            <p className="custom-muted">
-              Outstanding amount · {pendingPayments.filter(
-                payment =>
-                  payment.status !== "paid" &&
-                  payment.status !== "cancelled"
-              ).length} active payments
-            </p>
+            <h2 className="premium-pending-amount">
+              {money(outstanding)}
+            </h2>
 
-            {size === "expanded" &&
-              pendingPayments
-                .filter(
-                  payment =>
-                    payment.status !== "paid" &&
-                    payment.status !== "cancelled"
-                )
-                .slice(0, 5)
-                .map(payment => (
-                  <div className="custom-pending-row" key={payment.id}>
-                    <span>{payment.customerName}</span>
-                    <strong>
-                      {money(Math.max(
-                        0,
-                        payment.expectedAmount -
-                          payment.receipts.reduce(
-                            (sum, receipt) => sum + receipt.amount,
-                            0
-                          )
-                      ))}
-                    </strong>
-                  </div>
-                ))}
-          </>
+            <div className="premium-pending-meta">
+              <span className="premium-pending-dot" />
+              {activePayments.length} active payment
+              {activePayments.length === 1 ? "" : "s"}
+            </div>
+
+            {size === "expanded" && (
+              <div className="premium-pending-list">
+                {activePayments.length === 0 ? (
+                  <p className="premium-muted">No pending payments.</p>
+                ) : (
+                  activePayments.slice(0, 5).map(payment => {
+                    const received = payment.receipts.reduce(
+                      (sum, receipt) => sum + receipt.amount,
+                      0
+                    );
+
+                    return (
+                      <div
+                        className="premium-pending-row"
+                        key={payment.id}
+                      >
+                        <span>{payment.customerName}</span>
+                        <strong>
+                          {money(Math.max(
+                            0,
+                            payment.expectedAmount - received
+                          ))}
+                        </strong>
+                      </div>
+                    );
+                  })
+                )}
+              </div>
+            )}
+          </div>
         )}
       </section>
     );
   }
 
   return (
-    <div className="custom-dashboard">
-      <div className="custom-dashboard-top">
+    <div className="custom-dashboard premium-dashboard">
+      <div className="premium-dashboard-heading">
         <div>
-          <p className="custom-eyebrow">YOUR SPACE</p>
-          <h2>My Dashboard</h2>
+          <span className="premium-label">YOUR FINANCES</span>
+          <h2>Dashboard</h2>
+          <p className="premium-dashboard-subtitle">
+            A clear view of your money.
+          </p>
         </div>
 
         <button
           type="button"
-          className={`custom-settings-button ${editing ? "selected" : ""}`}
+          className={`premium-customise-button ${editing ? "active" : ""}`}
           onClick={() => setEditing(value => !value)}
         >
           <Settings2 size={17} />
@@ -300,21 +377,22 @@ export default function CustomDashboard({
       </div>
 
       {editing && (
-        <div className="dashboard-editor">
-          <div className="dashboard-editor-heading">
+        <div className="premium-dashboard-editor">
+          <div className="premium-editor-heading">
             <div>
               <h3>Personalise dashboard</h3>
-              <p>Drag widgets to change their order.</p>
+              <p>Manage widget visibility and size.</p>
             </div>
 
             <button type="button" onClick={reset}>
-              <RotateCcw size={15} /> Reset
+              <RotateCcw size={14} />
+              Reset
             </button>
           </div>
 
           {preferences.order.map(id => (
-            <div className="dashboard-editor-row" key={id}>
-              <GripVertical size={17} />
+            <div className="premium-editor-row" key={id}>
+              <GripVertical size={16} />
               <span>{LABELS[id]}</span>
 
               <button
@@ -339,7 +417,7 @@ export default function CustomDashboard({
         </div>
       )}
 
-      <div className="custom-widget-list">
+      <div className="premium-dashboard-grid">
         {preferences.order.map(renderWidget)}
       </div>
     </div>

@@ -1374,7 +1374,9 @@ export default function CashDistribution({
 
           <section class="hero">
             <h2>${escapeHtml(event.eventName)}</h2>
-            <p>Event date: ${escapeHtml(formatDate(event.eventAttendedDate))}</p>
+            <p>Event attended: ${escapeHtml(formatDate(event.eventAttendedDate))}</p>
+            <p>In Time: ${escapeHtml(event.inTime || "—")}</p>
+            <p>Out Time: ${escapeHtml(event.outTime || "—")}</p>
             <p>Location: ${escapeHtml(event.location || "—")}</p>
           </section>
 

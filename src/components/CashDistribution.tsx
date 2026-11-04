@@ -1288,13 +1288,37 @@ export default function CashDistribution({
     const pending = eventPending(event);
     const receiptReference = `ML-EVENT-${String(event.id).slice(0, 8).toUpperCase()}`;
 
+    
     const memberRows = event.members.map((member) => {
       const memberPaidAmount = memberPaid(member);
       const memberPendingAmount = memberPending(member);
       const status = statusLabel(memberStatus(member));
-      const paidDates = (member.payments || [])
-  .map((payment) => formatDate(payment.paidDate))
-  .join(", ") || "—";
+      const payments = member.payments || [];
+
+      const paymentHistory = payments.length
+        ? payments.map((payment) => `
+            <div class="payment-entry">
+              <strong>${money(payment.amount)}</strong>
+              <span>${escapeHtml(formatDate(payment.paidDate))}</span>
+              ${payment.referenceNote
+                ? `<small>${escapeHtml(payment.referenceNote)}</small>`
+                : ""}
+            </div>
+          `).join("")
+        : `<span class="no-payment">No payment recorded</span>`;
+
+      return `
+        <tr>
+          <td>${escapeHtml(member.memberName)}</td>
+          <td>${money(member.allocatedAmount)}</td>
+          <td>${money(memberPaidAmount)}</td>
+          <td>${paymentHistory}</td>
+          <td>${money(memberPendingAmount)}</td>
+          <td>${escapeHtml(status)}</td>
+        </tr>
+      `;
+    }).join("");
+
 
       return `
         <tr>

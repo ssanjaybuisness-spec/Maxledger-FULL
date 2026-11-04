@@ -2265,7 +2265,7 @@ export default function CashDistribution({
           </div>
         ) : (
           <div className="cash-event-list">
-            {filteredEvents.map((event) => {
+            {sortedEvents.map((event) => {
               const allocated = eventAllocated(event);
               const paid = eventPaid(event);
               const pending = eventPending(event);

@@ -1366,3 +1366,120 @@
   }
 }
 
+/* MAXLEDGER — EVENT FORM PREMIUM UPGRADE */
+
+.cash-section form {
+  min-width: 0;
+}
+
+.cash-section .cash-form-grid {
+  gap: 14px;
+}
+
+.cash-section .cash-field label {
+  margin-bottom: 8px;
+  color: #a6b6aa;
+  font-size: 11px;
+  font-weight: 750;
+  letter-spacing: 0.025em;
+}
+
+.cash-section .cash-field input,
+.cash-section .cash-field select,
+.cash-section .cash-field textarea {
+  box-sizing: border-box;
+  width: 100%;
+  min-height: 47px;
+  padding: 12px 14px;
+  border: 1px solid rgba(184, 204, 190, 0.13);
+  border-radius: 13px;
+  background: #0a100c;
+  color: #effaf2;
+  font-size: 13px;
+  transition: border-color 0.18s ease, box-shadow 0.18s ease;
+}
+
+.cash-section .cash-field textarea {
+  min-height: 85px;
+  resize: vertical;
+}
+
+.cash-section .cash-field input:focus,
+.cash-section .cash-field select:focus,
+.cash-section .cash-field textarea:focus {
+  outline: none;
+  border-color: #35d18a;
+  box-shadow: 0 0 0 3px rgba(53, 209, 138, 0.09);
+}
+
+.cash-section form h4 {
+  margin: 22px 0 14px;
+  color: #e8f5eb;
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.cash-section form > .cash-actions {
+  padding-top: 16px;
+  border-top: 1px solid rgba(184, 204, 190, 0.1);
+}
+
+.cash-section form > .cash-actions button {
+  min-height: 46px;
+  padding: 0 20px;
+  border-radius: 13px;
+  font-weight: 750;
+}
+
+.cash-section .cash-team-list {
+  gap: 8px;
+}
+
+.cash-section .cash-team-row input[type="checkbox"] {
+  accent-color: #35d18a;
+  width: 17px !important;
+  height: 17px;
+  min-height: auto;
+}
+
+.cash-section .cash-team-row input[type="number"] {
+  min-height: 40px;
+  border-radius: 10px;
+}
+
+.cash-event-details {
+  padding-top: 18px;
+}
+
+.cash-member-row {
+  padding: 14px;
+  border: 1px solid rgba(184, 204, 190, 0.09);
+  border-radius: 15px;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+@media (max-width: 650px) {
+  .cash-section .cash-form-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .cash-section form > .cash-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .cash-section form > .cash-actions button {
+    width: 100%;
+    padding: 0 10px;
+  }
+
+  .cash-section .cash-team-row {
+    gap: 10px;
+  }
+
+  .cash-section .cash-team-row input[type="number"] {
+    max-width: 100% !important;
+    width: 100%;
+  }
+}
+

@@ -227,6 +227,27 @@ export default function CashDistribution({
         event.members.some(
           (member) => member.teamMemberId === teamFilter
         );
+      const sortedEvents = useMemo(() => {
+  const items = [...filteredEvents];
+
+  switch (eventSort) {
+    case "oldest":
+      return items.sort((a, b) =>
+        (a.eventAttendedDate || "").localeCompare(b.eventAttendedDate || "")
+      );
+
+    case "pending":
+      return items.sort((a, b) => eventPending(b) - eventPending(a));
+
+    case "paid":
+      return items.sort((a, b) => eventPaid(b) - eventPaid(a));
+
+    default:
+      return items.sort((a, b) =>
+        (b.eventAttendedDate || "").localeCompare(a.eventAttendedDate || "")
+      );
+  }
+}, [filteredEvents, eventSort]);
 
       return matchesName && matchesDate && matchesStatus && matchesTeam;
     }),

@@ -2311,6 +2311,15 @@ export default function CashDistribution({
                       className="cash-btn cash-btn-secondary"
                       type="button"
                       onClick={() => duplicateEvent(event)}
+                      
+                     <button
+                       className="cash-btn cash-btn-secondary"
+                       type="button"
+                       onClick={() => exportEventReceipt(event)}
+                        >
+                       Event Receipt PDF
+                      </button>
+                    
                     >
                       Duplicate
                     </button>

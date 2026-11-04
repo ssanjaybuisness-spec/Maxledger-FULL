@@ -1268,6 +1268,7 @@ export default function CashDistribution({
           <td>${escapeHtml(member.memberName)}</td>
           <td>${money(member.allocatedAmount)}</td>
           <td>${money(memberPaidAmount)}</td>
+          <td>${escapeHtml(paidDates)}</td>
           <td>${money(memberPendingAmount)}</td>
           <td>${escapeHtml(status)}</td>
         </tr>

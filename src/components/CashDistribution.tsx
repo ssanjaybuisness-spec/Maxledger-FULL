@@ -1247,9 +1247,7 @@ export default function CashDistribution({
       alert("Unable to create the payment receipt. Please try again.");
     }
   }
-
-  function getYearOptions() {
-    
+  
   // Generate a complete receipt for an entire event.
   async function exportEventReceipt(event: CashDistribution) {
     const allocated = eventAllocated(event);

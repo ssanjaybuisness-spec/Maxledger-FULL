@@ -132,18 +132,53 @@ export default function App() {
   );
 
   const visibleTransactions = useMemo(() => {
-    const query = search.trim().toLowerCase();
+  const query = search.trim().toLowerCase();
+  const min = amountMin === "" ? null : Number(amountMin);
+  const max = amountMax === "" ? null : Number(amountMax);
 
-    return data.transactions.filter(item => {
+  return data.transactions
+    .filter(item => {
       const matchesFilter = filter === "all" || item.type === filter;
 
       const matchesSearch =
         item.title.toLowerCase().includes(query) ||
         item.category.toLowerCase().includes(query);
 
-      return matchesFilter && matchesSearch;
-    });
-  }, [data.transactions, search, filter]);
+      const matchesCategory =
+        categoryFilter === "all" || item.category === categoryFilter;
+
+      const matchesDateFrom = !dateFrom || item.date >= dateFrom;
+      const matchesDateTo = !dateTo || item.date <= dateTo;
+
+      const matchesMin = min === null || item.amount >= min;
+      const matchesMax = max === null || item.amount <= max;
+
+      return (
+        matchesFilter &&
+        matchesSearch &&
+        matchesCategory &&
+        matchesDateFrom &&
+        matchesDateTo &&
+        matchesMin &&
+        matchesMax
+      );
+    })
+    .sort((a, b) =>
+      sortOrder === "newest"
+        ? b.date.localeCompare(a.date) || b.createdAt - a.createdAt
+        : a.date.localeCompare(b.date) || a.createdAt - b.createdAt
+    );
+}, [
+  data.transactions,
+  search,
+  filter,
+  categoryFilter,
+  dateFrom,
+  dateTo,
+  amountMin,
+  amountMax,
+  sortOrder
+]);
 
   const money = (amount: number) =>
     balanceVisible

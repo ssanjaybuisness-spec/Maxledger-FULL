@@ -590,3 +590,290 @@
   .cash-field.full { grid-column: auto; }
   .cash-modal { padding: 17px; }
 }
+
+/* ==========================================
+   MAXLEDGER — ADVANCED TEAM & PERIOD REPORTS
+========================================== */
+
+.cash-report-shell {
+  position: relative;
+  isolation: isolate;
+}
+
+.cash-report-shell::before {
+  content: "";
+  position: absolute;
+  inset: 0 0 auto;
+  height: 180px;
+  pointer-events: none;
+  z-index: -1;
+  background: radial-gradient(
+    ellipse at 50% 0%,
+    rgba(53, 209, 138, 0.09),
+    transparent 72%
+  );
+}
+
+/* Report header */
+.cash-report-hero {
+  padding: 24px 21px 18px;
+}
+
+.cash-report-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 6px 9px;
+  border: 1px solid rgba(85, 217, 149, 0.15);
+  border-radius: 8px;
+  background: rgba(53, 209, 138, 0.06);
+}
+
+.cash-report-hero h2 {
+  margin-top: 12px;
+  font-size: clamp(23px, 5vw, 30px);
+  letter-spacing: -1px;
+  line-height: 1.15;
+}
+
+.cash-report-hero p {
+  max-width: 360px;
+  font-size: 12px;
+  line-height: 1.65;
+}
+
+/* Report tab switcher */
+.cash-report-tabs {
+  padding: 5px;
+  gap: 5px;
+  border-radius: 14px;
+  background: #090e0b;
+}
+
+.cash-tab {
+  min-height: 42px;
+  transition: background .2s ease, color .2s ease;
+}
+
+.cash-tab.active {
+  color: #07150c;
+  background: linear-gradient(135deg, #62e6a5, #35c982);
+  box-shadow: 0 3px 12px rgba(53, 209, 138, .16);
+}
+
+/* KPI cards */
+.cash-report-kpis {
+  gap: 11px;
+}
+
+.cash-report-kpi {
+  position: relative;
+  overflow: hidden;
+  padding: 16px;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #17211a, #101612);
+  transition: transform .18s ease, border-color .18s ease;
+}
+
+.cash-report-kpi::after {
+  content: "";
+  position: absolute;
+  width: 85px;
+  height: 85px;
+  right: -35px;
+  top: -40px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, .025);
+  pointer-events: none;
+}
+
+.cash-report-kpi.green {
+  border-color: rgba(67, 203, 137, .2);
+}
+
+.cash-report-kpi.blue {
+  border-color: rgba(101, 184, 216, .18);
+}
+
+.cash-report-kpi.violet {
+  border-color: rgba(169, 149, 220, .18);
+}
+
+.cash-report-kpi.amber {
+  border-color: rgba(217, 173, 91, .18);
+}
+
+.cash-report-kpi strong {
+  font-size: clamp(17px, 4.3vw, 23px);
+  line-height: 1.25;
+  margin-top: 13px;
+}
+
+.cash-report-kpi small {
+  font-size: 10px;
+  margin-top: 8px;
+}
+
+/* Team report toolbar */
+.cash-report-toolbar {
+  padding-bottom: 3px;
+}
+
+.cash-report-toolbar-title h3 {
+  font-size: 16px;
+  font-weight: 800;
+  letter-spacing: -.45px;
+}
+
+.cash-report-toolbar-title p {
+  font-size: 12px;
+  line-height: 1.6;
+}
+
+.cash-report-search {
+  min-height: 46px;
+  padding: 0 14px;
+  border-radius: 13px;
+}
+
+/* Team table */
+.cash-report-table-wrap {
+  border-radius: 16px;
+  border-color: rgba(184, 204, 190, .12);
+}
+
+.cash-report-table th {
+  padding: 14px;
+  background: #151e18;
+  color: #8fa197;
+}
+
+.cash-report-table td {
+  padding: 15px 14px;
+}
+
+.cash-report-table tbody tr {
+  transition: background .15s ease;
+}
+
+.cash-report-table tbody tr:hover {
+  background: rgba(53, 209, 138, .035);
+}
+
+.cash-report-person strong {
+  color: #f0f7f2;
+  font-size: 12px;
+}
+
+.cash-report-avatar {
+  width: 36px;
+  height: 36px;
+  flex-basis: 36px;
+  border-radius: 12px;
+  background: linear-gradient(145deg, #203c2b, #15251a);
+}
+
+/* Payment progress */
+.cash-report-progress {
+  height: 8px;
+  border-radius: 999px;
+  background: #202a23;
+}
+
+.cash-report-progress span {
+  background: linear-gradient(90deg, #26a96b, #6ce8aa);
+}
+
+/* Status pills */
+.cash-report-status {
+  padding: 6px 10px;
+  border-radius: 8px;
+  font-size: 10px;
+  letter-spacing: .02em;
+}
+
+/* Period Summary controls */
+.cash-report-period-controls {
+  gap: 10px;
+}
+
+.cash-report-period-controls .cash-input {
+  min-height: 48px;
+  border-radius: 13px;
+  font-weight: 600;
+}
+
+.cash-report-period-controls select:first-child {
+  background-color: #17231a;
+  border-color: rgba(53, 209, 138, .2);
+}
+
+/* Collection progress footer */
+.cash-report-period-footer {
+  align-items: center;
+  padding: 15px;
+  border: 1px solid rgba(184, 204, 190, .09);
+  border-radius: 13px;
+  background: rgba(255, 255, 255, .025);
+}
+
+.cash-report-period-footer strong {
+  color: #65e5a6;
+  font-size: 12px;
+}
+
+.cash-report-body > .cash-report-progress {
+  margin-top: -9px !important;
+  height: 10px !important;
+}
+
+/* Empty states */
+.cash-report-empty {
+  padding: 30px 18px;
+  border-radius: 17px;
+  background: linear-gradient(145deg, #151e18, #101612);
+}
+
+.cash-report-empty strong {
+  font-size: 15px;
+  margin-bottom: 8px;
+}
+
+/* Mobile refinements */
+@media (max-width: 420px) {
+  .cash-report-hero {
+    padding: 21px 16px 16px;
+  }
+
+  .cash-report-hero h2 {
+    font-size: 24px;
+  }
+
+  .cash-report-kpi {
+    padding: 13px;
+  }
+
+  .cash-report-kpi-label {
+    font-size: 8px;
+    letter-spacing: .06em;
+  }
+
+  .cash-report-kpi strong {
+    font-size: 17px;
+  }
+
+  .cash-report-kpi small {
+    font-size: 9px;
+  }
+
+  .cash-report-period-footer {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 7px;
+  }
+
+  .cash-report-period-footer strong {
+    text-align: left;
+  }
+}
+

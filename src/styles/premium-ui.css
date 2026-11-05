@@ -1916,3 +1916,42 @@ textarea:focus-visible {
     flex: 1;
   }
 }
+/* BUDGET SUMMARY CARD */
+
+.budget-page .pending-summary {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 20px;
+  border: 1px solid rgba(66, 223, 152, 0.18);
+  border-radius: 20px;
+  background: linear-gradient(145deg, #12241b, #0e1612);
+}
+
+.budget-page .pending-summary > div {
+  min-width: 0;
+  padding: 0 !important;
+  border: 0 !important;
+  border-radius: 0 !important;
+  background: transparent !important;
+  box-shadow: none !important;
+}
+
+.budget-page .pending-summary span {
+  display: block;
+  margin-bottom: 8px;
+  color: #9db0a3;
+  font-size: 13px;
+}
+
+.budget-page .pending-summary h2 {
+  margin: 0;
+  color: #5be4a1;
+  font-size: 28px;
+}
+
+.budget-page .pending-summary > svg {
+  flex-shrink: 0;
+  color: #5be4a1;
+}

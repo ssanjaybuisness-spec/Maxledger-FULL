@@ -2037,3 +2037,71 @@ textarea:focus-visible {
   --cash-muted: #9db0a3;
   --cash-blue: #36c67f;
 }
+/* CASH REPORT THEME */
+
+.pending-page .cash-report-shell {
+  border-color: rgba(184, 204, 190, 0.13);
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(53, 209, 138, 0.1), transparent 38%),
+    #101713;
+}
+
+.pending-page .cash-report-hero {
+  border-bottom-color: rgba(184, 204, 190, 0.1);
+}
+
+.pending-page .cash-report-tabs {
+  border-color: rgba(184, 204, 190, 0.09);
+  background: rgba(0, 0, 0, 0.2);
+}
+
+.pending-page .cash-report-tabs .cash-tab.active {
+  color: #06140c;
+  background: linear-gradient(135deg, #66edaa, #2bc47d);
+}
+
+.pending-page .cash-report-kpi {
+  border-color: rgba(184, 204, 190, 0.1);
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.pending-page .cash-report-kpi.green { border-top-color: #43cb89; }
+.pending-page .cash-report-kpi.blue { border-top-color: #65b8d8; }
+.pending-page .cash-report-kpi.amber { border-top-color: #d9ad5b; }
+.pending-page .cash-report-kpi.violet { border-top-color: #a995dc; }
+
+.pending-page .cash-report-hero p,
+.pending-page .cash-report-toolbar-title p,
+.pending-page .cash-report-kpi-label,
+.pending-page .cash-report-kpi small,
+.pending-page .cash-report-person small {
+  color: #9db0a3;
+}
+
+.pending-page .cash-report-progress {
+  background: rgba(255, 255, 255, 0.07);
+}
+
+.pending-page .cash-report-table-wrap {
+  border-color: rgba(184, 204, 190, 0.1);
+  background: rgba(0, 0, 0, 0.13);
+}
+
+.pending-page .cash-report-table th {
+  color: #8f9d93;
+  background: rgba(255, 255, 255, 0.025);
+}
+
+.pending-page .cash-report-table td {
+  border-top-color: rgba(184, 204, 190, 0.08);
+  color: #d8e3db;
+}
+
+.pending-page .cash-report-table tbody tr:hover {
+  background: rgba(53, 209, 138, 0.05);
+}
+
+.pending-page .cash-report-period-footer {
+  border-color: rgba(184, 204, 190, 0.1);
+  background: rgba(0, 0, 0, 0.2);
+}

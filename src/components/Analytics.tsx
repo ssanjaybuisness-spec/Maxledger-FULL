@@ -10,7 +10,8 @@ import {
   Pie,
   Cell,
   Legend,
-  CartesianGrid
+  CartesianGrid,
+  LabelList
 } from "recharts";
 import type { Transaction } from "../types";
 import { printPeriodFinancialReport } from "../services/report";
@@ -435,7 +436,7 @@ export default function Analytics({
             ) : (
               <div className="analytics-chart">
                 <ResponsiveContainer width="100%" height={260}>
-                  <BarChart data={trendData}>
+                  <BarChart data={trendData} margin={{ top: 18, right: 8, left: 0, bottom: 0 }}>
                     <CartesianGrid
                       strokeDasharray="3 3"
                       stroke="#26352f"
@@ -463,14 +464,38 @@ export default function Analytics({
                       dataKey="income"
                       name="Income"
                       fill="#34d399"
-                      radius={[5, 5, 0, 0]}
-                    />
-                    <Bar
-                      dataKey="expenses"
-                      name="Expenses"
-                      fill="#fb7185"
-                      radius={[5, 5, 0, 0]}
-                    />
+                     radius={[5, 5, 0, 0]}
+                       >
+                     <LabelList
+                      dataKey="income"
+                     position="top"
+                     fill="#34d399"
+                     fontSize={10}
+                     formatter={(value: unknown) =>
+                      mode === "yearly" || Number(value) <= 0
+                      ? ""
+        : compactCurrency(Number(value))
+    }
+  />
+</Bar>
+<Bar
+  dataKey="expenses"
+  name="Expenses"
+  fill="#fb7185"
+  radius={[5, 5, 0, 0]}
+>
+  <LabelList
+    dataKey="expenses"
+    position="top"
+    fill="#fb7185"
+    fontSize={10}
+    formatter={(value: unknown) =>
+      mode === "yearly" || Number(value) <= 0
+        ? ""
+        : compactCurrency(Number(value))
+    }
+  />
+</Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

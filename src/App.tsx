@@ -598,12 +598,15 @@ export default function App() {
       ))}
   </select>
 
+  <label className="filter-date-field">
+  <span>From</span>
   <input
     type="date"
     aria-label="From date"
     value={dateFrom}
     onChange={e => setDateFrom(e.target.value)}
   />
+</label>
 
   <input
     type="date"

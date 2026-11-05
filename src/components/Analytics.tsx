@@ -464,38 +464,38 @@ export default function Analytics({
                       dataKey="income"
                       name="Income"
                       fill="#34d399"
-                     radius={[5, 5, 0, 0]}
-                       >
-                     <LabelList
-                      dataKey="income"
-                     position="top"
-                     fill="#34d399"
-                     fontSize={10}
-                     formatter={(value: unknown) =>
+                      radius={[5, 5, 0, 0]}
+                     >
+                       <LabelList
+                         dataKey="income"
+                         position="top"
+                         fill="#34d399"
+                         fontSize={10}
+                         formatter={(value: unknown) =>
+                         mode === "yearly" || Number(value) <= 0
+                         ? ""
+                         : compactCurrency(Number(value))
+                       }
+                    />
+                  </Bar>
+                  <Bar
+                    dataKey="expenses"
+                    name="Expenses"
+                    fill="#fb7185"
+                    radius={[5, 5, 0, 0]}
+                   >
+                    <LabelList
+                      dataKey="expenses"
+                      position="top"
+                      fill="#fb7185"
+                      fontSize={10}
+                      formatter={(value: unknown) =>
                       mode === "yearly" || Number(value) <= 0
                       ? ""
-        : compactCurrency(Number(value))
-    }
-  />
-</Bar>
-<Bar
-  dataKey="expenses"
-  name="Expenses"
-  fill="#fb7185"
-  radius={[5, 5, 0, 0]}
->
-  <LabelList
-    dataKey="expenses"
-    position="top"
-    fill="#fb7185"
-    fontSize={10}
-    formatter={(value: unknown) =>
-      mode === "yearly" || Number(value) <= 0
-        ? ""
-        : compactCurrency(Number(value))
-    }
-  />
-</Bar>
+                      : compactCurrency(Number(value))
+                 }
+              />
+           </Bar>
                   </BarChart>
                 </ResponsiveContainer>
               </div>

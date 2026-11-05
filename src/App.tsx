@@ -608,12 +608,15 @@ export default function App() {
   />
 </label>
 
+  <label className="filter-date-field">
+  <span>To</span>
   <input
     type="date"
     aria-label="To date"
     value={dateTo}
     onChange={e => setDateTo(e.target.value)}
   />
+</label>
 
   <input
     type="number"

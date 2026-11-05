@@ -2186,3 +2186,19 @@ textarea:focus-visible {
   font-weight: 600;
   letter-spacing: 0.3px;
 }
+/* PENDING CARD COLOURS */
+
+.pending-module .pending-amounts div {
+  border-color: rgba(184, 204, 190, 0.1);
+  background: rgba(0, 0, 0, 0.22);
+}
+
+.pending-module .payment-status.paid {
+  color: #5be4a1;
+  background: rgba(54, 198, 127, 0.14);
+}
+
+.pending-module .payment-status.partially_paid {
+  color: #7fd6e8;
+  background: rgba(101, 184, 216, 0.14);
+}

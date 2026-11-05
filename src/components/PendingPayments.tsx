@@ -131,7 +131,6 @@ export default function PendingPayments({
       <div className="pending-heading">
         <div>
           <p>PAYMENT TRACKER</p>
-          <h2>Pending payments</h2>
         </div>
 
         <button className="add-button" onClick={() => setShowForm(true)}>

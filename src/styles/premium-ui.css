@@ -2234,3 +2234,8 @@ textarea:focus-visible {
 .pending-module .pending-card:has(.payment-status.cancelled) {
   opacity: 0.6;
 }
+/* CASH REPORT HERO */
+
+.pending-page .cash-report-hero {
+  background: none;
+}

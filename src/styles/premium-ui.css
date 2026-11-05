@@ -2224,3 +2224,13 @@ textarea:focus-visible {
   font-weight: 600;
   cursor: pointer;
 }
+/* PENDING LIST SPACING */
+
+.pending-module .pending-list {
+  display: grid;
+  gap: 12px;
+}
+
+.pending-module .pending-card:has(.payment-status.cancelled) {
+  opacity: 0.6;
+}

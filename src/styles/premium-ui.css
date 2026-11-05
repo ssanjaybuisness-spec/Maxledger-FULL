@@ -2145,3 +2145,15 @@ textarea:focus-visible {
     grid-column: 1 / -1;
   }
 }
+/* CASH DANGER BUTTON */
+
+.pending-page .cash-btn.cash-btn-danger {
+  color: #ff9991 !important;
+  border-color: rgba(241, 125, 114, 0.25) !important;
+  background: rgba(105, 37, 34, 0.22) !important;
+}
+
+.pending-page .cash-btn.cash-btn-danger:hover {
+  border-color: rgba(241, 125, 114, 0.5) !important;
+  background: rgba(105, 37, 34, 0.35) !important;
+}

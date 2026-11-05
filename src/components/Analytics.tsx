@@ -525,7 +525,8 @@ export default function Analytics({
                         cy="50%"
                         outerRadius={90}
                         innerRadius={52}
-                        paddingAngle={3}
+                        paddingAngle={categoryData.length > 1 ? 3 : 0}
+                        stroke="#101713"
                       >
                         {categoryData.map((item, index) => (
                           <Cell

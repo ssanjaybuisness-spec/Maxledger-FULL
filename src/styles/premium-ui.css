@@ -2027,3 +2027,13 @@ textarea:focus-visible {
   color: #5be4a1;
   font-size: 28px;
 }
+/* CASH DISTRIBUTION THEME */
+
+.pending-page .cash-page-midnight {
+  --cash-card: #101713;
+  --cash-card2: #17221b;
+  --cash-border: rgba(151, 177, 160, 0.16);
+  --cash-text: #edf5ef;
+  --cash-muted: #9db0a3;
+  --cash-blue: #36c67f;
+}

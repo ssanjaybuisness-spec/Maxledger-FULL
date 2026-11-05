@@ -2118,3 +2118,30 @@ textarea:focus-visible {
     radial-gradient(ellipse at 100% 0%, rgba(53, 209, 138, 0.1), transparent 38%),
     #101713 !important;
 }
+/* CASH HEADER MOBILE */
+
+@media (max-width: 650px) {
+  .pending-page .cash-header {
+    flex-direction: column !important;
+    align-items: stretch !important;
+  }
+
+  .pending-page .cash-header > div:first-child {
+    width: 100%;
+  }
+
+  .pending-page .cash-header .cash-muted {
+    margin-left: 0;
+    padding-left: 0;
+  }
+
+  .pending-page .cash-header .cash-actions {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    width: 100%;
+  }
+
+  .pending-page .cash-header .cash-actions .cash-button-primary {
+    grid-column: 1 / -1;
+  }
+}

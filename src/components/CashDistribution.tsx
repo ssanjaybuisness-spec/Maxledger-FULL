@@ -33,7 +33,13 @@ const today = () => {
     String(date.getDate()).padStart(2, "0"),
   ].join("-");
 };
-
+const formatTime12 = (value?: string) => {
+  if (!value) return "";
+  const [hourText, minute] = value.split(":");
+  const hour = Number(hourText);
+  if (!Number.isFinite(hour) || minute === undefined) return value;
+  return `${hour % 12 || 12}:${minute} ${hour >= 12 ? "PM" : "AM"}`;
+};
 const makeId = () => crypto.randomUUID();
 
 const money = (value: number) =>
@@ -2460,8 +2466,8 @@ export default function CashDistribution({
                       <div className="cash-event-meta">
                         <span>{formatDate(event.eventAttendedDate)}</span>
                         {event.location && <span>📍 {event.location}</span>}
-                        {event.inTime && <span>In: {event.inTime}</span>}
-                        {event.outTime && <span>Out: {event.outTime}</span>}
+                        {event.inTime && <span>In: {formatTime12(event.inTime)}</span>}
+                        {event.outTime && <span>Out: {formatTime12(event.outTime)}</span>}
                       </div>
                     </div>
 

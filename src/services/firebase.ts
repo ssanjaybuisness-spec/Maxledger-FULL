@@ -138,7 +138,26 @@ export async function saveCloudData(
     updatedAt: serverTimestamp()
   });
 }
+function stableStringify(value: unknown): string {
+  if (value === null || typeof value !== "object") {
+    return JSON.stringify(value) ?? "null";
+  }
 
+  if (Array.isArray(value)) {
+    return "[" + value.map(stableStringify).join(",") + "]";
+  }
+
+  const record = value as Record<string, unknown>;
+
+  return (
+    "{" +
+    Object.keys(record)
+      .sort()
+      .map(key => JSON.stringify(key) + ":" + stableStringify(record[key]))
+      .join(",") +
+    "}"
+  );
+}
 async function trimCloudBackups(userId: string) {
   const backupsRef = collection(db, "users", userId, "backups");
 
@@ -185,23 +204,16 @@ export async function createAutomaticCloudBackup(
 
   const snapshot = await getDocs(latestQuery);
 
-  if (!snapshot.empty) {
-    const latestData = snapshot.docs[0].data().data as
-      | { transactions?: unknown[] }
-      | undefined;
-
-    const currentTransactions =
-      (data as { transactions?: unknown[] } | null)?.transactions ?? [];
-
-    const latestTransactions = latestData?.transactions ?? [];
+    if (!snapshot.empty) {
+    const latestData = snapshot.docs[0].data().data;
 
     if (
-      JSON.stringify(latestTransactions) ===
-      JSON.stringify(currentTransactions)
+      stableStringify(removeUndefined(data)) ===
+      stableStringify(latestData)
     ) {
       return false;
     }
-  }
+    }
 
   await addDoc(backupsRef, {
     data: removeUndefined(data),

@@ -174,7 +174,7 @@ export default function BackupManager({ currentData, onRestore }: Props) {
         <div className="backup-stat">
           <Clock3 size={17} />
           <strong>{pendingCount}</strong>
-          <span>Pending items</span>
+          <span>Payment records</span>
         </div>
         <div className="backup-stat">
           <HardDrive size={17} />
@@ -242,7 +242,7 @@ export default function BackupManager({ currentData, onRestore }: Props) {
                   <span className="backup-item-meta">
                     {data?.transactions?.length ?? 0} transactions
                     <i />
-                    {data?.pendingPayments?.length ?? 0} pending
+                    {data?.pendingPayments?.length ?? 0} payments
                   </span>
                 </div>
 

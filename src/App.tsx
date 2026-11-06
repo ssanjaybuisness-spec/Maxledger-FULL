@@ -819,10 +819,15 @@ export default function App() {
                 )
               }))
             }
-            onTeamMembersChange={items =>
+                        onTeamMembersChange={items =>
               setData(current => ({
                 ...current,
-                teamMembers: items
+                teamMembers: items,
+                deletedTransactionIds: withDeleted(
+                  current,
+                  current.teamMembers,
+                  items
+                )
               }))
             }
           />

@@ -354,21 +354,27 @@ export default function App() {
     }));
   }
 
-  function handleCategoriesChange(
+    function handleCategoriesChange(
     categories: AppData["categories"],
     transactions: Transaction[]
   ) {
     setData(current => ({
       ...current,
       categories,
-      transactions
+      transactions,
+      deletedTransactionIds: withDeleted(
+        current,
+        current.categories,
+        categories
+      )
     }));
   }
 
-  function handleBudgetsChange(budgets: Budget[]) {
+    function handleBudgetsChange(budgets: Budget[]) {
     setData(current => ({
       ...current,
-      budgets
+      budgets,
+      deletedTransactionIds: withDeleted(current, current.budgets, budgets)
     }));
   }
 

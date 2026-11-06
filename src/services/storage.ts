@@ -60,13 +60,17 @@ function isValidData(value: unknown): value is AppData {
 }
 
 function migrateData(data: AppData): AppData {
-  const existingIds = new Set(data.categories.map(category => category.id));
+    const existingIds = new Set(data.categories.map(category => category.id));
+  const deletedIds = new Set(data.deletedTransactionIds || []);
 
   return {
     ...data,
     categories: [
       ...data.categories,
-      ...DEFAULT_CATEGORIES.filter(category => !existingIds.has(category.id))
+      ...DEFAULT_CATEGORIES.filter(
+        category =>
+          !existingIds.has(category.id) && !deletedIds.has(category.id)
+      )
     ],
     budgets: Array.isArray(data.budgets) ? data.budgets : [],
     teamMembers: Array.isArray(data.teamMembers)

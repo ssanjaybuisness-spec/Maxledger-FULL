@@ -154,11 +154,16 @@ export default function CustomDashboard({
     });
   }
 
-  const activePayments = pendingPayments.filter(
-    payment =>
-      payment.status !== "paid" &&
-      payment.status !== "cancelled"
-  );
+    const activePayments = pendingPayments.filter(payment => {
+    if (payment.status === "cancelled") return false;
+
+    const received = payment.receipts.reduce(
+      (sum, receipt) => sum + receipt.amount,
+      0
+    );
+
+    return payment.expectedAmount - received > 0.009;
+  });
 
   const outstanding = activePayments.reduce((total, payment) => {
     const received = payment.receipts.reduce(

@@ -77,7 +77,9 @@ export default function Analytics({
   );
 
   const [endDate, setEndDate] = useState(
-    currentDate.toISOString().slice(0, 10)
+        new Date(Date.now() - currentDate.getTimezoneOffset() * 60000)
+      .toISOString()
+      .slice(0, 10)
   );
 
   const years = useMemo(() => {

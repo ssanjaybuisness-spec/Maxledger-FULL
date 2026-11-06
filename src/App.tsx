@@ -564,7 +564,9 @@ export default function App() {
                 type="date"
                 defaultValue={
                   editingTransaction?.date ||
-                  new Date().toISOString().slice(0, 10)
+                  new Date(Date.now() - new Date().getTimezoneOffset() * 60000)
+                    .toISOString()
+                    .slice(0, 10)
                 }
                 required
               />

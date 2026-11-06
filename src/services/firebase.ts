@@ -190,7 +190,7 @@ export async function createCloudBackup(
   await trimCloudBackups(userId);
 }
 
-export async function createAutomaticCloudBackup(
+async function runAutomaticCloudBackup(
   userId: string,
   data: unknown
 ) {
@@ -224,6 +224,20 @@ export async function createAutomaticCloudBackup(
   await trimCloudBackups(userId);
 
   return true;
+}
+let automaticBackupQueue: Promise<unknown> = Promise.resolve();
+
+export function createAutomaticCloudBackup(
+  userId: string,
+  data: unknown
+): Promise<boolean> {
+  const run = automaticBackupQueue
+    .catch(() => undefined)
+    .then(() => runAutomaticCloudBackup(userId, data));
+
+  automaticBackupQueue = run;
+
+  return run;
 }
 
 export async function getCloudBackups(userId: string) {

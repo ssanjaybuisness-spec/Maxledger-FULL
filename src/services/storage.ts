@@ -116,22 +116,27 @@ function mergeData(local: AppData, cloud: AppData): AppData {
     cloud.transactions
   ).filter(transaction => !deletedIds.has(transaction.id));
 
+    const keep = <T extends { id: string }>(items: T[]) =>
+    items.filter(item => !deletedIds.has(item.id));
+
   return migrateData({
     transactions,
-    pendingPayments: mergeRecords(
-      local.pendingPayments,
-      cloud.pendingPayments
+    pendingPayments: keep(
+      mergeRecords(local.pendingPayments, cloud.pendingPayments)
     ),
-    categories: mergeRecords(local.categories, cloud.categories),
-    accounts: mergeRecords(local.accounts, cloud.accounts),
-    budgets: mergeRecords(local.budgets || [], cloud.budgets || []),
-    teamMembers: mergeRecords(
-      local.teamMembers || [],
-      cloud.teamMembers || []
+    categories: keep(mergeRecords(local.categories, cloud.categories)),
+    accounts: keep(mergeRecords(local.accounts, cloud.accounts)),
+    budgets: keep(
+      mergeRecords(local.budgets || [], cloud.budgets || [])
     ),
-    cashDistributions: mergeRecords(
-      local.cashDistributions || [],
-      cloud.cashDistributions || []
+    teamMembers: keep(
+      mergeRecords(local.teamMembers || [], cloud.teamMembers || [])
+    ),
+    cashDistributions: keep(
+      mergeRecords(
+        local.cashDistributions || [],
+        cloud.cashDistributions || []
+      )
     ),
     deletedTransactionIds: Array.from(deletedIds)
   });

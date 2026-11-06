@@ -41,7 +41,21 @@ const EMPTY_DATA: AppData = {
   teamMembers: [],
   cashDistributions: []
 };
+function withDeleted<T extends { id: string }>(
+  current: AppData,
+  before: T[] | undefined,
+  after: T[]
+): string[] {
+  const kept = new Set(after.map(item => item.id));
 
+  const removed = (before || [])
+    .filter(item => !kept.has(item.id))
+    .map(item => item.id);
+
+  return Array.from(
+    new Set([...(current.deletedTransactionIds || []), ...removed])
+  );
+}
 type Filter = "all" | "income" | "expense";
 
 type Tab =
@@ -794,10 +808,15 @@ export default function App() {
           <CashDistribution
             distributions={data.cashDistributions || []}
             teamMembers={data.teamMembers || []}
-            onDistributionsChange={items =>
+                        onDistributionsChange={items =>
               setData(current => ({
                 ...current,
-                cashDistributions: items
+                cashDistributions: items,
+                deletedTransactionIds: withDeleted(
+                  current,
+                  current.cashDistributions,
+                  items
+                )
               }))
             }
             onTeamMembersChange={items =>

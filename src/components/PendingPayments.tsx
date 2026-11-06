@@ -29,7 +29,11 @@ export default function PendingPayments({
     if (remaining(payment) === 0) return "paid";
     if (receivedTotal(payment) > 0) return "partially_paid";
 
-    if (payment.expectedDate < new Date().toISOString().slice(0, 10)) {
+        const todayLocal = new Date(
+      Date.now() - new Date().getTimezoneOffset() * 60000
+    ).toISOString().slice(0, 10);
+
+    if (payment.expectedDate < todayLocal) {
       return "overdue";
     }
 
@@ -100,7 +104,9 @@ export default function PendingPayments({
       id: crypto.randomUUID(),
       amount,
       method,
-      receivedDate: new Date().toISOString().slice(0, 10),
+            receivedDate: new Date(
+        Date.now() - new Date().getTimezoneOffset() * 60000
+      ).toISOString().slice(0, 10),
       notes
     };
 

@@ -15,11 +15,14 @@ import {
 } from "recharts";
 import type { Transaction } from "../types";
 import { printPeriodFinancialReport } from "../services/report";
+import { exportFinancialReportExcel } from "../services/excel";
 
 interface Props {
   transactions: Transaction[];
   onExportCSV: () => void;
+  onExportExcel: () => void;
   onDownloadPDF: () => void;
+  onDownloadExcelReport: () => void;
   onBackup: () => void;
   onRestore: () => void;
 }
@@ -58,7 +61,9 @@ const currentDate = new Date();
 export default function Analytics({
   transactions,
   onExportCSV,
+  onExportExcel,
   onDownloadPDF,
+  onDownloadExcelReport,
   onBackup,
   onRestore
 }: Props) {
@@ -253,6 +258,10 @@ export default function Analytics({
     printPeriodFinancialReport(filteredTransactions, periodLabel);
   };
 
+  const exportExcel = () => {
+    void exportFinancialReportExcel(filteredTransactions, periodLabel);
+  };
+
   return (
     <section className="analytics-page">
       <div className="welcome">
@@ -369,6 +378,24 @@ export default function Analytics({
             }}
           >
             ↓ Export PDF Report
+          </button>
+
+          <button
+            type="button"
+            onClick={exportExcel}
+            style={{
+              width: "100%",
+              padding: "13px",
+              marginBottom: "18px",
+              borderRadius: "10px",
+              border: "1px solid #34d399",
+              background: "transparent",
+              color: "#34d399",
+              fontWeight: 700,
+              cursor: "pointer"
+            }}
+          >
+            ↓ Export Excel Report
           </button>
 
           <div className="analytics-summary">
@@ -593,9 +620,27 @@ export default function Analytics({
         <button
           type="button"
           className="add-button"
+          onClick={onExportExcel}
+          disabled={transactions.length === 0}
+        >
+          ↓ Export Excel
+        </button>
+
+        <button
+          type="button"
+          className="add-button"
           onClick={onDownloadPDF}
         >
           ↓ Download PDF
+        </button>
+
+        <button
+          type="button"
+          className="add-button"
+          onClick={onDownloadExcelReport}
+          disabled={transactions.length === 0}
+        >
+          ↓ Download Excel report
         </button>
 
         <button

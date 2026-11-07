@@ -4,6 +4,7 @@ import { Capacitor } from "@capacitor/core";
 import { Filesystem, Directory } from "@capacitor/filesystem";
 import { Share } from "@capacitor/share";
 import { Printer } from "@capgo/capacitor-printer";
+import { exportCashDistributionExcel, fileSafe } from "../services/excel";
 
 import type {
   CashDistribution,
@@ -21,7 +22,7 @@ interface Props {
 
 type SplitMode = "equal" | "custom";
 type ReportTab = "events" | "members";
-type PeriodMode = "monthly" | "yearly";
+type PeriodMode = "daily" | "monthly" | "yearly" | "custom";
 type PaymentFilter = "all" | "paid" | "partial" | "unpaid";
 
 const today = () => {
@@ -155,6 +156,9 @@ export default function CashDistribution({
   const [periodMode, setPeriodMode] = useState<PeriodMode>("monthly");
   const [selectedMonth, setSelectedMonth] = useState(today().slice(0, 7));
   const [selectedYear, setSelectedYear] = useState(today().slice(0, 4));
+  const [selectedDay, setSelectedDay] = useState(today());
+  const [customFrom, setCustomFrom] = useState(`${today().slice(0, 7)}-01`);
+  const [customTo, setCustomTo] = useState(today());
   const [reportSearch, setReportSearch] = useState("");
 
   const stats = useMemo(() => ({
@@ -169,13 +173,71 @@ export default function CashDistribution({
     ),
   }), [distributions]);
 
+  const periodRange = useMemo(() => {
+    if (periodMode === "daily") {
+      return {
+        from: selectedDay,
+        to: selectedDay,
+        label: selectedDay ? formatDate(selectedDay) : "",
+        invalid: !selectedDay,
+      };
+    }
+
+    if (periodMode === "monthly") {
+      const [year, month] = selectedMonth.split("-").map(Number);
+
+      return {
+        from: `${selectedMonth}-01`,
+        to: `${selectedMonth}-31`,
+        label:
+          year && month
+            ? new Date(year, month - 1, 1).toLocaleDateString("en-IN", {
+                month: "long",
+                year: "numeric",
+              })
+            : "",
+        invalid: !year || !month,
+      };
+    }
+
+    if (periodMode === "yearly") {
+      return {
+        from: `${selectedYear}-01-01`,
+        to: `${selectedYear}-12-31`,
+        label: selectedYear,
+        invalid: !selectedYear,
+      };
+    }
+
+    return {
+      from: customFrom,
+      to: customTo,
+      label:
+        customFrom && customTo
+          ? `${formatDate(customFrom)} to ${formatDate(customTo)}`
+          : "",
+      invalid: !customFrom || !customTo || customFrom > customTo,
+    };
+  }, [
+    periodMode,
+    selectedDay,
+    selectedMonth,
+    selectedYear,
+    customFrom,
+    customTo,
+  ]);
+
   const periodEvents = useMemo(
-    () => distributions.filter((event) =>
-      periodMode === "monthly"
-        ? event.eventAttendedDate?.startsWith(selectedMonth)
-        : event.eventAttendedDate?.startsWith(selectedYear)
-    ),
-    [distributions, periodMode, selectedMonth, selectedYear]
+    () =>
+      periodRange.invalid
+        ? []
+        : distributions.filter(
+            (event) =>
+              Boolean(event.eventAttendedDate) &&
+              event.eventAttendedDate >= periodRange.from &&
+              event.eventAttendedDate <= periodRange.to
+          ),
+    [distributions, periodRange]
   );
 
     const periodPayments = useMemo(
@@ -725,7 +787,15 @@ export default function CashDistribution({
     );
   }
     // CSV export
-  async function exportCSV() {
+  async function exportCSV(
+    source: CashDistribution[] = distributions,
+    label = "All events"
+  ) {
+    if (source.length === 0) {
+      alert("No cash distribution events to export for this selection.");
+      return;
+    }
+
     const headers = [
       "Event",
       "Event Date",
@@ -742,7 +812,7 @@ export default function CashDistribution({
 
     const rows: string[][] = [];
 
-    distributions.forEach((event) => {
+    source.forEach((event) => {
       event.members.forEach((member) => {
         const payments = member.payments || [];
 
@@ -791,7 +861,7 @@ export default function CashDistribution({
       .join("\n");
 
     const fileContent = "\uFEFF" + csvContent;
-    const fileName = `MaxLedger-Cash-Distribution-${today()}.csv`;
+    const fileName = `MaxLedger-Cash-Distribution-${fileSafe(label)}-${today()}.csv`;
 
     try {
       if (Capacitor.isNativePlatform()) {
@@ -831,8 +901,22 @@ export default function CashDistribution({
   }
 
   // PDF export
-  async function exportPDF() {
-    const eventRows = distributions
+  async function exportPDF(
+    source: CashDistribution[] = distributions,
+    label = "All events"
+  ) {
+    if (source.length === 0) {
+      alert("No cash distribution events to export for this selection.");
+      return;
+    }
+
+    const totals = {
+      allocated: source.reduce((sum, event) => sum + eventAllocated(event), 0),
+      paid: source.reduce((sum, event) => sum + eventPaid(event), 0),
+      pending: source.reduce((sum, event) => sum + eventPending(event), 0),
+    };
+
+    const eventRows = source
       .map((event) => {
         const members = event.members
           .map((member) => `
@@ -1027,21 +1111,21 @@ export default function CashDistribution({
       <body>
         <header class="header">
           <h1>MaxLedger</h1>
-          <p>Cash Distribution Report · ${escapeHtml(today())}</p>
+          <p>Cash Distribution Report · ${escapeHtml(label)} · ${escapeHtml(today())}</p>
         </header>
 
         <div class="summary">
           <div class="summary-card">
             <span>Total Allocated</span>
-            <strong>${money(stats.allocated)}</strong>
+            <strong>${money(totals.allocated)}</strong>
           </div>
           <div class="summary-card">
             <span>Total Paid</span>
-            <strong>${money(stats.paid)}</strong>
+            <strong>${money(totals.paid)}</strong>
           </div>
           <div class="summary-card">
             <span>Total Pending</span>
-            <strong>${money(stats.pending)}</strong>
+            <strong>${money(totals.pending)}</strong>
           </div>
         </div>
 
@@ -1997,9 +2081,15 @@ export default function CashDistribution({
         .cash-report-toolbar-title p { margin: 0; color: #8496b1; font-size: 12px; }
         .cash-report-search { max-width: 280px; }
         .cash-report-period-controls {
-          display: grid; grid-template-columns: minmax(130px, .7fr) minmax(150px, 1fr) minmax(100px, .6fr);
+          display: grid; grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
           gap: 10px; margin-bottom: 17px;
         }
+        .cash-period-field { display: flex; flex-direction: column; gap: 5px; color: #9aa9c2; font-size: 11px; font-weight: 700; }
+        .cash-period-label { margin: 0 0 14px; color: #9aa9c2; font-size: 12px; }
+        .cash-period-label strong { color: #e5edf8; }
+        .cash-period-warning { margin: 0 0 14px; color: #fbbf24; font-size: 12px; }
+        .cash-period-exports { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 16px; }
+        .cash-period-exports .cash-button:disabled { opacity: .45; cursor: not-allowed; }
         .cash-report-progress {
           height: 7px; width: 100%; overflow: hidden; border-radius: 999px;
           background: #263651; margin-top: 7px;
@@ -2052,7 +2142,6 @@ export default function CashDistribution({
         @media(max-width: 760px) {
           .cash-report-kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
           .cash-report-period-controls { grid-template-columns: 1fr 1fr; }
-          .cash-report-period-controls > :last-child { grid-column: 1 / -1; }
           .cash-report-hero, .cash-report-body { padding-left: 15px; padding-right: 15px; }
           .cash-report-tabs { width: 100%; }
           .cash-report-tabs .cash-tab { flex: 1; }
@@ -2078,10 +2167,24 @@ export default function CashDistribution({
           </div>
         </div>
         <div className="cash-actions">
-          <button className="cash-button" onClick={exportCSV}>
+          <button
+            className="cash-button"
+            onClick={() => void exportCSV()}
+          >
             Export CSV
           </button>
-          <button className="cash-button" onClick={exportPDF}>
+          <button
+            className="cash-button"
+            onClick={() =>
+              void exportCashDistributionExcel(distributions, "All events")
+            }
+          >
+            Export Excel
+          </button>
+          <button
+            className="cash-button"
+            onClick={() => void exportPDF()}
+          >
             Export PDF
           </button>
           <button
@@ -2719,28 +2822,108 @@ export default function CashDistribution({
                   value={periodMode}
                   onChange={(e) => setPeriodMode(e.target.value as PeriodMode)}
                 >
-                  <option value="monthly">Monthly view</option>
-                  <option value="yearly">Yearly view</option>
+                  <option value="daily">Day</option>
+                  <option value="monthly">Month</option>
+                  <option value="yearly">Year</option>
+                  <option value="custom">Custom range</option>
                 </select>
+
+                {periodMode === "daily" && (
+                  <input
+                    className="cash-input"
+                    type="date"
+                    aria-label="Day"
+                    value={selectedDay}
+                    onChange={(e) => setSelectedDay(e.target.value)}
+                  />
+                )}
 
                 {periodMode === "monthly" && (
                   <input
                     className="cash-input"
                     type="month"
+                    aria-label="Month"
                     value={selectedMonth}
                     onChange={(e) => setSelectedMonth(e.target.value)}
                   />
                 )}
 
-                <select
-                  className="cash-input"
-                  value={selectedYear}
-                  onChange={(e) => setSelectedYear(e.target.value)}
+                {periodMode === "yearly" && (
+                  <select
+                    className="cash-input"
+                    aria-label="Year"
+                    value={selectedYear}
+                    onChange={(e) => setSelectedYear(e.target.value)}
+                  >
+                    {getYearOptions().map((year) => (
+                      <option key={year} value={year}>{year}</option>
+                    ))}
+                  </select>
+                )}
+
+                {periodMode === "custom" && (
+                  <>
+                    <label className="cash-period-field">
+                      <span>From</span>
+                      <input
+                        className="cash-input"
+                        type="date"
+                        value={customFrom}
+                        max={customTo || undefined}
+                        onChange={(e) => setCustomFrom(e.target.value)}
+                      />
+                    </label>
+                    <label className="cash-period-field">
+                      <span>To</span>
+                      <input
+                        className="cash-input"
+                        type="date"
+                        value={customTo}
+                        min={customFrom || undefined}
+                        onChange={(e) => setCustomTo(e.target.value)}
+                      />
+                    </label>
+                  </>
+                )}
+              </div>
+
+              {periodRange.invalid ? (
+                <p className="cash-period-warning">
+                  Choose a valid {periodMode === "custom" ? "date range" : "period"} to see results.
+                </p>
+              ) : (
+                <p className="cash-period-label">
+                  Showing events attended in <strong>{periodRange.label}</strong>
+                </p>
+              )}
+
+              <div className="cash-period-exports">
+                <button
+                  type="button"
+                  className="cash-button"
+                  disabled={periodEvents.length === 0}
+                  onClick={() =>
+                    void exportCashDistributionExcel(periodEvents, periodRange.label)
+                  }
                 >
-                  {getYearOptions().map((year) => (
-                    <option key={year} value={year}>{year}</option>
-                  ))}
-                </select>
+                  Export Excel
+                </button>
+                <button
+                  type="button"
+                  className="cash-button"
+                  disabled={periodEvents.length === 0}
+                  onClick={() => void exportCSV(periodEvents, periodRange.label)}
+                >
+                  Export CSV
+                </button>
+                <button
+                  type="button"
+                  className="cash-button"
+                  disabled={periodEvents.length === 0}
+                  onClick={() => void exportPDF(periodEvents, periodRange.label)}
+                >
+                  Export PDF
+                </button>
               </div>
 
               <div className="cash-report-kpis">

@@ -419,7 +419,9 @@ export default function App() {
         amount: receipt.amount,
         type: "income",
         date: receipt.receivedDate,
-        notes: receipt.notes,
+        notes: receipt.notes,    
+        paymentId: payment.id,
+        receiptId: receipt.id,
         createdAt: now,
         updatedAt: now
       };

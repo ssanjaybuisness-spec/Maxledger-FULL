@@ -178,25 +178,19 @@ export default function CashDistribution({
     [distributions, periodMode, selectedMonth, selectedYear]
   );
 
-  const periodPayments = useMemo(
-    () => distributions.flatMap((event) =>
+    const periodPayments = useMemo(
+    () => periodEvents.flatMap((event) =>
       event.members.flatMap((member) =>
-        (member.payments || [])
-          .filter((payment) =>
-            periodMode === "monthly"
-              ? payment.paidDate?.startsWith(selectedMonth)
-              : payment.paidDate?.startsWith(selectedYear)
-          )
-          .map((payment) => ({
-            eventName: event.eventName,
-            memberName: member.memberName,
-            amount: payment.amount,
-            paidDate: payment.paidDate,
-            referenceNote: payment.referenceNote || "",
-          }))
+        (member.payments || []).map((payment) => ({
+          eventName: event.eventName,
+          memberName: member.memberName,
+          amount: payment.amount,
+          paidDate: payment.paidDate,
+          referenceNote: payment.referenceNote || "",
+        }))
       )
     ),
-    [distributions, periodMode, selectedMonth, selectedYear]
+    [periodEvents]
   );
 
   const periodSummary = useMemo(() => ({
@@ -206,12 +200,11 @@ export default function CashDistribution({
     pending: periodEvents.reduce(
       (sum, event) => sum + eventPending(event), 0
     ),
-    paid: periodPayments.reduce(
-      (sum, payment) => sum + payment.amount, 0
+    paid: periodEvents.reduce(
+      (sum, event) => sum + eventPaid(event), 0
     ),
     eventCount: periodEvents.length,
-  }), [periodEvents, periodPayments]);
-  
+  }), [periodEvents]);
   
   const filteredEvents = useMemo(
     () => distributions.filter((event) => {

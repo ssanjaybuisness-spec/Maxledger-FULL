@@ -10,6 +10,8 @@ export interface Transaction {
   date: string;
   notes?: string;
   accountId?: string;
+  paymentId?: string;
+  receiptId?: string;
   createdAt: number;
   updatedAt: number;
 }

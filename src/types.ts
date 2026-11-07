@@ -38,6 +38,7 @@ export interface PendingPayment {
   id: string;
   customerName: string;
   expectedAmount: number;
+  /** Optional. An empty string means no expected date was set. */
   expectedDate: string;
   eventAttendedDate?: string;
   status: PaymentStatus;

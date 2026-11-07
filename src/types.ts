@@ -8,6 +8,10 @@ export interface Transaction {
   category: string;
   type: TransactionType;
   date: string;
+  /** Date the event/work was attended (income entries). */
+  eventAttendedDate?: string;
+  /** Date the money was actually received (income entries). */
+  paymentDate?: string;
   notes?: string;
   accountId?: string;
   paymentId?: string;

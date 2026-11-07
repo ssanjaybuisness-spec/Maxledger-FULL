@@ -1,7 +1,3 @@
-import { Capacitor } from "@capacitor/core";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
-
 import type {
   AppData,
   Budget,
@@ -11,6 +7,7 @@ import type {
   Transaction
 } from "../types";
 
+import { saveFileToDevice } from "./files";
 import { buildXlsx, type SheetDefinition } from "./xlsx";
 
 /* ------------------------------------------------------------------ */
@@ -60,34 +57,11 @@ export async function saveWorkbook(
   try {
     const bytes = buildXlsx(sheets);
 
-    if (Capacitor.isNativePlatform()) {
-      const file = await Filesystem.writeFile({
-        path: fileName,
-        data: toBase64(bytes),
-        directory: Directory.Cache
-      });
-
-      await Share.share({
-        title: "MaxLedger Excel Export",
-        text: "Your MaxLedger Excel export",
-        files: [file.uri],
-        dialogTitle: "Save or share Excel file"
-      });
-
-      return;
-    }
-
-    const blob = new Blob([bytes as BlobPart], { type: XLSX_MIME });
-    const url = URL.createObjectURL(blob);
-    const link = document.createElement("a");
-
-    link.href = url;
-    link.download = fileName;
-    document.body.appendChild(link);
-    link.click();
-    link.remove();
-
-    setTimeout(() => URL.revokeObjectURL(url), 1000);
+    await saveFileToDevice(
+      fileName,
+      { base64: toBase64(bytes) },
+      XLSX_MIME
+    );
   } catch (error) {
     // A cancelled share sheet should not look like a failure.
     const message = error instanceof Error ? error.message : String(error);
@@ -303,7 +277,9 @@ function pendingStatus(payment: PendingPayment): string {
   if (payment.status === "cancelled") return "Cancelled";
   if (remaining === 0) return "Paid";
   if (received > 0) return "Partially paid";
-  if (payment.expectedDate < localToday()) return "Overdue";
+  if (payment.expectedDate && payment.expectedDate < localToday()) {
+    return "Overdue";
+  }
 
   return "Pending";
 }
@@ -311,8 +287,11 @@ function pendingStatus(payment: PendingPayment): string {
 export function pendingPaymentSheets(
   payments: PendingPayment[]
 ): SheetDefinition[] {
+  // Payments without an expected date are listed last.
   const sorted = [...payments].sort((a, b) =>
-    a.expectedDate.localeCompare(b.expectedDate)
+    (a.expectedDate || "9999-12-31").localeCompare(
+      b.expectedDate || "9999-12-31"
+    )
   );
 
   return [

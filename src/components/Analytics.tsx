@@ -484,9 +484,12 @@ export default function Analytics({
                       formatter={value => currency(Number(value))}
                       contentStyle={{
                         background: "#111c17",
-                        border: "1px solid #26352f",
-                        borderRadius: 10
+                        border: "1px solid #34d399",
+                        borderRadius: 10,
+                        color: "#e8f1ec"
                       }}
+                      itemStyle={{ color: "#e8f1ec" }}
+                      labelStyle={{ color: "#e8f1ec" }}
                     />
                     <Legend />
                     <Bar
@@ -569,9 +572,12 @@ export default function Analytics({
                         formatter={value => currency(Number(value))}
                         contentStyle={{
                           background: "#111c17",
-                          border: "1px solid #26352f",
-                          borderRadius: 10
+                          border: "1px solid #34d399",
+                          borderRadius: 10,
+                          color: "#e8f1ec"
                         }}
+                        itemStyle={{ color: "#e8f1ec", fontWeight: 600 }}
+                        labelStyle={{ color: "#e8f1ec" }}
                       />
 
                       <Legend />

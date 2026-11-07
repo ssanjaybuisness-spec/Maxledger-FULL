@@ -3,7 +3,7 @@ import React, { useEffect, useState } from "react";
 import ReactDOM from "react-dom/client";
 import App from "./App";
 import GoogleAuth from "./components/GoogleAuth";
-import { auth, onAuthStateChanged, logout } from "./services/firebase";
+import { auth, onAuthStateChanged } from "./services/firebase";
 import "./styles.css";
 import "./styles/premium-ui.css";
 
@@ -26,15 +26,7 @@ function Root() {
     return <GoogleAuth />;
   }
 
-  return (
-    <>
-      <div className="signed-in-bar">
-        <span>Signed in as {user.displayName || user.email}</span>
-        <button type="button" onClick={() => logout()}>Sign out</button>
-      </div>
-      <App />
-    </>
-  );
+  return <App />;
 }
 
 ReactDOM.createRoot(document.getElementById("root")!).render(

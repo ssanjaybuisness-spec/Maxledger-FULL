@@ -1,10 +1,9 @@
 import "../styles/cash-distribution-premium.css";
 import { useMemo, useState, type FormEvent } from "react";
 import { Capacitor } from "@capacitor/core";
-import { Filesystem, Directory } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
 import { Printer } from "@capgo/capacitor-printer";
 import { exportCashDistributionExcel, fileSafe } from "../services/excel";
+import { saveFileToDevice } from "../services/files";
 
 import type {
   CashDistribution,
@@ -864,36 +863,11 @@ export default function CashDistribution({
     const fileName = `MaxLedger-Cash-Distribution-${fileSafe(label)}-${today()}.csv`;
 
     try {
-      if (Capacitor.isNativePlatform()) {
-        const result = await Filesystem.writeFile({
-          path: fileName,
-          data: fileContent,
-          directory: Directory.Cache,
-          encoding: "utf8" as never,
-        });
-
-        await Share.share({
-          title: "Cash Distribution Report",
-          text: "MaxLedger cash distribution report",
-          url: result.uri,
-          dialogTitle: "Export Cash Distribution",
-        });
-      } else {
-        const blob = new Blob([fileContent], {
-          type: "text/csv;charset=utf-8;",
-        });
-
-        const url = URL.createObjectURL(blob);
-        const link = document.createElement("a");
-
-        link.href = url;
-        link.download = fileName;
-        document.body.appendChild(link);
-        link.click();
-        link.remove();
-
-        URL.revokeObjectURL(url);
-      }
+      await saveFileToDevice(
+        fileName,
+        { text: fileContent },
+        "text/csv;charset=utf-8"
+      );
     } catch (error) {
       console.error("CSV export failed:", error);
       alert("Unable to export CSV. Please try again.");

@@ -10,6 +10,7 @@ interface Props {
   categories: Category[];
   transactions: Transaction[];
   onChange: (budgets: Budget[]) => void;
+  onExportExcel?: () => void;
 }
 
 const currency = (amount: number) =>
@@ -28,7 +29,8 @@ export default function BudgetManager({
   budgets,
   categories,
   transactions,
-  onChange
+  onChange,
+  onExportExcel
 }: Props) {
   const [selectedMonth, setSelectedMonth] = useState(getCurrentMonth());
   const [category, setCategory] = useState("Overall");
@@ -146,6 +148,17 @@ export default function BudgetManager({
         </div>
         <Wallet size={28} />
       </div>
+
+      {onExportExcel && (
+        <button
+          type="button"
+          className="excel-export-button"
+          onClick={onExportExcel}
+          disabled={budgets.length === 0}
+        >
+          ↓ Export budgets to Excel
+        </button>
+      )}
 
       <form className="transaction-form" onSubmit={saveBudget}>
         <h3>Set a budget</h3>

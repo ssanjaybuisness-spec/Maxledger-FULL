@@ -77,6 +77,8 @@ function getTransactionRows(
         <td>${escapeHTML(item.title)}</td>
         <td>${escapeHTML(item.category)}</td>
         <td>${item.type === "income" ? "Income" : "Expense"}</td>
+        <td>${escapeHTML(item.eventAttendedDate || "—")}</td>
+        <td>${escapeHTML(item.paymentDate || "—")}</td>
         <td class="${item.type}">${money(item.amount)}</td>
       </tr>
     `)
@@ -353,6 +355,8 @@ export function printFinancialReport(
                 <th>Title</th>
                 <th>Category</th>
                 <th>Type</th>
+                <th>Event date</th>
+                <th>Paid on</th>
                 <th>Amount</th>
               </tr>
             </thead>
@@ -435,6 +439,8 @@ export function printPeriodFinancialReport(
                 <th>Title</th>
                 <th>Category</th>
                 <th>Type</th>
+                <th>Event date</th>
+                <th>Paid on</th>
                 <th>Amount</th>
               </tr>
             </thead>

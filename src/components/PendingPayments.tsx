@@ -7,12 +7,14 @@ interface Props {
   payments: PendingPayment[];
   onChange: (payments: PendingPayment[]) => void;
   onReceive: (paymentId: string, receipt: PaymentReceipt) => void;
+  onExportExcel?: () => void;
 }
 
 export default function PendingPayments({
   payments,
   onChange,
-  onReceive
+  onReceive,
+  onExportExcel
 }: Props) {
   const [showForm, setShowForm] = useState(false);
   const [receivingId, setReceivingId] = useState<string | null>(null);
@@ -143,6 +145,17 @@ export default function PendingPayments({
           <Plus size={17} /> Add
         </button>
       </div>
+
+      {onExportExcel && (
+        <button
+          type="button"
+          className="excel-export-button"
+          onClick={onExportExcel}
+          disabled={payments.length === 0}
+        >
+          ↓ Export Excel
+        </button>
+      )}
 
       <div className="pending-summary">
         <span>Outstanding amount</span>

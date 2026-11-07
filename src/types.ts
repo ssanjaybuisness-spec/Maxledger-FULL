@@ -12,6 +12,10 @@ export interface Transaction {
   eventAttendedDate?: string;
   /** Date the money was actually received (income entries). */
   paymentDate?: string;
+  /** Date the event/work was attended (income entries). */
+  eventAttendedDate?: string;
+  /** Date the money was actually received (income entries). */
+  paymentDate?: string;
   notes?: string;
   accountId?: string;
   paymentId?: string;
@@ -116,3 +120,4 @@ export interface AppData {
   cashDistributions?: CashDistribution[];
   deletedTransactionIds?: string[];
 }
+

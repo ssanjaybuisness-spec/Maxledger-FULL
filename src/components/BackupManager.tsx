@@ -4,12 +4,14 @@ import {
   auth,
   createCloudBackup,
   getCloudBackups,
+  logout,
   restoreCloudBackup
 } from "../services/firebase";
 import type { AppData } from "../types";
 import {
   Cloud, CloudDownload, RefreshCw, ShieldCheck,
-  Clock3, Database, HardDrive, CheckCircle2
+  Clock3, Database, HardDrive, CheckCircle2,
+  FileSpreadsheet, LogOut
 } from "lucide-react";
 
 type BackupItem = {
@@ -22,6 +24,7 @@ type BackupItem = {
 type Props = {
   currentData: AppData;
   onRestore: (data: AppData) => void;
+  onExportExcel?: () => void;
 };
 
 function formatBackupDate(value: any) {
@@ -44,7 +47,11 @@ function isAppData(value: any): value is AppData {
     Array.isArray(value.budgets);
 }
 
-export default function BackupManager({ currentData, onRestore }: Props) {
+export default function BackupManager({
+  currentData,
+  onRestore,
+  onExportExcel
+}: Props) {
   const [backups, setBackups] = useState<BackupItem[]>([]);
   const [loading, setLoading] = useState(true);
   const [busy, setBusy] = useState(false);
@@ -52,6 +59,31 @@ export default function BackupManager({ currentData, onRestore }: Props) {
   const [messageError, setMessageError] = useState(false);
 
   const userId = auth.currentUser?.uid;
+  const accountName =
+    auth.currentUser?.displayName || auth.currentUser?.email || "Signed in";
+  const accountEmail = auth.currentUser?.email || "";
+  const [signingOut, setSigningOut] = useState(false);
+
+  async function handleSignOut() {
+    if (
+      !window.confirm(
+        "Sign out of MaxLedger? Your data stays saved in the cloud and on this device."
+      )
+    ) {
+      return;
+    }
+
+    setSigningOut(true);
+
+    try {
+      await logout();
+    } catch (error) {
+      console.error("Sign out failed:", error);
+      setMessage("Sign out failed. Please try again.");
+      setMessageError(true);
+      setSigningOut(false);
+    }
+  }
   const transactionCount = currentData.transactions.length;
   const pendingCount = currentData.pendingPayments.length;
 
@@ -163,6 +195,17 @@ export default function BackupManager({ currentData, onRestore }: Props) {
           <CloudDownload size={17} />
           {busy ? "Please wait…" : "Create manual backup"}
         </button>
+
+        {onExportExcel && (
+          <button
+            type="button"
+            className="backup-create-button backup-excel-button"
+            onClick={onExportExcel}
+          >
+            <FileSpreadsheet size={17} />
+            Export all data to Excel
+          </button>
+        )}
       </div>
 
       <div className="backup-stats">
@@ -263,6 +306,27 @@ export default function BackupManager({ currentData, onRestore }: Props) {
         <ShieldCheck size={14} />
         Restoring creates a safety backup of your current data first.
       </p>
+
+      <div className="backup-account">
+        <span className="backup-kicker">ACCOUNT</span>
+
+        <div className="backup-account-info">
+          <strong>{accountName}</strong>
+          {accountEmail && accountEmail !== accountName && (
+            <span>{accountEmail}</span>
+          )}
+        </div>
+
+        <button
+          type="button"
+          className="backup-signout-button"
+          onClick={() => void handleSignOut()}
+          disabled={signingOut || busy}
+        >
+          <LogOut size={16} />
+          {signingOut ? "Signing out…" : "Sign out"}
+        </button>
+      </div>
     </section>
   );
 }

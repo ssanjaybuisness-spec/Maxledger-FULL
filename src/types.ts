@@ -120,4 +120,3 @@ export interface AppData {
   cashDistributions?: CashDistribution[];
   deletedTransactionIds?: string[];
 }
-

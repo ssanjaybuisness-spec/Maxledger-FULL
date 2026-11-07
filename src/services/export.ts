@@ -23,6 +23,8 @@ export async function exportTransactionsCSV(
       "Type",
       "Category",
       "Amount",
+      "Event Attended Date",
+      "Payment Date",
       "Notes"
     ];
 
@@ -32,6 +34,8 @@ export async function exportTransactionsCSV(
       transaction.type,
       transaction.category,
       transaction.amount,
+      transaction.eventAttendedDate || "",
+      transaction.paymentDate || "",
       transaction.notes || ""
     ]);
 

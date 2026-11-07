@@ -35,7 +35,7 @@ export default function PendingPayments({
       Date.now() - new Date().getTimezoneOffset() * 60000
     ).toISOString().slice(0, 10);
 
-    if (payment.expectedDate < todayLocal) {
+    if (payment.expectedDate && payment.expectedDate < todayLocal) {
       return "overdue";
     }
 
@@ -59,7 +59,6 @@ export default function PendingPayments({
 
     if (
       !customerName ||
-      !expectedDate ||
       !Number.isFinite(expectedAmount) ||
       expectedAmount <= 0
     ) return;
@@ -181,8 +180,8 @@ export default function PendingPayments({
           <label>Event attended date</label>
           <input name="eventAttendedDate" type="date" />
 
-          <label>Expected receiving date</label>
-          <input name="expectedDate" type="date" required />
+          <label>Expected receiving date (optional)</label>
+          <input name="expectedDate" type="date" />
 
           <label>Notes</label>
           <input name="notes" maxLength={300}
@@ -225,7 +224,9 @@ export default function PendingPayments({
                   {payment.eventAttendedDate && (
                     <p>Event attended: {payment.eventAttendedDate}</p>
                   )}
-                  <p>Expected: {payment.expectedDate}</p>
+                  <p>
+                    Expected: {payment.expectedDate || "No date set"}
+                  </p>
                 </div>
                 <span className={`payment-status ${status}`}>
                   {status.replace("_", " ")}

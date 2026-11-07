@@ -4318,3 +4318,76 @@ select:focus-visible {
     font-size: 13px;
   }
 }
+
+/* Excel export + new income date fields */
+.transaction-info p.transaction-dates {
+  margin-top: 2px;
+  font-size: 11px;
+  opacity: 0.85;
+}
+
+.excel-export-button {
+  width: 100%;
+  margin: 0 0 14px;
+  padding: 12px;
+  border: 1px solid var(--green, #34d399);
+  border-radius: 12px;
+  color: var(--green, #34d399);
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.excel-export-button:disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+.backup-account {
+  margin-top: 18px;
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-radius: 16px;
+  background: var(--surface);
+}
+
+.backup-account-info {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+  margin-bottom: 12px;
+}
+
+.backup-account-info strong {
+  font-size: 14px;
+  word-break: break-word;
+}
+
+.backup-account-info span {
+  color: var(--muted);
+  font-size: 12px;
+  word-break: break-word;
+}
+
+.backup-signout-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+  padding: 12px;
+  border: 1px solid #f87171;
+  border-radius: 12px;
+  color: #f87171;
+  background: transparent;
+  font-weight: 700;
+  cursor: pointer;
+}
+
+.backup-excel-button {
+  margin-top: 10px;
+  color: #c0d18e;
+  background: transparent;
+  border: 1px solid rgba(192, 209, 142, 0.5);
+}
+

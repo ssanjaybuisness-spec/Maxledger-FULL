@@ -1,7 +1,6 @@
 
 import type { Transaction } from "../types";
-import { Filesystem, Directory, Encoding } from "@capacitor/filesystem";
-import { Share } from "@capacitor/share";
+import { saveFileToDevice } from "./files";
 
 function escapeCSV(value: unknown): string {
   const text = String(value ?? "");
@@ -48,19 +47,11 @@ export async function exportTransactionsCSV(
       .toISOString()
       .slice(0, 10)}.csv`;
 
-    const file = await Filesystem.writeFile({
-      path: filename,
-      data: "\uFEFF" + csv,
-      directory: Directory.Cache,
-      encoding: Encoding.UTF8
-    });
-
-    await Share.share({
-      title: "MaxLedger CSV Export",
-      text: "Your MaxLedger transaction export",
-      files: [file.uri],
-      dialogTitle: "Save or share CSV"
-    });
+    await saveFileToDevice(
+      filename,
+      { text: "\uFEFF" + csv },
+      "text/csv;charset=utf-8"
+    );
   } catch (error) {
     console.error("CSV export failed:", error);
     alert("Unable to export CSV. Please try again.");

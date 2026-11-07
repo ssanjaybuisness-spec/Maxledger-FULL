@@ -31,6 +31,13 @@ import { exportTransactionsCSV } from "./services/export";
 import { exportBackup } from "./services/backup";
 import { importBackup } from "./services/restore";
 import { printFinancialReport } from "./services/report";
+import {
+  exportTransactionsExcel,
+  exportFinancialReportExcel,
+  exportPendingPaymentsExcel,
+  exportBudgetsExcel,
+  exportFullDataExcel
+} from "./services/excel";
 
 const EMPTY_DATA: AppData = {
   transactions: [],
@@ -243,6 +250,14 @@ export default function App() {
     const amount = Number(form.get("amount"));
     const type = form.get("type") as TransactionType;
     const date = String(form.get("date") || "");
+    const eventAttendedDate =
+      type === "income"
+        ? String(form.get("eventAttendedDate") || "") || undefined
+        : undefined;
+    const paymentDate =
+      type === "income"
+        ? String(form.get("paymentDate") || "") || undefined
+        : undefined;
 
     if (
       !title ||
@@ -268,6 +283,8 @@ export default function App() {
                 amount,
                 type,
                 date,
+                eventAttendedDate,
+                paymentDate,
                 updatedAt: now
               }
             : item
@@ -281,6 +298,8 @@ export default function App() {
         amount,
         type,
         date,
+        eventAttendedDate,
+        paymentDate,
         createdAt: now,
         updatedAt: now
       };
@@ -419,7 +438,9 @@ export default function App() {
         amount: receipt.amount,
         type: "income",
         date: receipt.receivedDate,
-        notes: receipt.notes,    
+        eventAttendedDate: payment.eventAttendedDate || undefined,
+        paymentDate: receipt.receivedDate,
+        notes: receipt.notes,
         paymentId: payment.id,
         receiptId: receipt.id,
         createdAt: now,
@@ -593,6 +614,24 @@ export default function App() {
                 required
               />
 
+              {formType === "income" && (
+                <>
+                  <label>Event attended date (optional)</label>
+                  <input
+                    name="eventAttendedDate"
+                    type="date"
+                    defaultValue={editingTransaction?.eventAttendedDate || ""}
+                  />
+
+                  <label>Payment date (optional)</label>
+                  <input
+                    name="paymentDate"
+                    type="date"
+                    defaultValue={editingTransaction?.paymentDate || ""}
+                  />
+                </>
+              )}
+
               <button className="submit-button" type="submit">
                 {editingId ? "Update transaction" : "Save transaction"}
               </button>
@@ -721,6 +760,15 @@ export default function App() {
                   <div className="transaction-info">
                     <h3>{item.title}</h3>
                     <p>{item.category} · {item.date}</p>
+                    {item.type === "income" &&
+                      (item.eventAttendedDate || item.paymentDate) && (
+                        <p className="transaction-dates">
+                          {item.eventAttendedDate &&
+                            `Event: ${item.eventAttendedDate}`}
+                          {item.eventAttendedDate && item.paymentDate && " · "}
+                          {item.paymentDate && `Paid: ${item.paymentDate}`}
+                        </p>
+                      )}
                   </div>
 
                   <strong className={item.type}>
@@ -761,6 +809,9 @@ export default function App() {
             payments={data.pendingPayments}
             onChange={handlePendingChange}
             onReceive={handleReceive}
+            onExportExcel={() =>
+              void exportPendingPaymentsExcel(data.pendingPayments)
+            }
           />
         </section>
       )}
@@ -792,6 +843,12 @@ export default function App() {
             categories={data.categories}
             transactions={data.transactions}
             onChange={handleBudgetsChange}
+            onExportExcel={() =>
+              void exportBudgetsExcel(
+                data.budgets as Budget[],
+                data.transactions
+              )
+            }
           />
         </section>
       )}
@@ -800,7 +857,13 @@ export default function App() {
         <Analytics
           transactions={data.transactions}
           onExportCSV={() => exportTransactionsCSV(data.transactions)}
+          onExportExcel={() =>
+            void exportTransactionsExcel(data.transactions)
+          }
           onDownloadPDF={() => printFinancialReport(data)}
+          onDownloadExcelReport={() =>
+            void exportFinancialReportExcel(data.transactions, "All time")
+          }
           onBackup={() => exportBackup(data)}
           onRestore={() => backupInputRef.current?.click()}
         />
@@ -851,6 +914,7 @@ export default function App() {
 
           <BackupManager
             currentData={data}
+            onExportExcel={() => void exportFullDataExcel(data)}
             onRestore={restoredData => {
               setData({
                 ...restoredData,
